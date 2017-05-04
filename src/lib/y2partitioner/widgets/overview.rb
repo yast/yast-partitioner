@@ -8,7 +8,7 @@ module Y2Partitioner
   module Widgets
     # Widget representing partitioner overview.
     #
-    # It have replace point where it display more details about selected element
+    # It has replace point where it displays more details about selected element
     # in partitioning.
     #
     # TODO: abstract treewidget from it
