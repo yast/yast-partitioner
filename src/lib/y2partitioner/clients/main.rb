@@ -1,3 +1,5 @@
+require "y2partitioner/widgets/overview"
+
 Yast.import "CWM"
 Yast.import "Stage"
 Yast.import "Wizard"
@@ -11,7 +13,19 @@ module Y2Partitioner
       def self.run
         textdomain "storage"
 
-        contents = HBox(
+        contents = MarginBox(
+          0.5,
+          0.5,
+          HBox(
+            HWeight(
+            30,
+            Widgets::Overview.new # TODO: overview widget
+            ),
+            HWeight(
+              70,
+              Empty()# TODO: replace point ( probably passed to overview )
+            )
+          )
         )
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
