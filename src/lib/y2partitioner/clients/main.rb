@@ -1,4 +1,5 @@
 require "y2partitioner/widgets/overview"
+require "y2storage"
 
 Yast.import "CWM"
 Yast.import "Stage"
@@ -14,13 +15,14 @@ module Y2Partitioner
       def self.run
         textdomain "storage"
 
+        staging = Y2Storage::StorageManager.instance.y2storage_staging
         contents = MarginBox(
           0.5,
           0.5,
           HBox(
             HWeight(
               30,
-              Widgets::Overview.new # TODO: overview widget
+              Widgets::Overview.new(staging) # TODO: overview widget
             ),
             HWeight(
               70,

@@ -13,9 +13,10 @@ module Y2Partitioner
     #
     # TODO: abstract treewidget from it
     class Overview < CWM::CustomWidget
-      def initialize
+      def initialize(device_graph)
         self.handle_all_events = true
         @opened = [:all]
+        @device_graph = device_graph
       end
 
       def contents
@@ -104,8 +105,19 @@ module Y2Partitioner
           term(:icon, Icons::HD),
           _("Hard Disks"),
           open?(:hd),
-          [] # TODO: real disks subtree
+          disks_items
         )
+      end
+
+      def disks_items
+        @device_graph.disks.map do |disk|
+          Item(
+            Id(disk.name),
+            disk.sysfs_name,
+            open?(disk.name),
+            [] #TODO real partitions
+          )
+        end
       end
 
       def raid_items
