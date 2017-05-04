@@ -6,6 +6,7 @@ Yast.import "Wizard"
 
 module Y2Partitioner
   module Clients
+    # Main entry point to see partitioner configuration
     class Main
       extend Yast::I18n
       extend Yast::UIShortcuts
@@ -18,12 +19,12 @@ module Y2Partitioner
           0.5,
           HBox(
             HWeight(
-            30,
-            Widgets::Overview.new # TODO: overview widget
+              30,
+              Widgets::Overview.new # TODO: overview widget
             ),
             HWeight(
               70,
-              Empty()# TODO: replace point ( probably passed to overview )
+              Empty() # TODO: replace point ( probably passed to overview )
             )
           )
         )

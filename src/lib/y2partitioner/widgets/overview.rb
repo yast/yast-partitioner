@@ -6,6 +6,11 @@ Yast.import "Hostname"
 
 module Y2Partitioner
   module Widgets
+    # Widget representing partitioner overview.
+    #
+    # It have replace point where it display more details about selected element
+    # in partitioning.
+    #
     # TODO: abstract treewidget from it
     class Overview < CWM::CustomWidget
       def initialize
@@ -19,6 +24,7 @@ module Y2Partitioner
 
       def handle(event)
         id = event["ID"]
+        log.info "handling id #{id}"
 
         nil
       end
@@ -39,17 +45,17 @@ module Y2Partitioner
 
       def subitems
         [
-          harddisk_items,
+          harddisk_items
         ]
       end
 
       def harddisk_items
         Item(
-           Id(:hd),
-           term(:icon, Icons::HD),
-           _("Hard Disks"),
-           open?(:hd),
-           [] # TODO: real disks subtree
+          Id(:hd),
+          term(:icon, Icons::HD),
+          _("Hard Disks"),
+          open?(:hd),
+          [] # TODO: real disks subtree
         )
       end
 
