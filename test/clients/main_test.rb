@@ -11,6 +11,7 @@ describe Y2Partitioner::Clients::Main do
       allow(Yast::Wizard).to receive(:CloseDialog)
       allow(Yast::CWM).to receive(:show)
       allow(Yast::Stage).to receive(:initial).and_return(false)
+      Y2Storage::StorageManager.create_test_instance
     end
 
     it "opens wizard outside of initial stage" do
