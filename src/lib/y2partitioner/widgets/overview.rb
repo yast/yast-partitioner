@@ -41,31 +41,47 @@ module Y2Partitioner
             machine_items
           ),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-          Item(
-            Id(:devicegraph),
-            term(:icon, Icons::GRAPH),
-            _("Device Graph"),
-            open?(:devicegraph)
-          ),
-          Item(
-            Id(:mountgraph),
-            term(:icon, Icons::GRAPH),
-            _("Mount Graph"),
-            open?(:mountgraph)
-          ),
-          Item(
-            Id(:summary),
-            term(:icon, Icons::SUMMARY),
-            _("Installation Summary"),
-            open?(:summary)
-          ),
-          Item(
-            Id(:settings),
-            term(:icon, Icons::SETTINGS),
-            _("Settings"),
-            open?(:settings)
-          )
+          device_graph_item,
+          mount_graph_item,
+          summary_item,
+          settings_item
         ]
+      end
+
+      def device_graph_item
+        Item(
+          Id(:devicegraph),
+          term(:icon, Icons::GRAPH),
+          _("Device Graph"),
+          open?(:devicegraph)
+        )
+      end
+
+      def mount_graph_item
+        Item(
+          Id(:mountgraph),
+          term(:icon, Icons::GRAPH),
+          _("Mount Graph"),
+          open?(:mountgraph)
+        )
+      end
+
+      def summary_item
+        Item(
+          Id(:summary),
+          term(:icon, Icons::SUMMARY),
+          _("Installation Summary"),
+          open?(:summary)
+        )
+      end
+
+      def settings_item
+        Item(
+          Id(:settings),
+          term(:icon, Icons::SETTINGS),
+          _("Settings"),
+          open?(:settings)
+        )
       end
 
       def machine_items
