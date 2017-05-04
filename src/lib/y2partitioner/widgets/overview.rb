@@ -115,7 +115,17 @@ module Y2Partitioner
             Id(disk.name),
             disk.sysfs_name,
             open?(disk.name),
-            [] #TODO real partitions
+            partition_items(disk)
+          )
+        end
+      end
+
+      def partition_items(disk)
+        disk.partitions.map do |partition|
+          Item(
+            Id(partition.name),
+            partition.sysfs_name,
+            open?(partition.name)
           )
         end
       end
