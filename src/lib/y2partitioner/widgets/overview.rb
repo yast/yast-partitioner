@@ -13,16 +13,19 @@ module Y2Partitioner
     #
     # TODO: abstract treewidget from it
     class Overview < CWM::CustomWidget
+      # creates new widget for given device graph
       def initialize(device_graph)
         self.handle_all_events = true
         @opened = [:all]
         @device_graph = device_graph
       end
 
+      # content of widget
       def contents
         Tree(Id(:tree), Opt(:notify), _("System View"), items)
       end
 
+      # handles widgets. As it is with notify, it will get any click on Item
       def handle(event)
         id = event["ID"]
         log.info "handling id #{id}"
