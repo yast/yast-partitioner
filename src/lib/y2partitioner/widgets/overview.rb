@@ -146,8 +146,29 @@ module Y2Partitioner
           term(:icon, Icons::LVM),
           _("Volume Management"),
           open?(:lvm),
-          [] # TODO: real LVM subtree
+          lvm_vgs_items
         )
+      end
+
+      def lvm_vgs_items
+        @device_graph.lvm_vgs.map do |vg|
+          Item(
+            Id(vg.vg_name),
+            vg.vg_name,
+            open?(vg.vg_name),
+            lvm_lvs_items(vg)
+          )
+        end
+      end
+
+      def lvm_lvs_items(vg)
+        vg.lvm_lvs.map do |lv|
+          Item(
+            Id(lv.name),
+            lv.lv_name,
+            open?(lv.name),
+          )
+        end
       end
 
       def crypt_files_items
