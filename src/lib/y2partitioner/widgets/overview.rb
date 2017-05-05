@@ -37,14 +37,15 @@ module Y2Partitioner
 
       def items
         [
-          # TODO: stuck getting hostname on my pc Yast::Hostname.CurrentHostname, so use for now machine
+          # TODO: stuck getting hostname on my pc Yast::Hostname.CurrentHostname,
+          # so use for now machine string
           item_for(:all, "machine", icon: Icons::ALL, subtree: machine_items),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
           item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
           item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
           item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
-          item_for(:settings, _("Settings"), icon: Icons::SETTINGS),
+          item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
         ]
       end
 
@@ -86,8 +87,8 @@ module Y2Partitioner
       end
 
       def lvm_items
-        item_for(:lvm, _("Volume Management"), icon: Icons::LVM,
-          subtree: lvm_vgs_items)
+        item_for(:lvm, _("Volume Management"), icon:    Icons::LVM,
+                                               subtree: lvm_vgs_items)
       end
 
       def lvm_vgs_items
