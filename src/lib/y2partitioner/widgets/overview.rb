@@ -166,7 +166,7 @@ module Y2Partitioner
           Item(
             Id(lv.name),
             lv.lv_name,
-            open?(lv.name),
+            open?(lv.name)
           )
         end
       end

@@ -9,6 +9,8 @@ require "y2storage"
 # I did not find complex enough examples
 
 module Y2Storage
+  # just reopening for faking up sysfs_name
+  # not production code, only for testing
   class BlkDevice < Device
     def sysfs_name
       name.split("/").last
