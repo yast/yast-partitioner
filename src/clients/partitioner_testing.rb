@@ -5,6 +5,17 @@ require "yast"
 require "y2partitioner/clients/main"
 require "y2storage"
 
+# fake sysfs_name method as loading it from yaml is not supported and for xml
+# I did not find complex enough examples
+
+module Y2Storage
+  class BlkDevice < Device
+    def sysfs_name
+      name.split("/").last
+    end
+  end
+end
+
 arg = Yast::WFM.Args.first
 storage = Y2Storage::StorageManager.fake_from_yaml(arg)
 storage.probed.copy(storage.staging)
