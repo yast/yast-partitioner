@@ -58,5 +58,6 @@ rake install DESTDIR="%{buildroot}"
 
 %doc COPYING
 %doc README.md
+%doc CONTRIBUTING.md
 
 %build
