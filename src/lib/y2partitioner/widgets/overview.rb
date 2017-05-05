@@ -37,55 +37,15 @@ module Y2Partitioner
 
       def items
         [
-          Item(
-            Id(:all),
-            term(:icon, Icons::ALL),
-            open?(:all),
-            "machine", # TODO: stuck getting hostname on my pc Yast::Hostname.CurrentHostname,
-            machine_items
-          ),
+          # TODO: stuck getting hostname on my pc Yast::Hostname.CurrentHostname, so use for now machine
+          item_for(:all, "machine", icon: Icons::ALL, subtree: machine_items),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-          device_graph_item,
-          mount_graph_item,
-          summary_item,
-          settings_item
+          item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
+          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+          item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
+          item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
+          item_for(:settings, _("Settings"), icon: Icons::SETTINGS),
         ]
-      end
-
-      def device_graph_item
-        Item(
-          Id(:devicegraph),
-          term(:icon, Icons::GRAPH),
-          _("Device Graph"),
-          open?(:devicegraph)
-        )
-      end
-
-      def mount_graph_item
-        Item(
-          Id(:mountgraph),
-          term(:icon, Icons::GRAPH),
-          _("Mount Graph"),
-          open?(:mountgraph)
-        )
-      end
-
-      def summary_item
-        Item(
-          Id(:summary),
-          term(:icon, Icons::SUMMARY),
-          _("Installation Summary"),
-          open?(:summary)
-        )
-      end
-
-      def settings_item
-        Item(
-          Id(:settings),
-          term(:icon, Icons::SETTINGS),
-          _("Settings"),
-          open?(:settings)
-        )
       end
 
       def machine_items
@@ -103,135 +63,80 @@ module Y2Partitioner
       end
 
       def harddisk_items
-        Item(
-          Id(:hd),
-          term(:icon, Icons::HD),
-          _("Hard Disks"),
-          open?(:hd),
-          disks_items
-        )
+        item_for(:hd, _("Hard Disks"), icon: Icons::HD, subtree: disks_items)
       end
 
       def disks_items
         @device_graph.disks.map do |disk|
-          Item(
-            Id(disk.name),
-            disk.sysfs_name,
-            open?(disk.name),
-            partition_items(disk)
-          )
+          id = "disk:" + disk.name
+          item_for(id, disk.sysfs_name, subtree: partition_items(disk))
         end
       end
 
       def partition_items(disk)
         disk.partitions.map do |partition|
-          Item(
-            Id(partition.name),
-            partition.sysfs_name,
-            open?(partition.name)
-          )
+          id = "partition:" + partition.name
+          item_for(id, partition.sysfs_name)
         end
       end
 
       def raid_items
-        Item(
-          Id(:raid),
-          term(:icon, Icons::RAID),
-          _("RAID"),
-          open?(:raid),
-          [] # TODO: real MD subtree
-        )
+        # TODO: real MD subtree
+        item_for(:raid, _("RAID"), icon: Icons::RAID, subtree: [])
       end
 
       def lvm_items
-        Item(
-          Id(:lvm),
-          term(:icon, Icons::LVM),
-          _("Volume Management"),
-          open?(:lvm),
-          lvm_vgs_items
-        )
+        item_for(:lvm, _("Volume Management"), icon: Icons::LVM,
+          subtree: lvm_vgs_items)
       end
 
       def lvm_vgs_items
         @device_graph.lvm_vgs.map do |vg|
-          Item(
-            Id(vg.vg_name),
-            vg.vg_name,
-            open?(vg.vg_name),
-            lvm_lvs_items(vg)
-          )
+          id = "lvm_vg:" + vg.vg_name
+          item_for(id, vg.vg_name, subtree: lvm_lvs_items(vg))
         end
       end
 
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
-          Item(
-            Id(lv.name),
-            lv.lv_name,
-            open?(lv.name)
-          )
+          id = "lvm_lv" + lv.name
+          item_for(id, lv.lv.name)
         end
       end
 
       def crypt_files_items
-        Item(
-          Id(:loop),
-          term(:icon, Icons::LOOP),
-          _("Crypt Files"),
-          open?(:loop),
-          [] # TODO: real subtree
-        )
+        # TODO: real subtree
+        item_for(:loop, _("Crypt Files"), icon: Icons::LOOP, subtree: [])
       end
 
       def device_mapper_items
-        Item(
-          Id(:dm),
-          term(:icon, Icons::DM),
-          _("Device Mapper"),
-          open?(:dm),
-          [] # TODO: real subtree
-        )
+        # TODO: real subtree
+        item_for(:dm, _("Device Mapper"), icon: Icons::DM, subtree: [])
       end
 
       def nfs_items
-        Item(
-          Id(:nfs),
-          term(:icon, Icons::NFS),
-          _("NFS"),
-          open?(:nfs),
-          [] # TODO: real subtree
-        )
+        item_for(:nfs, _("NFS"), icon: Icons::NFS)
       end
 
       def btrfs_items
-        Item(
-          Id(:btrfs),
-          term(:icon, Icons::NFS),
-          _("Btrfs"),
-          open?(:btrfs),
-          [] # TODO: real subtree
-        )
+        item_for(:btrfs, _("Btrfs"), icon: Icons::NFS)
       end
 
       def tmpfs_items
-        Item(
-          Id(:tmpfs),
-          term(:icon, Icons::NFS),
-          _("tmpfs"),
-          open?(:tmpfs),
-          [] # TODO: real subtree
-        )
+        item_for(:tmpfs, _("tmpfs"), icon: Icons::NFS)
       end
 
       def unused_items
-        Item(
-          Id(:unused),
-          term(:icon, Icons::UNUSED),
-          _("Unused Devices"),
-          open?(:unused),
-          [] # TODO: real subtree
-        )
+        item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
+      end
+
+      def item_for(id, title, icon: nil, subtree: [])
+        args = [Id(id)]
+        args << term(:icon, icon) if icon
+        args << title
+        args << open?(id)
+        args << subtree
+        Item(*args)
       end
 
       def open?(id)

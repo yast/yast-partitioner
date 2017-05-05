@@ -22,7 +22,7 @@ module Y2Partitioner
           HBox(
             HWeight(
               30,
-              Widgets::Overview.new(staging) # TODO: overview widget
+              Widgets::Overview.new(staging)
             ),
             HWeight(
               70,
