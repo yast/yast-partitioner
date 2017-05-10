@@ -16,17 +16,21 @@ module Y2Partitioner
         textdomain "storage"
 
         staging = Y2Storage::StorageManager.instance.y2storage_staging
+
+        details_rp = CWM::ReplacePoint.new(id: "partitioner_details_pane")
+        overview_w = Widgets::Overview.new(staging, details_rp: details_rp)
+
         contents = MarginBox(
           0.5,
           0.5,
           HBox(
             HWeight(
               30,
-              Widgets::Overview.new(staging)
+              overview_w
             ),
             HWeight(
               70,
-              Empty() # TODO: replace point ( probably passed to overview )
+              details_rp
             )
           )
         )

@@ -14,12 +14,14 @@ module Y2Partitioner
     # TODO: abstract treewidget from it
     class Overview < CWM::CustomWidget
       # creates new widget for given device graph
-      def initialize(device_graph)
+      # @param [CWM::ReplacePoint] details_rp replace-point for the details pane
+      def initialize(device_graph, details_rp:)
         textdomain "storage"
         self.handle_all_events = true
         @hostname = Yast::Hostname.CurrentHostname
         @opened = [:all]
         @device_graph = device_graph
+        @details_rp = details_rp
       end
 
       # content of widget
@@ -30,7 +32,13 @@ module Y2Partitioner
       # handles widgets. As it is with notify, it will get any click on Item
       def handle(event)
         id = event["ID"]
-        log.info "handling id #{id}"
+        return nil unless id == :tree
+
+        items = Yast::UI.QueryWidget(Id(:tree), :CurrentBranch)
+
+        details = CWM::PushButton.new
+        details.define_singleton_method(:label, ->{ "Conjure #{items.inspect}" })
+        @details_rp.replace(details)
 
         nil
       end
