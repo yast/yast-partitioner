@@ -15,6 +15,7 @@ module Y2Partitioner
     class Overview < CWM::CustomWidget
       # creates new widget for given device graph
       def initialize(device_graph)
+        textdomain "storage"
         self.handle_all_events = true
         @opened = [:all]
         @device_graph = device_graph
