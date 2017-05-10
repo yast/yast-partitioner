@@ -17,6 +17,7 @@ module Y2Partitioner
       def initialize(device_graph)
         textdomain "storage"
         self.handle_all_events = true
+        @hostname = Yast::Hostname.CurrentHostname
         @opened = [:all]
         @device_graph = device_graph
       end
@@ -38,9 +39,7 @@ module Y2Partitioner
 
       def items
         [
-          # TODO: stuck getting hostname on my pc Yast::Hostname.CurrentHostname,
-          # so use for now machine string
-          item_for(:all, "machine", icon: Icons::ALL, subtree: machine_items),
+          item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
           item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
