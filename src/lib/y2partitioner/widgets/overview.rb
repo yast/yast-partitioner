@@ -14,6 +14,7 @@ module Y2Partitioner
     # TODO: abstract treewidget from it
     class Overview < CWM::CustomWidget
       # creates new widget for given device graph
+      # @param [Y2Storage::Devicegraph] device_graph
       # @param [CWM::ReplacePoint] details_rp replace-point for the details pane
       def initialize(device_graph, details_rp:)
         textdomain "storage"
@@ -109,7 +110,7 @@ module Y2Partitioner
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
           id = "lvm_lv" + lv.name
-          item_for(id, lv.lv.name)
+          item_for(id, lv.lv_name)
         end
       end
 
