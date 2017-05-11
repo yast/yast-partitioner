@@ -38,12 +38,20 @@ module Y2Partitioner
 
         items = Yast::UI.QueryWidget(Id(:tree), :CurrentBranch)
         last = items.last
-        if last.to_s.start_with? "partition:"
-          pname = last.sub("partition:", "")
-          partition = Y2Storage::Partition.find_by_name(@device_graph, pname)
-          wterm = ExpertPartitioner::PartitionTreeView.new(partition)
-          details = CWM::CustomWidget.new
-          details.define_singleton_method(:contents, -> { wterm.create })
+        itype, _colon, iname = last.to_s.partition ":"
+        case itype
+        when "disk"
+          disk = Y2Storage::Disk.find_by_name(@device_graph, iname)
+          view = ExpertPartitioner::DiskTreeView.new(disk)
+          details = wrap_view(view)
+        when "partition"
+          partition = Y2Storage::Partition.find_by_name(@device_graph, iname)
+          view = ExpertPartitioner::PartitionTreeView.new(partition)
+          details = wrap_view(view)
+        when "lvm_vg"
+          vg = Y2Storage::LvmVg.find_by_vg_name(@device_graph, iname)
+          view = ExpertPartitioner::LvmVgTreeView.new(vg)
+          details = wrap_view(view)
         else
           details = CWM::PushButton.new
           details.define_singleton_method(:label, -> { "Todo, #{items.inspect}" })
@@ -54,6 +62,15 @@ module Y2Partitioner
       end
 
     private
+
+      # @param v [ExpertPartitioner::TreeView]
+      # @return [CWM::AbstractWidget]
+      def wrap_view(v)
+        ui_term = v.create
+        w = CWM::CustomWidget.new
+        w.define_singleton_method(:contents, -> { ui_term })
+        w
+      end
 
       def items
         [
