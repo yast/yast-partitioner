@@ -1,6 +1,7 @@
 require "cwm/widget"
 
 require "y2partitioner/icons"
+require "expert_partitioner/tree_views/partition"
 
 Yast.import "Hostname"
 
@@ -36,9 +37,17 @@ module Y2Partitioner
         return nil unless id == :tree
 
         items = Yast::UI.QueryWidget(Id(:tree), :CurrentBranch)
-
-        details = CWM::PushButton.new
-        details.define_singleton_method(:label, ->{ "Conjure #{items.inspect}" })
+        last = items.last
+        if last.to_s.start_with? "partition:"
+          pname = last.sub("partition:", "")
+          partition = Y2Storage::Partition.find_by_name(@device_graph, pname)
+          wterm = ExpertPartitioner::PartitionTreeView.new(partition)
+          details = CWM::CustomWidget.new
+          details.define_singleton_method(:contents, -> { wterm.create })
+        else
+          details = CWM::PushButton.new
+          details.define_singleton_method(:label, -> { "Todo, #{items.inspect}" })
+        end
         @details_rp.replace(details)
 
         nil
