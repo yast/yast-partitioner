@@ -16,23 +16,12 @@ module Y2Partitioner
         textdomain "storage"
 
         staging = Y2Storage::StorageManager.instance.y2storage_staging
-
-        details_rp = CWM::ReplacePoint.new(id: "partitioner_details_pane")
-        overview_w = Widgets::Overview.new(staging, details_rp: details_rp)
+        overview_w = Widgets::Overview.new(staging)
 
         contents = MarginBox(
           0.5,
           0.5,
-          HBox(
-            HWeight(
-              30,
-              overview_w
-            ),
-            HWeight(
-              70,
-              details_rp
-            )
-          )
+          overview_w
         )
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial

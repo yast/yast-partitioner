@@ -13,32 +13,43 @@ module Y2Partitioner
     # in partitioning.
     #
     # TODO: abstract treewidget from it
-    class Overview < CWM::CustomWidget
+    class Overview < CWM::Tree
       # creates new widget for given device graph
       # @param [Y2Storage::Devicegraph] device_graph
-      # @param [CWM::ReplacePoint] details_rp replace-point for the details pane
-      def initialize(device_graph, details_rp:)
+      def initialize(device_graph)
         textdomain "storage"
         self.handle_all_events = true
         @hostname = Yast::Hostname.CurrentHostname
         @opened = [:all]
         @device_graph = device_graph
-        @details_rp = details_rp
       end
 
-      # content of widget
-      def contents
-        Tree(Id(:tree), Opt(:notify), _("System View"), items)
+      def label
+        _("System View")
+      end
+
+      def find_tree_item
+        item_path = Yast::UI.QueryWidget(Id(widget_id), :CurrentBranch)
+        ti = CWM::TreeItem.new(nil, nil, children: items)
+        until item_path.empty?
+          front = item_path.shift
+          ti = ti.children.fetch(front) # must find it
+        end
+        ti
       end
 
       # handles widgets. As it is with notify, it will get any click on Item
       def handle(event)
         id = event["ID"]
-        return nil unless id == :tree
+        # TODO: pass events to child widgets
+        return nil unless id == widget_id
 
-        items = Yast::UI.QueryWidget(Id(:tree), :CurrentBranch)
-        last = items.last
-        itype, _colon, iname = last.to_s.partition ":"
+        ti = find_tree_item
+        details = ti.data
+        # and here we need to work out an adaptation of what Tabs#handle does!
+
+
+        itype = nil
         case itype
         when "disk"
           disk = Y2Storage::Disk.find_by_name(@device_graph, iname)
@@ -56,7 +67,6 @@ module Y2Partitioner
           details = CWM::PushButton.new
           details.define_singleton_method(:label, -> { "Todo, #{items.inspect}" })
         end
-        @details_rp.replace(details)
 
         nil
       end
@@ -73,6 +83,7 @@ module Y2Partitioner
       end
 
       def items
+        @items ||=
         [
           item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
           # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
@@ -81,7 +92,7 @@ module Y2Partitioner
           item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
           item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
           item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
-        ]
+        ].map { |i| [i.id, i] }.to_h
       end
 
       def machine_items
@@ -111,8 +122,11 @@ module Y2Partitioner
 
       def partition_items(disk)
         disk.partitions.map do |partition|
+          y2partition = Y2Storage::Partition.find_by_name(@device_graph, partition.name)
+          view = ExpertPartitioner::PartitionTreeView.new(y2partition)
+          pane_term = view.create
           id = "partition:" + partition.name
-          item_for(id, partition.sysfs_name)
+          item_for(id, partition.sysfs_name, pane: pane_term)
         end
       end
 
@@ -166,21 +180,13 @@ module Y2Partitioner
         item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
       end
 
-      def item_for(id, title, icon: nil, subtree: [])
-        args = [Id(id)]
-        args << term(:icon, icon) if icon
-        args << title
-        args << open?(id)
-        args << subtree
-        Item(*args)
+      def item_for(id, title, icon: nil, pane: nil, subtree: [])
+        children = subtree.map { |i| [i.id, i] }.to_h
+        CWM::TreeItem.new(id, title, icon: icon, open: open?(id), data: pane, children: children)
       end
 
       def open?(id)
         @opened.include?(id)
-      end
-
-      def term(*args)
-        Yast::Term.new(*args)
       end
     end
   end
