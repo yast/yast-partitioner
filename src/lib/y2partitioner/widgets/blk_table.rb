@@ -16,6 +16,7 @@ module Y2Partitioner
         @blk_devices = blk_devices
       end
 
+      # headers of table
       def header
         [
           # TRANSLATORS: table header, Device is physical name of block device
@@ -44,6 +45,7 @@ module Y2Partitioner
         ]
       end
 
+      # table items. See CWM::Table#items
       def items
         @blk_devices.map do |device|
           [

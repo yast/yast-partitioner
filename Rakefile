@@ -9,5 +9,5 @@ Yast::Tasks.configuration do |conf|
   conf.obs_sr_project = nil
   # TODO: improve it, at least do not get worse
   # TODO: remove condition when new packaging tasks are accepted to factory
-  conf.documentation_minimal = 50 if conf.respond_to?(:documentation_minimal=)
+  conf.documentation_minimal = 80 if conf.respond_to?(:documentation_minimal=)
 end
