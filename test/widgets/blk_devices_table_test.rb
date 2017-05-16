@@ -1,8 +1,8 @@
 require_relative "../test_helper"
 
-require "y2partitioner/widgets/blk_table"
+require "y2partitioner/widgets/blk_devices_table"
 
-describe Y2Partitioner::Widgets::BlkTable do
+describe Y2Partitioner::Widgets::BlkDevicesTable do
   subject { described_class.new(devices) }
   let(:devices) do
     graph = devicegraph_stub("complex-lvm-encrypt.yml").probed

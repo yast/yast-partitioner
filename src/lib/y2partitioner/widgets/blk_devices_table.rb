@@ -6,8 +6,8 @@ require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
-    # Table widget to represent given list of Block Devices.
-    class BlkTable < CWM::Table
+    # Table widget to represent given list of Y2Storage::BlkDevice.
+    class BlkDevicesTable < CWM::Table
       include Yast::I18n
 
       # @param blk_devices [Array<Y2Storage::BlkDevice>] devices to display
