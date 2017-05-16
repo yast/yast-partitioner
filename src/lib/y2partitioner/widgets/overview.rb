@@ -48,7 +48,6 @@ module Y2Partitioner
         details = ti.data
         # and here we need to work out an adaptation of what Tabs#handle does!
 
-
         itype = nil
         case itype
         when "disk"
@@ -84,15 +83,15 @@ module Y2Partitioner
 
       def items
         @items ||=
-        [
-          item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
-          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-          item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
-          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-          item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
-          item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
-          item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
-        ].map { |i| [i.id, i] }.to_h
+          [
+            item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
+            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+            item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
+            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+            item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
+            item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
+            item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
+          ].map { |i| [i.id, i] }.to_h
       end
 
       def machine_items
