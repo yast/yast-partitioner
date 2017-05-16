@@ -23,6 +23,8 @@ if ENV["COVERAGE"]
   end
 end
 
+require "y2storage"
+
 def devicegraph_stub(name)
   path = File.join(File.dirname(__FILE__), "data", name)
   storage = Y2Storage::StorageManager.fake_from_yaml(path)

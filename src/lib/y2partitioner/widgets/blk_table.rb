@@ -7,7 +7,7 @@ require "y2partitioner/icons"
 module Y2Partitioner
   module Widgets
     # Table widget to represent given list of Block Devices.
-    class BlkTable
+    class BlkTable < CWM::Table
       include Yast::I18n
 
       def initialize(blk_devices)
@@ -49,7 +49,7 @@ module Y2Partitioner
             device.name, # use name as id
             device.name,
             device.size.to_human_string,
-            device.exists_in_probed ? "" : "F", # TODO: dasd format use "X", investigate it
+            device.exists_in_probed? ? "" : "F", # TODO: dasd format use "X", investigate it
             encryption_value_for(device),
             type_for(device),
             fs_type_for(device),
