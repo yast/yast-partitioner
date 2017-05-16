@@ -22,5 +22,3 @@ describe Y2Partitioner::Widgets::BlkTable do
     end
   end
 end
-
-

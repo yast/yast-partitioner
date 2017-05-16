@@ -6,6 +6,7 @@ require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
+    # Table widget to represent given list of Block Devices.
     class BlkTable
       include Yast::I18n
 
@@ -73,7 +74,7 @@ module Y2Partitioner
         end
       end
 
-      def type_for(device)
+      def type_for(_device)
         # TODO: add PartitionType#to_human_string to yast2-storage-ng.
         # TODO: also type for disks. Old one: https://github.com/yast/yast-storage/blob/master/src/modules/StorageFields.rb#L517
         #   for disk, lets add it to partitioner, unless someone else need it

@@ -30,4 +30,3 @@ def devicegraph_stub(name)
 
   storage
 end
-
