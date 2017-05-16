@@ -10,6 +10,7 @@ module Y2Partitioner
     class BlkTable < CWM::Table
       include Yast::I18n
 
+      # @param blk_devices [Array<Y2Storage::BlkDevice>] devices to display
       def initialize(blk_devices)
         textdomain "storage"
         @blk_devices = blk_devices

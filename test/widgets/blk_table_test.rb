@@ -9,6 +9,10 @@ describe Y2Partitioner::Widgets::BlkTable do
     Y2Storage::BlkDevice.all(graph)
   end
 
+  before do
+    allow(Yast::UI).to receive(:GetDisplayInfo).and_return("HasIconSupport" => true)
+  end
+
   describe "#header" do
     it "returns array" do
       expect(subject.header).to be_a(::Array)
