@@ -27,6 +27,9 @@ module Y2Partitioner
 
       def disk_text
         # TODO: consider using e.g. erb for this kind of output
+        # for erb examples see
+        # https://github.com/yast/yast-registration/blob/master/src/data/registration/certificate_summary.erb
+        # https://github.com/yast/yast-registration/blob/327ab34c020a89f8b7e3f4bff55deea82e457237/src/lib/registration/helpers.rb#L165
         # TRANSLATORS: heading for section about device
         output = Yast::HTML.Heading(_("Device:"))
         output << Yast::HTML.List(device_attributes_list)
@@ -45,6 +48,7 @@ module Y2Partitioner
           format(_("Number of Cylinders: %s"), "Do we need it?"),
           format(_("Cylinder Size: %s"), "Do we need it?"),
           # TODO: to_human_string for Y2Storage::DataTransport
+          # TRANSLATORS: Computer bus which the device is connected to e.g. SATA or ATA.
           format(_("Bus: %s"), "TODO"),
           format(_("Sector Size: %s"), "Do we need it?"),
           # TRANSLATORS: disk partition table label
