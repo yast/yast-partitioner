@@ -2,6 +2,8 @@ require "cwm/widget"
 
 Yast.import "HTML"
 
+require "y2partitioner/widgets/blk_device_attributes"
+
 module Y2Partitioner
   module Widgets
     class PartitionDescription < CWM::RichText
@@ -19,6 +21,7 @@ module Y2Partitioner
     private
 
       attr_reader :partition
+      alias_method :blk_device, :partition
 
       def partition_text
         # TODO: consider using e.g. erb for this kind of output
@@ -45,48 +48,14 @@ module Y2Partitioner
 
       def device_attributes_list
         [
-          # TRANSLATORS: here device stands for kernel path to device
-          format(_("Device: %s"), partition.name),
-          # TRANSLATORS: size of partition
-          format(_("Size: %s"), partition.size.to_human_string),
-          # TRANSLATORS: If partition is encrypted. Answer is Yes/No
-          format(_("Encrypted: %s"),  partition.encrypted? ? _("Yes") : _("No"),
-          # maybe move it to own class this helpers
-          device_path,
-          device_id,
+          device_name,
+          device_size,
+          device_encrypted,
+          device_udev_by_path.join(Yast::HTML.Newline),
+          device_udev_by_id.join(Yast::HTML.Newline),
           # TRANSLATORS: accronym for Filesystem Identifier
           format(_("FS ID: %s"), "TODO")
         ]
-      end
-
-      def device_path
-        paths = partition.udev_paths
-        if paths.size > 1
-          res = paths.each_with_index.map do |path, index|
-            # TRANSLATORS: Device path is where on motherboard is device connected,
-            # %i is number when there are more paths
-            format(_("Device Path %i: %s"), index + 1, path)
-          end
-          res.join(Yast::HTML.Newline)
-        else
-          # TRANSLATORS: Device path is where on motherboard is device connected
-          format(_("Device Path: %s"), paths.first)
-        end
-      end
-
-      def device_id
-        ids = partition.udev_ids
-        if ids.size > 1
-          res = paths.each_with_index.map do |id, index|
-            # TRANSLATORS: Device ID is udev ID for device,
-            # %i is number when there are more paths
-            format(_("Device ID %i: %s"), index + 1, id)
-          end
-          res.join(Yast::HTML.Newline)
-        else
-          # TRANSLATORS: Device ID is udev ID for device,
-          format(_("Device ID: %s"), ids.first)
-        end
       end
     end
   end
