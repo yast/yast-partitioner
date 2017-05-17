@@ -10,20 +10,27 @@ module Y2Partitioner
     module BlkDeviceAttributes
       extend Yast::I18n
 
+      # sets textdomain
       def included(_target)
         textdomain "storage"
       end
 
+      # kernel device name formatted
+      # @return [String]
       def device_name
         # TRANSLATORS: here device stands for kernel path to device
         format(_("Device: %s"), blk_device.name)
       end
 
+      # Block device size
+      # @return [String] device size in human readable format
       def device_size
         # TRANSLATORS: size of partition
         format(_("Size: %s"), blk_device.size.to_human_string)
       end
 
+      # Udev by path links for device in human readable format
+      # @return [Array<String>]
       def device_udev_by_path
         paths = blk_device.udev_paths
         if paths.size > 1
@@ -38,6 +45,8 @@ module Y2Partitioner
         end
       end
 
+      # Udev by id links for device in human readable format
+      # @return [Array<String>]
       def device_udev_by_id
         ids = blk_device.udev_ids
         if ids.size > 1
@@ -52,6 +61,8 @@ module Y2Partitioner
         end
       end
 
+      # Information if device is encrypted
+      # @return [String]
       def device_encrypted
         format(_("Encrypted: %s"), blk_device.encrypted? ? _("Yes") : _("No"))
       end

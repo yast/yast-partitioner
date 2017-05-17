@@ -10,11 +10,13 @@ module Y2Partitioner
     class DiskDescription < CWM::RichText
       include Yast::I18n
 
+      # @param disk [Y2Storage::Disk] to describe
       def initialize(disk)
         textdomain "storage"
         @disk = disk
       end
 
+      # inits widget content
       def init
         self.value = disk_text
       end

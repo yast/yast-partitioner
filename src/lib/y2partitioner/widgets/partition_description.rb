@@ -5,16 +5,19 @@ Yast.import "HTML"
 require "y2partitioner/widgets/blk_device_attributes"
 
 module Y2Partitioner
+  # CWM widgets for partitioner
   module Widgets
     # Widget that is richtext filled with description of partition passed in constructor
     class PartitionDescription < CWM::RichText
       include Yast::I18n
 
+      # @param partition [Y2Storage::Partition] to describe
       def initialize(partition)
         textdomain "storage"
         @partition = partition
       end
 
+      # inits widget content
       def init
         self.value = partition_text
       end
