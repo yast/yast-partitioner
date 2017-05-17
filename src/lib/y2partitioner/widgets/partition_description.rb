@@ -6,6 +6,7 @@ require "y2partitioner/widgets/blk_device_attributes"
 
 module Y2Partitioner
   module Widgets
+    # Widget that is richtext filled with description of partition passed in constructor
     class PartitionDescription < CWM::RichText
       include Yast::I18n
 
@@ -41,7 +42,7 @@ module Y2Partitioner
           # TRANSLATORS: File system and its type as human string
           format(_("Mount Point: %s"), partition.filesystem_mountpoint || ""),
           # TRANSLATORS: Label associated with file system
-          format(_("Label: %s"), partition.filesystem_label || ""),
+          format(_("Label: %s"), partition.filesystem_label || "")
         ]
       end
 

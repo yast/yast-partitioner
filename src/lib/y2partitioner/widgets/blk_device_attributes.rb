@@ -53,7 +53,7 @@ module Y2Partitioner
       end
 
       def device_encrypted
-        format(_("Encrypted: %s"),  blk_device.encrypted? ? _("Yes") : _("No"))
+        format(_("Encrypted: %s"), blk_device.encrypted? ? _("Yes") : _("No"))
       end
     end
   end

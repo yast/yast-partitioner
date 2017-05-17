@@ -6,6 +6,7 @@ require "y2partitioner/widgets/blk_device_attributes"
 
 module Y2Partitioner
   module Widgets
+    # Widget that is richtext filled with description of partition passed in constructor
     class DiskDescription < CWM::RichText
       include Yast::I18n
 
