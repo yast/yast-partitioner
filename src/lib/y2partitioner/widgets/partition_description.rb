@@ -25,9 +25,8 @@ module Y2Partitioner
 
       def partition_text
         # TODO: consider using e.g. erb for this kind of output
-        output = ""
         # TRANSLATORS: heading for section about device
-        output << Yast::HTML.Heading(_("Device:"))
+        output = Yast::HTML.Heading(_("Device:"))
         output << Yast::HTML.List(device_attributes_list)
         # TRANSLATORS: heading for section about Filesystem on device
         output << Yast::HTML.Heading(_("File System:"))

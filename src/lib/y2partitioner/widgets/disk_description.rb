@@ -25,11 +25,10 @@ module Y2Partitioner
 
       include BlkDeviceAttributes
 
-      def partition_text
+      def disk_text
         # TODO: consider using e.g. erb for this kind of output
-        output = ""
         # TRANSLATORS: heading for section about device
-        output << Yast::HTML.Heading(_("Device:"))
+        output = Yast::HTML.Heading(_("Device:"))
         output << Yast::HTML.List(device_attributes_list)
         # TRANSLATORS: heading for section about Hard Disk details
         output << Yast::HTML.Heading(_("Hard Disk:"))
