@@ -2,7 +2,8 @@ require "cwm/widget"
 require "cwm/tree_pager"
 
 require "y2partitioner/icons"
-require "expert_partitioner/tree_views/partition"
+require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/partition_description"
 
 Yast.import "Hostname"
 
@@ -24,40 +25,7 @@ module Y2Partitioner
         super(*items, label: _("System View"))
       end
 
-      # FIXME: leftover from the previous prototype
-      def keepme(itype, iname)
-        itype = nil
-        case itype
-        when "disk"
-          disk = Y2Storage::Disk.find_by_name(@device_graph, iname)
-          view = ExpertPartitioner::DiskTreeView.new(disk)
-          _details = wrap_view(view)
-        when "partition"
-          partition = Y2Storage::Partition.find_by_name(@device_graph, iname)
-          view = ExpertPartitioner::PartitionTreeView.new(partition)
-          _details = wrap_view(view)
-        when "lvm_vg"
-          vg = Y2Storage::LvmVg.find_by_vg_name(@device_graph, iname)
-          view = ExpertPartitioner::LvmVgTreeView.new(vg)
-          _details = wrap_view(view)
-        else
-          details = CWM::PushButton.new
-          details.define_singleton_method(:label, -> { "Todo, #{items.inspect}" })
-        end
-
-        nil
-      end
-
     private
-
-      # @param v [ExpertPartitioner::TreeView]
-      # @return [CWM::AbstractWidget]
-      def wrap_view(v)
-        ui_term = v.create
-        w = CWM::CustomWidget.new
-        w.define_singleton_method(:contents, -> { ui_term })
-        w
-      end
 
       def items
         @items ||=
@@ -87,12 +55,16 @@ module Y2Partitioner
       end
 
       def harddisk_items
-        item_for(:hd, _("Hard Disks"), icon: Icons::HD, subtree: disks_items)
+        bdt_w = BlkDevicesTable.new(@device_graph.disks)
+        item_for(:hd, _("Hard Disks"), icon:    Icons::HD,
+                                       widget:  bdt_w,
+                                       subtree: disks_items)
       end
 
       def disks_items
         @device_graph.disks.map do |disk|
           id = "disk:" + disk.name
+          # TODO: widget: one tab w overview, another w partitions
           item_for(id, disk.sysfs_name, subtree: partition_items(disk))
         end
       end
@@ -107,8 +79,9 @@ module Y2Partitioner
           # FIXME: this is called dozens of times per single click!!
           return @contents if @contents
           y2partition = Y2Storage::Partition.find_by_name(dg, partition_name)
-          view = ExpertPartitioner::PartitionTreeView.new(y2partition)
-          @contents = view.create
+          rt_w = PartitionDescription.new(y2partition)
+          # Page wants a WidgetTerm, not an AbstractWidget
+          @contents = VBox(rt_w)
         end
         page
       end
@@ -172,8 +145,9 @@ module Y2Partitioner
         item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
       end
 
-      def item_for(id, label, icon: nil, subtree: [])
-        page = CWM::Page.new(widget_id: id, label: label, contents: Empty())
+      def item_for(id, label, widget: nil, icon: nil, subtree: [])
+        contents = widget ? VBox(widget) : Empty()
+        page = CWM::Page.new(widget_id: id, label: label, contents: contents)
         CWM::PagerTreeItem.new(page,
           icon: icon, open: open?(id), children: subtree)
       end
