@@ -31,15 +31,15 @@ module Y2Partitioner
         when "disk"
           disk = Y2Storage::Disk.find_by_name(@device_graph, iname)
           view = ExpertPartitioner::DiskTreeView.new(disk)
-          details = wrap_view(view)
+          _details = wrap_view(view)
         when "partition"
           partition = Y2Storage::Partition.find_by_name(@device_graph, iname)
           view = ExpertPartitioner::PartitionTreeView.new(partition)
-          details = wrap_view(view)
+          _details = wrap_view(view)
         when "lvm_vg"
           vg = Y2Storage::LvmVg.find_by_vg_name(@device_graph, iname)
           view = ExpertPartitioner::LvmVgTreeView.new(vg)
-          details = wrap_view(view)
+          _details = wrap_view(view)
         else
           details = CWM::PushButton.new
           details.define_singleton_method(:label, -> { "Todo, #{items.inspect}" })
@@ -117,7 +117,7 @@ module Y2Partitioner
         disk.partitions.map do |partition|
           id = "partition:" + partition.name
           page = partition_page_for(partition.name,
-                                    id: id, label: partition.sysfs_name)
+            id: id, label: partition.sysfs_name)
           CWM::PagerTreeItem.new(page)
         end
       end
@@ -175,7 +175,7 @@ module Y2Partitioner
       def item_for(id, label, icon: nil, subtree: [])
         page = CWM::Page.new(widget_id: id, label: label, contents: Empty())
         CWM::PagerTreeItem.new(page,
-                               icon: icon, open: open?(id), children: subtree)
+          icon: icon, open: open?(id), children: subtree)
       end
 
       def open?(id)
