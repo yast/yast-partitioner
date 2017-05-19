@@ -1,4 +1,5 @@
 require "cwm/widget"
+require "cwm/tree_pager"
 
 require "y2partitioner/icons"
 require "expert_partitioner/tree_views/partition"
@@ -9,45 +10,22 @@ module Y2Partitioner
   module Widgets
     # Widget representing partitioner overview.
     #
-    # It has replace point where it displays more details about selected element
-    # in partitioning.
-    #
-    # TODO: abstract treewidget from it
-    class Overview < CWM::Tree
+    # It has replace point where it displays more details
+    # about selected element in partitioning.
+    class Overview < CWM::TreePager
+      attr_reader :tree_widget
+
       # creates new widget for given device graph
       # @param [Y2Storage::Devicegraph] device_graph
       def initialize(device_graph)
         textdomain "storage"
-        self.handle_all_events = true
         @hostname = Yast::Hostname.CurrentHostname
-        @opened = [:all]
         @device_graph = device_graph
+        super(*items, label: _("System View"))
       end
 
-      def label
-        _("System View")
-      end
-
-      def find_tree_item
-        item_path = Yast::UI.QueryWidget(Id(widget_id), :CurrentBranch)
-        ti = CWM::TreeItem.new(nil, nil, children: items)
-        until item_path.empty?
-          front = item_path.shift
-          ti = ti.children.fetch(front) # must find it
-        end
-        ti
-      end
-
-      # handles widgets. As it is with notify, it will get any click on Item
-      def handle(event)
-        id = event["ID"]
-        # TODO: pass events to child widgets
-        return nil unless id == widget_id
-
-        ti = find_tree_item
-        details = ti.data
-        # and here we need to work out an adaptation of what Tabs#handle does!
-
+      # FIXME: leftover from the previous prototype
+      def keepme(itype, iname)
         itype = nil
         case itype
         when "disk"
@@ -91,7 +69,7 @@ module Y2Partitioner
             item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
             item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
             item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
-          ].map { |i| [i.id, i] }.to_h
+          ]
       end
 
       def machine_items
@@ -119,13 +97,28 @@ module Y2Partitioner
         end
       end
 
+      # @param [String]
+      # @return [CWM::Page]
+      def partition_page_for(partition_name, id:, label:)
+        # the widget id of page must match the item id of its selector item
+        page = CWM::Page.new(widget_id: id, label: label, contents: nil)
+        dg = @device_graph
+        page.define_singleton_method(:contents) do
+          # FIXME: this is called dozens of times per single click!!
+          return @contents if @contents
+          y2partition = Y2Storage::Partition.find_by_name(dg, partition_name)
+          view = ExpertPartitioner::PartitionTreeView.new(y2partition)
+          @contents = view.create
+        end
+        page
+      end
+
       def partition_items(disk)
         disk.partitions.map do |partition|
-          y2partition = Y2Storage::Partition.find_by_name(@device_graph, partition.name)
-          view = ExpertPartitioner::PartitionTreeView.new(y2partition)
-          pane_term = view.create
           id = "partition:" + partition.name
-          item_for(id, partition.sysfs_name, pane: pane_term)
+          page = partition_page_for(partition.name,
+                                    id: id, label: partition.sysfs_name)
+          CWM::PagerTreeItem.new(page)
         end
       end
 
@@ -179,13 +172,14 @@ module Y2Partitioner
         item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
       end
 
-      def item_for(id, title, icon: nil, pane: nil, subtree: [])
-        children = subtree.map { |i| [i.id, i] }.to_h
-        CWM::TreeItem.new(id, title, icon: icon, open: open?(id), data: pane, children: children)
+      def item_for(id, label, icon: nil, subtree: [])
+        page = CWM::Page.new(widget_id: id, label: label, contents: Empty())
+        CWM::PagerTreeItem.new(page,
+                               icon: icon, open: open?(id), children: subtree)
       end
 
       def open?(id)
-        @opened.include?(id)
+        id == :all
       end
     end
   end
