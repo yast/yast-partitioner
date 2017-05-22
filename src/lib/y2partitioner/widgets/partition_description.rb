@@ -27,12 +27,13 @@ module Y2Partitioner
       attr_reader :partition
       alias_method :blk_device, :partition
 
+      include BlkDeviceAttributes
+
       def partition_text
         # TODO: consider using e.g. erb for this kind of output
         # TRANSLATORS: heading for section about device
         output = Yast::HTML.Heading(_("Device:"))
-        # FIXME: unfinished?
-        # output << Yast::HTML.List(device_attributes_list)
+        output << Yast::HTML.List(device_attributes_list)
         # TRANSLATORS: heading for section about Filesystem on device
         output << Yast::HTML.Heading(_("File System:"))
         output << Yast::HTML.List(filesystem_attributes_list)
