@@ -10,6 +10,37 @@ Yast.import "Hostname"
 
 module Y2Partitioner
   module Widgets
+    # A dummy page for prototyping
+    class GenericPage < CWM::Page
+      attr_reader :label, :contents
+
+      def initialize(id, label, contents)
+        self.widget_id = id
+        @label = label
+        @contents = contents
+      end
+    end
+
+    class PartitionPage < CWM::Page
+      # @param [Y2Storage::Partition] partition
+      def initialize(partition)
+        @partition = partition
+        self.widget_id = "partition:" + partition.name
+      end
+
+      def label
+        @partition.sysfs_name
+      end
+
+      def contents
+        # FIXME: this is called dozens of times per single click!!
+        return @contents if @contents
+        rt_w = PartitionDescription.new(@partition)
+        # Page wants a WidgetTerm, not an AbstractWidget
+        @contents = VBox(rt_w)
+      end
+    end
+
     # Widget representing partitioner overview.
     #
     # It has replace point where it displays more details
@@ -65,32 +96,13 @@ module Y2Partitioner
       def disks_items
         @device_graph.disks.map do |disk|
           page = DiskPage.new(disk)
-          item_for(page.widget_id, disk.sysfs_name, subtree: partition_items(disk), widget: page)
+          CWM::PagerTreeItem.new(page, children: partition_items(disk))
         end
-      end
-
-      # @param [String]
-      # @return [CWM::Page]
-      def partition_page_for(partition_name, id:, label:)
-        # the widget id of page must match the item id of its selector item
-        page = CWM::Page.new(widget_id: id, label: label, contents: nil)
-        dg = @device_graph
-        page.define_singleton_method(:contents) do
-          # FIXME: this is called dozens of times per single click!!
-          return @contents if @contents
-          y2partition = Y2Storage::Partition.find_by_name(dg, partition_name)
-          rt_w = PartitionDescription.new(y2partition)
-          # Page wants a WidgetTerm, not an AbstractWidget
-          @contents = VBox(rt_w)
-        end
-        page
       end
 
       def partition_items(disk)
         disk.partitions.map do |partition|
-          id = "partition:" + partition.name
-          page = partition_page_for(partition.name,
-            id: id, label: partition.sysfs_name)
+          page = PartitionPage.new(partition)
           CWM::PagerTreeItem.new(page)
         end
       end
@@ -147,7 +159,7 @@ module Y2Partitioner
 
       def item_for(id, label, widget: nil, icon: nil, subtree: [])
         contents = widget ? VBox(widget) : Empty()
-        page = CWM::Page.new(widget_id: id, label: label, contents: contents)
+        page = GenericPage.new(id, label, contents)
         CWM::PagerTreeItem.new(page,
           icon: icon, open: open?(id), children: subtree)
       end
