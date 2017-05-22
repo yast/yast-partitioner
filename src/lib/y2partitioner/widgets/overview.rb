@@ -3,6 +3,7 @@ require "cwm/tree_pager"
 
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/disk_page"
 require "y2partitioner/widgets/partition_description"
 
 Yast.import "Hostname"
@@ -63,9 +64,8 @@ module Y2Partitioner
 
       def disks_items
         @device_graph.disks.map do |disk|
-          id = "disk:" + disk.name
-          # TODO: widget: one tab w overview, another w partitions
-          item_for(id, disk.sysfs_name, subtree: partition_items(disk))
+          page = DiskPage.new(disk)
+          item_for(page.widget_id, disk.sysfs_name, subtree: partition_items(disk), widget: page)
         end
       end
 
