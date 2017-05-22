@@ -10,8 +10,11 @@ module Y2Partitioner
     class DiskPage < CWM::Page
       def initialize(disk)
         @disk = disk
-        id = "disk:" + disk.name
-        super(widget_id: id, label: disk.sysfs_name, contents: contents)
+        self.widget_id = "disk:" + disk.name
+      end
+
+      def label
+        @disk.sysfs_name
       end
 
       def contents
