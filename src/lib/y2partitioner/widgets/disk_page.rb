@@ -3,6 +3,7 @@ require "cwm/tree_pager"
 
 require "y2partitioner/widgets/blk_devices_table"
 require "y2partitioner/widgets/disk_description"
+require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
@@ -14,10 +15,17 @@ module Y2Partitioner
       end
 
       def contents
-        VBox(CWM::Tabs.new(
-          DiskTab.new(@disk),
-          PartitionsTab.new(@disk.partitions)
-        ))
+        icon = Icons::SMALL_ICONS_PATH + Icons::HD
+        VBox(
+          Left(HBox(
+            Image(icon, ""),
+            Heading(_("Hard Disk: ") + @disk.name)
+          )),
+          CWM::Tabs.new(
+           DiskTab.new(@disk),
+            PartitionsTab.new(@disk.partitions)
+          )
+        )
       end
     end
 
