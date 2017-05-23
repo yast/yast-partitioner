@@ -4,7 +4,7 @@ require "cwm/tree_pager"
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_table"
 require "y2partitioner/widgets/disk_page"
-require "y2partitioner/widgets/partition_description"
+require "y2partitioner/widgets/partition_page"
 
 Yast.import "Hostname"
 
@@ -18,26 +18,6 @@ module Y2Partitioner
         self.widget_id = id
         @label = label
         @contents = contents
-      end
-    end
-
-    class PartitionPage < CWM::Page
-      # @param [Y2Storage::Partition] partition
-      def initialize(partition)
-        @partition = partition
-        self.widget_id = "partition:" + partition.name
-      end
-
-      def label
-        @partition.sysfs_name
-      end
-
-      def contents
-        # FIXME: this is called dozens of times per single click!!
-        return @contents if @contents
-        rt_w = PartitionDescription.new(@partition)
-        # Page wants a WidgetTerm, not an AbstractWidget
-        @contents = VBox(rt_w)
       end
     end
 
@@ -126,7 +106,7 @@ module Y2Partitioner
 
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
-          id = "lvm_lv" + lv.name
+          id = "lvm_lv:" + lv.name
           item_for(id, lv.lv_name)
         end
       end
@@ -158,7 +138,10 @@ module Y2Partitioner
       end
 
       def item_for(id, label, widget: nil, icon: nil, subtree: [])
-        contents = widget ? VBox(widget) : Empty()
+        log.info "id #{id} label #{label}"
+        text = id.to_s.split(":", 2)[1] || id.to_s
+        widget ||= Heading(text)
+        contents = VBox(widget)
         page = GenericPage.new(id, label, contents)
         CWM::PagerTreeItem.new(page,
           icon: icon, open: open?(id), children: subtree)
