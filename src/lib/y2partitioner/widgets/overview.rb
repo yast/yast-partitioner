@@ -2,7 +2,7 @@ require "cwm/widget"
 require "cwm/tree_pager"
 
 require "y2partitioner/icons"
-require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/blk_devices_page"
 require "y2partitioner/widgets/disk_page"
 require "y2partitioner/widgets/partition_page"
 
@@ -67,10 +67,12 @@ module Y2Partitioner
       end
 
       def harddisk_items
-        bdt_w = BlkDevicesTable.new(@device_graph.disks)
-        item_for(:hd, _("Hard Disks"), icon:    Icons::HD,
-                                       widget:  bdt_w,
-                                       subtree: disks_items)
+        blk_devices = @device_graph.disks.reduce([]) do |acc, disk|
+          acc << disk
+          acc.concat(disk.partitions)
+        end
+        page = BlkDevicesPage.new(blk_devices)
+        CWM::PagerTreeItem.new(page, children: disks_items, icon: Icons::HD)
       end
 
       def disks_items
