@@ -11,6 +11,7 @@ Yast.import "Hostname"
 module Y2Partitioner
   module Widgets
     # A dummy page for prototyping
+    # FIXME: remove it when no longer needed
     class GenericPage < CWM::Page
       attr_reader :label, :contents
 
@@ -140,7 +141,6 @@ module Y2Partitioner
       end
 
       def item_for(id, label, widget: nil, icon: nil, subtree: [])
-        log.info "id #{id} label #{label}"
         text = id.to_s.split(":", 2)[1] || id.to_s
         widget ||= Heading(text)
         contents = VBox(widget)

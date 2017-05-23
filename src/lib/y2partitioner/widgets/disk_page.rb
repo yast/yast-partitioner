@@ -9,6 +9,7 @@ module Y2Partitioner
   module Widgets
     class DiskPage < CWM::Page
       def initialize(disk)
+        textdomain "storage"
         @disk = disk
         self.widget_id = "disk:" + disk.name
       end
@@ -18,11 +19,11 @@ module Y2Partitioner
       end
 
       def contents
-        icon = Icons::SMALL_ICONS_PATH + Icons::HD
+        icon = Icons.small_icon(Icons::HD)
         VBox(
           Left(HBox(
             Image(icon, ""),
-            Heading(_("Hard Disk: ") + @disk.name)
+            Heading(format(_("Hard Disk: %s"), @disk.name))
           )),
           CWM::Tabs.new(
            DiskTab.new(@disk),
@@ -34,11 +35,11 @@ module Y2Partitioner
 
     class DiskTab < CWM::Tab
       def initialize(disk)
+        textdomain "storage"
         @disk = disk
       end
 
       def label
-        textdomain "storage"
         _("&Overview")
       end
 
@@ -49,11 +50,11 @@ module Y2Partitioner
 
     class PartitionsTab < CWM::Tab
       def initialize(partitions)
+        textdomain "storage"
         @partitions = partitions
       end
 
       def label
-        textdomain "storage"
         _("&Partitions")
       end
 

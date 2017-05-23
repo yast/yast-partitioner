@@ -58,7 +58,7 @@ module Y2Partitioner
           device_encrypted,
           device_udev_by_path.join(Yast::HTML.Newline),
           device_udev_by_id.join(Yast::HTML.Newline),
-          # TRANSLATORS: accronym for Filesystem Identifier
+          # TRANSLATORS: acronym for Filesystem Identifier
           format(_("FS ID: %s"), "TODO")
         ]
       end

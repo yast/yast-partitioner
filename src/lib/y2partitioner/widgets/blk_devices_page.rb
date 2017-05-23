@@ -6,18 +6,22 @@ require "y2partitioner/icons"
 module Y2Partitioner
   module Widgets
     class BlkDevicesPage < CWM::Page
+      include Yast::I18n
+
       def initialize(devices)
+        textdomain "storage"
+
         @devices = devices
       end
 
       def label
-        "Hard Disks"
+        _("Hard Disks")
       end
 
       def contents
         return @contents if @contents
 
-        icon = Icons::SMALL_ICONS_PATH + Icons::HD
+        icon = Icons.small_icon(Icons::HD)
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents = VBox(
           Left(HBox(

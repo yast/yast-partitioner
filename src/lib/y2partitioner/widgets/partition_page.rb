@@ -18,16 +18,16 @@ module Y2Partitioner
       def contents
         # FIXME: this is called dozens of times per single click!!
         return @contents if @contents
-        rt_w = PartitionDescription.new(@partition)
-        icon = Icons::SMALL_ICONS_PATH + Icons::HD_PART
+
+        icon = Icons.small_icon(Icons::HD_PART)
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents = VBox(
           Left(HBox(
             Image(icon, ""),
             # TRANSLATORS: Heading. String followed by name of partition
-            Heading(_("Partition: ") + @partition.name)
+            Heading(format(_("Partition: "), @partition.name))
           )),
-          rt_w
+          PartitionDescription.new(@partition)
         )
       end
     end

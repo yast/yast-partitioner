@@ -16,6 +16,10 @@ module Y2Partitioner
         @blk_devices = blk_devices
       end
 
+      # TRANSLATORS: table header, "F" stands for Format flag. Keep it short,
+      # ideally single letter.
+      FORMAT_FLAG = N_("F")
+
       # headers of table
       def header
         [
@@ -24,9 +28,7 @@ module Y2Partitioner
           _("Device"),
           # TRANSLATORS: table header, size of block device e.g. "8.00 GiB"
           Right(_("Size")),
-          # TRANSLATORS: table header, "F" stands for Format flag. Keep it short,
-          # ideally single letter. Keep in sync with F used later for format marker.
-          Center(_("F")),
+          Center(_(FORMAT_FLAG)),
           # TRANSLATORS: table header, flag if device is encrypted. Keep it short,
           # ideally three letters. Keep in sync with Enc used later for format marker.
           Center(_("Enc")),
@@ -52,7 +54,7 @@ module Y2Partitioner
             device.name, # use name as id
             device.name,
             device.size.to_human_string,
-            device.exists_in_probed? ? "" : "F", # TODO: dasd format use "X", investigate it
+            device.exists_in_probed? ? "" : _(FORMAT_FLAG), # TODO: dasd format use "X", check it
             encryption_value_for(device),
             type_for(device),
             fs_type_for(device),
@@ -70,7 +72,7 @@ module Y2Partitioner
         return "" unless device.encrypted?
 
         if Yast::UI.GetDisplayInfo["HasIconSupport"]
-          icon_path = Icons::SMALL_ICONS_PATH + Icons::ENCRYPTED
+          icon_path = Icons.small_icon(Icons::ENCRYPTED)
           cell(icon(icon_path))
         else
           "E"
