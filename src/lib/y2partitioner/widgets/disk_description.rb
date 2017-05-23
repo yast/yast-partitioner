@@ -48,12 +48,9 @@ module Y2Partitioner
           format(_("Vendor: %s"), "TODO"),
           # TRANSLATORS: Disk Model
           format(_("Model: %s"), "TODO"),
-          format(_("Number of Cylinders: %s"), "Do we need it?"),
-          format(_("Cylinder Size: %s"), "Do we need it?"),
           # TODO: to_human_string for Y2Storage::DataTransport
           # TRANSLATORS: Computer bus which the device is connected to e.g. SATA or ATA.
           format(_("Bus: %s"), "TODO"),
-          format(_("Sector Size: %s"), "Do we need it?"),
           # TRANSLATORS: disk partition table label
           format(_("Disk Label: %s"), partition_table ? partition_table.type.to_human_string : "")
         ]
