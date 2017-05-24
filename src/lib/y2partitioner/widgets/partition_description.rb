@@ -22,6 +22,10 @@ module Y2Partitioner
         self.value = partition_text
       end
 
+      def help
+        _("Textual description of partition data and configuratio")
+      end
+
     private
 
       attr_reader :partition

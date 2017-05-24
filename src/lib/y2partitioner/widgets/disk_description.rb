@@ -21,6 +21,10 @@ module Y2Partitioner
         self.value = disk_text
       end
 
+      def help
+        _("Textual description of disk data and configuration")
+      end
+
     private
 
       attr_reader :disk
