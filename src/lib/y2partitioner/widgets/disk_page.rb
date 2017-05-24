@@ -2,6 +2,7 @@ require "cwm/widget"
 require "cwm/tree_pager"
 
 require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/disk_bar_graph"
 require "y2partitioner/widgets/disk_description"
 require "y2partitioner/icons"
 
@@ -28,7 +29,7 @@ module Y2Partitioner
           )),
           CWM::Tabs.new(
             DiskTab.new(@disk),
-            PartitionsTab.new(@disk.partitions, @pager)
+            PartitionsTab.new(@disk, @pager)
           )
         )
       end
@@ -50,9 +51,10 @@ module Y2Partitioner
     end
 
     class PartitionsTab < CWM::Tab
-      def initialize(partitions, pager)
+      def initialize(disk, pager)
         textdomain "storage"
-        @partitions = partitions
+        @disk = disk
+        @pager = pager
       end
 
       def label
@@ -60,7 +62,10 @@ module Y2Partitioner
       end
 
       def contents
-        @contents ||= VBox(BlkDevicesTable.new(@partitions))
+        @contents ||= VBox(
+          DiskBarGraph.new(@disk),
+          BlkDevicesTable.new(@disk.partitions, @pager)
+        )
       end
     end
   end
