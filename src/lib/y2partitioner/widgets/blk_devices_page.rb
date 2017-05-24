@@ -8,10 +8,11 @@ module Y2Partitioner
     class BlkDevicesPage < CWM::Page
       include Yast::I18n
 
-      def initialize(devices)
+      def initialize(devices, pager)
         textdomain "storage"
 
         @devices = devices
+        @pager = pager
       end
 
       def label
@@ -29,7 +30,7 @@ module Y2Partitioner
             # TRANSLATORS: Heading. String followed by name of partition
             Heading(_("Hard Disks "))
           )),
-          BlkDevicesTable.new(@devices)
+          BlkDevicesTable.new(@devices, @pager)
         )
       end
     end

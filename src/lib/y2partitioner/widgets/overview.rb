@@ -72,13 +72,13 @@ module Y2Partitioner
           acc << disk
           acc.concat(disk.partitions)
         end
-        page = BlkDevicesPage.new(blk_devices)
+        page = BlkDevicesPage.new(blk_devices, self)
         CWM::PagerTreeItem.new(page, children: disks_items, icon: Icons::HD)
       end
 
       def disks_items
         @device_graph.disks.map do |disk|
-          page = DiskPage.new(disk)
+          page = DiskPage.new(disk, self)
           CWM::PagerTreeItem.new(page, children: partition_items(disk))
         end
       end

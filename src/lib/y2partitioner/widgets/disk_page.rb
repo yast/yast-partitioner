@@ -8,9 +8,10 @@ require "y2partitioner/icons"
 module Y2Partitioner
   module Widgets
     class DiskPage < CWM::Page
-      def initialize(disk)
+      def initialize(disk, pager)
         textdomain "storage"
         @disk = disk
+        @pager = pager
         self.widget_id = "disk:" + disk.name
       end
 
@@ -26,8 +27,8 @@ module Y2Partitioner
             Heading(format(_("Hard Disk: %s"), @disk.name))
           )),
           CWM::Tabs.new(
-           DiskTab.new(@disk),
-            PartitionsTab.new(@disk.partitions)
+            DiskTab.new(@disk),
+            PartitionsTab.new(@disk.partitions, @pager)
           )
         )
       end
@@ -49,7 +50,7 @@ module Y2Partitioner
     end
 
     class PartitionsTab < CWM::Tab
-      def initialize(partitions)
+      def initialize(partitions, pager)
         textdomain "storage"
         @partitions = partitions
       end

@@ -9,11 +9,24 @@ module Y2Partitioner
     # Table widget to represent given list of Y2Storage::BlkDevice.
     class BlkDevicesTable < CWM::Table
       include Yast::I18n
+      extend Yast::I18n
 
       # @param blk_devices [Array<Y2Storage::BlkDevice>] devices to display
-      def initialize(blk_devices)
+      # @param pager [CWM::Pager] table have feature, that double click change content of pager
+      #   if someone do not need this feature, make it only optional
+      def initialize(blk_devices, pager)
         textdomain "storage"
         @blk_devices = blk_devices
+        @pager = pager
+      end
+
+      def opt
+        [:notify]
+      end
+
+      def handle
+        id = value[/table:(.*)/, 1]
+        @pager.handle("ID" => id)
       end
 
       # TRANSLATORS: table header, "F" stands for Format flag. Keep it short,
@@ -68,7 +81,7 @@ module Y2Partitioner
       def items
         @blk_devices.map do |device|
           [
-            device.name, # use name as id
+           id_for_device(device), # use name as id
             device.name,
             device.size.to_human_string,
             device.exists_in_probed? ? "" : _(FORMAT_FLAG), # TODO: dasd format use "X", check it
@@ -94,6 +107,21 @@ module Y2Partitioner
         else
           "E"
         end
+      end
+
+      # helper to generate id that can be later used in handle
+      # @note keep in sync with ids used in overview widget
+      def id_for_device(device)
+        res = "table:"
+        if device.is?(:partition)
+          res << "partition:#{device.name}"
+        elsif device.is?(:disk)
+          res << "disk:#{device.name}"
+        else
+          raise "unsuported type #{device.inspect}"
+        end
+
+        res
       end
 
       def type_for(_device)
