@@ -47,6 +47,23 @@ module Y2Partitioner
         ]
       end
 
+      def help
+        format(_(
+          "Table shows selected devices with its attributes.<br>" \
+            "<b>Device</b> is kernel name for device.<br>" \
+            "<b>Size</b> is size of device in reasonable units. " \
+            "Units can be different for each device.<br>" \
+            "<b>%{format_flag}</b> is flag if device is going to be formatted.<br>" \
+            "<b>Enc</b> is flag is content on device will be encrypted.<br>" \
+            "<b>Type</b> is description for type of device.<br>" \
+            "<b>FS Type</b> is description of filesystem on device.<br>" \
+            "<b>Label</b> is label for given device if set.<br>" \
+            "<b>Mount Point</b> is where device is mounted or empty if not.<br>" \
+            "<b>Start</b> is the first sector on device.<br>" \
+            "<b>End</b> is the last sector on device.<br>"
+        ), format_flag: FORMAT_FLAG)
+      end
+
       # table items. See CWM::Table#items
       def items
         @blk_devices.map do |device|
