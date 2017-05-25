@@ -1,3 +1,4 @@
+require "cwm/tree_pager"
 require "y2partitioner/widgets/overview"
 require "y2storage"
 
@@ -16,7 +17,7 @@ module Y2Partitioner
         textdomain "storage"
 
         staging = Y2Storage::StorageManager.instance.y2storage_staging
-        overview_w = Widgets::Overview.new(staging)
+        overview_w = CWM::TreePager.new(Widgets::OverviewTree.new(staging))
 
         contents = MarginBox(
           0.5,

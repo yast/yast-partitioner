@@ -1,5 +1,5 @@
 require "cwm/widget"
-require "cwm/tree_pager"
+require "cwm/tree"
 
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_page"
@@ -26,8 +26,7 @@ module Y2Partitioner
     #
     # It has replace point where it displays more details
     # about selected element in partitioning.
-    class Overview < CWM::TreePager
-      attr_reader :tree_widget
+    class OverviewTree < CWM::Tree
 
       # creates new widget for given device graph
       # @param [Y2Storage::Devicegraph] device_graph
@@ -35,10 +34,11 @@ module Y2Partitioner
         textdomain "storage"
         @hostname = Yast::Hostname.CurrentHostname
         @device_graph = device_graph
-        super(*items, label: _("System View"))
       end
 
-    private
+      def label
+        _("System View")
+      end
 
       def items
         @items ||=
@@ -52,6 +52,8 @@ module Y2Partitioner
             item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
           ]
       end
+
+    private
 
       def machine_items
         [
