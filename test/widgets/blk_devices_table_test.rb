@@ -3,11 +3,14 @@ require_relative "../test_helper"
 require "y2partitioner/widgets/blk_devices_table"
 
 describe Y2Partitioner::Widgets::BlkDevicesTable do
-  subject { described_class.new(devices) }
+  subject { described_class.new(devices, pager) }
+
   let(:devices) do
     graph = devicegraph_stub("complex-lvm-encrypt.yml").probed
     Y2Storage::BlkDevice.all(graph)
   end
+
+  let(:pager) { double("Pager") }
 
   before do
     allow(Yast::UI).to receive(:GetDisplayInfo).and_return("HasIconSupport" => true)

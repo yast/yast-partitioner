@@ -117,6 +117,10 @@ module Y2Partitioner
           res << "partition:#{device.name}"
         elsif device.is?(:disk)
           res << "disk:#{device.name}"
+        elsif device.is?(:encryption)
+          res << "encryption:#{device.name}"
+        elsif device.is?(:lvm_lv)
+          res << "lvm_lv:#{device.lv_name}"
         else
           raise "unsuported type #{device.inspect}"
         end
