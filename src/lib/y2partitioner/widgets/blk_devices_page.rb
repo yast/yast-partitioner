@@ -5,6 +5,7 @@ require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
+    # A Page for block devices: contains a {BlkDevicesTable}
     class BlkDevicesPage < CWM::Page
       include Yast::I18n
 
@@ -23,7 +24,6 @@ module Y2Partitioner
         return @contents if @contents
 
         icon = Icons.small_icon(Icons::HD)
-        # Page wants a WidgetTerm, not an AbstractWidget
         @contents = VBox(
           Left(
             HBox(

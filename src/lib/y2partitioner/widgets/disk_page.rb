@@ -8,6 +8,7 @@ require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
+    # A Page for a disk: contains {DiskTab} and {PartitionsTab}
     class DiskPage < CWM::Page
       def initialize(disk, pager)
         textdomain "storage"
@@ -37,6 +38,7 @@ module Y2Partitioner
       end
     end
 
+    # A Tab for a disk
     class DiskTab < CWM::Tab
       def initialize(disk)
         textdomain "storage"
@@ -48,10 +50,12 @@ module Y2Partitioner
       end
 
       def contents
+        # Page wants a WidgetTerm, not an AbstractWidget
         @contents ||= VBox(DiskDescription.new(@disk))
       end
     end
 
+    # A Tab for disk partitions
     class PartitionsTab < CWM::Tab
       def initialize(disk, pager)
         textdomain "storage"

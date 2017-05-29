@@ -4,6 +4,7 @@ require "y2partitioner/widgets/partition_description"
 
 module Y2Partitioner
   module Widgets
+    # A Page for a partition
     class PartitionPage < CWM::Page
       # @param [Y2Storage::Partition] partition
       def initialize(partition)
@@ -20,7 +21,6 @@ module Y2Partitioner
         return @contents if @contents
 
         icon = Icons.small_icon(Icons::HD_PART)
-        # Page wants a WidgetTerm, not an AbstractWidget
         @contents = VBox(
           Left(
             HBox(
