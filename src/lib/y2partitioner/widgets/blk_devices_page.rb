@@ -25,16 +25,16 @@ module Y2Partitioner
         icon = Icons.small_icon(Icons::HD)
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents = VBox(
-          Left(HBox(
-            Image(icon, ""),
-            # TRANSLATORS: Heading. String followed by name of partition
-            Heading(_("Hard Disks "))
-          )),
+          Left(
+            HBox(
+              Image(icon, ""),
+              # TRANSLATORS: Heading. String followed by name of partition
+              Heading(_("Hard Disks "))
+            )
+          ),
           BlkDevicesTable.new(@devices, @pager)
         )
       end
     end
   end
 end
-
-

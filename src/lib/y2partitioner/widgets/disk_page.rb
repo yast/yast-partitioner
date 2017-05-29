@@ -23,10 +23,12 @@ module Y2Partitioner
       def contents
         icon = Icons.small_icon(Icons::HD)
         VBox(
-          Left(HBox(
-            Image(icon, ""),
-            Heading(format(_("Hard Disk: %s"), @disk.name))
-          )),
+          Left(
+            HBox(
+              Image(icon, ""),
+              Heading(format(_("Hard Disk: %s"), @disk.name))
+            )
+          ),
           CWM::Tabs.new(
             DiskTab.new(@disk),
             PartitionsTab.new(@disk, @pager)

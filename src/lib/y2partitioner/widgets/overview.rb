@@ -27,7 +27,6 @@ module Y2Partitioner
     # It has replace point where it displays more details
     # about selected element in partitioning.
     class OverviewTree < CWM::Tree
-
       # creates new widget for given device graph
       # @param [Y2Storage::Devicegraph] device_graph
       def initialize(device_graph)

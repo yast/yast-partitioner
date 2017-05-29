@@ -22,11 +22,13 @@ module Y2Partitioner
         icon = Icons.small_icon(Icons::HD_PART)
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents = VBox(
-          Left(HBox(
-            Image(icon, ""),
-            # TRANSLATORS: Heading. String followed by name of partition
-            Heading(format(_("Partition: "), @partition.name))
-          )),
+          Left(
+            HBox(
+              Image(icon, ""),
+              # TRANSLATORS: Heading. String followed by name of partition
+              Heading(format(_("Partition: "), @partition.name))
+            )
+          ),
           PartitionDescription.new(@partition)
         )
       end
