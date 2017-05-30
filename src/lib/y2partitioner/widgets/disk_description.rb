@@ -21,6 +21,7 @@ module Y2Partitioner
         self.value = disk_text
       end
 
+      # @macro AW
       def help
         _("Textual description of disk data and configuration")
       end

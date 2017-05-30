@@ -16,10 +16,12 @@ module Y2Partitioner
         @pager = pager
       end
 
+      # @macro AW
       def label
         _("Hard Disks")
       end
 
+      # @macro CW
       def contents
         return @contents if @contents
 

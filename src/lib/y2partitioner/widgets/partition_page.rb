@@ -12,10 +12,12 @@ module Y2Partitioner
         self.widget_id = "partition:" + partition.name
       end
 
+      # @macro AW
       def label
         @partition.sysfs_name
       end
 
+      # @macro CW
       def contents
         # FIXME: this is called dozens of times per single click!!
         return @contents if @contents

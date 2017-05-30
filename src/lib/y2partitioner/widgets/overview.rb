@@ -35,10 +35,12 @@ module Y2Partitioner
         @device_graph = device_graph
       end
 
+      # @macro AW
       def label
         _("System View")
       end
 
+      # @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FTree:items
       def items
         @items ||=
           [

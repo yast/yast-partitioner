@@ -12,6 +12,7 @@ module Y2Storage
   # just reopening for faking up sysfs_name
   # not production code, only for testing
   class BlkDevice < Device
+    # @return [String] "sda2" or "dm-1"
     def sysfs_name
       name.split("/").last
     end
