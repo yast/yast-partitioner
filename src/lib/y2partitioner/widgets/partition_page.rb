@@ -8,6 +8,8 @@ module Y2Partitioner
     class PartitionPage < CWM::Page
       # @param [Y2Storage::Partition] partition
       def initialize(partition)
+        textdomain "storage"
+
         @partition = partition
         self.widget_id = "partition:" + partition.name
       end
