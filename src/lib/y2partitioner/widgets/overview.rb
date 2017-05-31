@@ -1,53 +1,60 @@
 require "cwm/widget"
+require "cwm/tree"
 
 require "y2partitioner/icons"
+require "y2partitioner/widgets/blk_devices_page"
+require "y2partitioner/widgets/disk_page"
+require "y2partitioner/widgets/partition_page"
 
 Yast.import "Hostname"
 
 module Y2Partitioner
   module Widgets
+    # A dummy page for prototyping
+    # FIXME: remove it when no longer needed
+    class GenericPage < CWM::Page
+      attr_reader :label, :contents
+
+      def initialize(id, label, contents)
+        self.widget_id = id
+        @label = label
+        @contents = contents
+      end
+    end
+
     # Widget representing partitioner overview.
     #
-    # It has replace point where it displays more details about selected element
-    # in partitioning.
-    #
-    # TODO: abstract treewidget from it
-    class Overview < CWM::CustomWidget
+    # It has replace point where it displays more details
+    # about selected element in partitioning.
+    class OverviewTree < CWM::Tree
       # creates new widget for given device graph
+      # @param [Y2Storage::Devicegraph] device_graph
       def initialize(device_graph)
-        self.handle_all_events = true
-        @opened = [:all]
+        textdomain "storage"
+        @hostname = Yast::Hostname.CurrentHostname
         @device_graph = device_graph
       end
 
-      # content of widget
-      def contents
-        Tree(Id(:tree), Opt(:notify), _("System View"), items)
+      # @macro AW
+      def label
+        _("System View")
       end
 
-      # handles widgets. As it is with notify, it will get any click on Item
-      def handle(event)
-        id = event["ID"]
-        log.info "handling id #{id}"
-
-        nil
+      # @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FTree:items
+      def items
+        @items ||=
+          [
+            item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
+            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+            item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
+            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+            item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
+            item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
+            item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
+          ]
       end
 
     private
-
-      def items
-        [
-          # TODO: stuck getting hostname on my pc Yast::Hostname.CurrentHostname,
-          # so use for now machine string
-          item_for(:all, "machine", icon: Icons::ALL, subtree: machine_items),
-          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-          item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
-          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-          item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
-          item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
-          item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
-        ]
-      end
 
       def machine_items
         [
@@ -64,20 +71,25 @@ module Y2Partitioner
       end
 
       def harddisk_items
-        item_for(:hd, _("Hard Disks"), icon: Icons::HD, subtree: disks_items)
+        blk_devices = @device_graph.disks.reduce([]) do |acc, disk|
+          acc << disk
+          acc.concat(disk.partitions)
+        end
+        page = BlkDevicesPage.new(blk_devices, self)
+        CWM::PagerTreeItem.new(page, children: disks_items, icon: Icons::HD)
       end
 
       def disks_items
         @device_graph.disks.map do |disk|
-          id = "disk:" + disk.name
-          item_for(id, disk.sysfs_name, subtree: partition_items(disk))
+          page = DiskPage.new(disk, self)
+          CWM::PagerTreeItem.new(page, children: partition_items(disk))
         end
       end
 
       def partition_items(disk)
         disk.partitions.map do |partition|
-          id = "partition:" + partition.name
-          item_for(id, partition.sysfs_name)
+          page = PartitionPage.new(partition)
+          CWM::PagerTreeItem.new(page)
         end
       end
 
@@ -100,8 +112,8 @@ module Y2Partitioner
 
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
-          id = "lvm_lv" + lv.name
-          item_for(id, lv.lv.name)
+          id = "lvm_lv:" + lv.name
+          item_for(id, lv.lv_name)
         end
       end
 
@@ -131,21 +143,17 @@ module Y2Partitioner
         item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
       end
 
-      def item_for(id, title, icon: nil, subtree: [])
-        args = [Id(id)]
-        args << term(:icon, icon) if icon
-        args << title
-        args << open?(id)
-        args << subtree
-        Item(*args)
+      def item_for(id, label, widget: nil, icon: nil, subtree: [])
+        text = id.to_s.split(":", 2)[1] || id.to_s
+        widget ||= Heading(text)
+        contents = VBox(widget)
+        page = GenericPage.new(id, label, contents)
+        CWM::PagerTreeItem.new(page,
+          icon: icon, open: open?(id), children: subtree)
       end
 
       def open?(id)
-        @opened.include?(id)
-      end
-
-      def term(*args)
-        Yast::Term.new(*args)
+        id == :all
       end
     end
   end

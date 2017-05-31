@@ -5,3 +5,7 @@
 [![Coverage Status](https://img.shields.io/coveralls/yast/yast-partitioner.svg)](https://coveralls.io/r/yast/yast-partitioner?branch=master)
 [![Code Climate](https://codeclimate.com/github/yast/yast-partitioner/badges/gpa.svg)](https://codeclimate.com/github/yast/yast-partitioner)
 
+
+## Intentional Differences to Old Expert Partitioner
+
+- does not display info about cylinders and sectors

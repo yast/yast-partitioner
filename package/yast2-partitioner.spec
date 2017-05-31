@@ -16,14 +16,15 @@
 #
 
 Name:		yast2-partitioner
-Version:        3.3.0
+Version:        3.3.1
 Release:	0
 BuildArch:	noarch
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-build
 Source:		%{name}-%{version}.tar.bz2
 
-Requires:	yast2
+# CWM::Tree
+Requires:	yast2 >= 3.2.32
 Requires:	yast2-ruby-bindings
 Requires:	yast2-storage-ng
 
@@ -31,7 +32,7 @@ BuildRequires:	update-desktop-files
 BuildRequires:	yast2-storage-ng
 BuildRequires:	yast2-ruby-bindings
 BuildRequires:	yast2-devtools
-BuildRequires:	yast2
+BuildRequires:	yast2 >= 3.2.32
 BuildRequires:	rubygem(yast-rake)
 BuildRequires:	rubygem(rspec)
 

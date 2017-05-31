@@ -1,3 +1,7 @@
+require "yast"
+
+Yast.import "Directory"
+
 module Y2Partitioner
   # Icons used by partitioner
   module Icons
@@ -42,5 +46,14 @@ module Y2Partitioner
 
     # icon
     ENCRYPTED = "yast-encrypted.png".freeze
+
+    # path to small icons, fits nicely in table
+    SMALL_ICONS_PATH = (Yast::Directory.icondir + "22x22/apps/").freeze
+
+    # helper to get full path to small version of icon
+    # @param icon [String] icon filename including suffix
+    def self.small_icon(icon)
+      SMALL_ICONS_PATH + icon
+    end
   end
 end
