@@ -1,11 +1,36 @@
 require "cwm/tree_pager"
 
 require "y2partitioner/widgets/partition_description"
+require "y2partitioner/dialogs/format_and_mount"
 
 module Y2Partitioner
   module Widgets
     # A Page for a partition
     class PartitionPage < CWM::Page
+      # Edit a partition
+      class EditButton < CWM::PushButton
+        def initialize
+          # do we need this in every little tiny class?
+          textdomain "storage"
+        end
+
+        def label
+          _("Edit...")
+        end
+
+        def opt
+          [:key_F4]
+        end
+
+        def handle
+          # Formerly:
+          # EpEditPartition -> DlgEditPartition -> (MiniWorkflow:
+          #   MiniWorkflowStepFormatMount, MiniWorkflowStepPassword)
+          Dialogs::FormatAndMount.run
+          nil # stay in UI loop
+        end
+      end
+
       # @param [Y2Storage::Partition] partition
       def initialize(partition)
         textdomain "storage"
@@ -33,7 +58,8 @@ module Y2Partitioner
               Heading(format(_("Partition: "), @partition.name))
             )
           ),
-          PartitionDescription.new(@partition)
+          PartitionDescription.new(@partition),
+          EditButton.new
         )
       end
     end
