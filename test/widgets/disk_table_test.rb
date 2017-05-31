@@ -1,8 +1,8 @@
 require_relative "../test_helper"
 
-require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/disk_table"
 
-describe Y2Partitioner::Widgets::BlkDevicesTable do
+describe Y2Partitioner::Widgets::DiskTable do
   subject { described_class.new(devices, pager) }
 
   let(:devices) do
