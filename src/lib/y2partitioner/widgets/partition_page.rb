@@ -9,9 +9,11 @@ module Y2Partitioner
     class PartitionPage < CWM::Page
       # Edit a partition
       class EditButton < CWM::PushButton
-        def initialize
+        # @param partition [Y2Storage::Partition] FIXME: unsure which type we want
+        def initialize(partition)
           # do we need this in every little tiny class?
           textdomain "storage"
+          @partition = partition
         end
 
         def label
@@ -26,7 +28,7 @@ module Y2Partitioner
           # Formerly:
           # EpEditPartition -> DlgEditPartition -> (MiniWorkflow:
           #   MiniWorkflowStepFormatMount, MiniWorkflowStepPassword)
-          Dialogs::FormatAndMount.run
+          Dialogs::FormatAndMount.new(@partition).run
           nil # stay in UI loop
         end
       end
@@ -59,7 +61,7 @@ module Y2Partitioner
             )
           ),
           PartitionDescription.new(@partition),
-          EditButton.new
+          EditButton.new(@partition)
         )
       end
     end

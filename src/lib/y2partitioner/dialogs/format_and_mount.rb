@@ -5,8 +5,10 @@ module Y2Partitioner
   module Dialogs
     # Formerly MiniWorkflowStepFormatMount
     class FormatAndMount < UI::Dialog
-      def initialize
-        super
+      # @param partition [Y2Storage::Partition] FIXME: unsure which type we want
+      def initialize(partition)
+        @partition = partition
+        super()
         Yast.import "Popup"
         textdomain "storage"
       end
@@ -28,23 +30,59 @@ module Y2Partitioner
       end
 
       def dialog_title
-        "Edit Partition /dev/fixme"
+        "Edit Partition %s" % @partition.name
+      end
+
+      # A generalized GreaseMonkey.Left*WithAttachment
+      #
+      # If you say
+      #   item_plus_indented(Button1, Button2, Button3, Button4)
+      # You will see
+      #   Button1
+      #       Button2
+      #       Button3
+      #       Button4
+      def item_plus_indented(heading_item, *indented_items)
+        VBox(
+          Left(heading_item),
+          HBox(
+            HSpacing(4),
+            VBox(*indented_items)
+          )
+        )
       end
 
       def dialog_content
-        VBox(
+        fs_type = @partition.filesystem_type
+        fs_type = fs_type ? fs_type.to_human : ""
+        mount_point = @partition.filesystem_mountpoint || ""
+
+        HVSquash(
           HBox(
-            VBox(
+            item_plus_indented(
               Label(_("Formatting Options")),
-              RadioButton(_("Format partition")),
-              PushButton(Id(:file_system_options), _("O&ptions...")),
-              RadioButton(_("Do not format partition"))
+              item_plus_indented(
+                RadioButton(_("Format partition")),
+                ComboBox(_("File &System"), [fs_type]),
+                PushButton(Id(:file_system_options), _("O&ptions...")),
+              ),
+              item_plus_indented(
+                RadioButton(_("Do not format partition")),
+                Empty()
+              )
             ),
-            VBox(
+            HSpacing(4),
+            item_plus_indented(
               Label(_("Mounting Options")),
-              RadioButton(_("Mount partition")),
-              PushButton(Id(:fstab_options), _("Fs&tab Options...")),
-              RadioButton(_("Do not mount partition"))
+              item_plus_indented(
+                RadioButton(_("Mount partition")),
+                ComboBox(_("&Mount Point"), [mount_point]),
+                PushButton(Id(:fstab_options), _("Fs&tab Options..."))
+              ),
+              item_plus_indented(
+                RadioButton(_("Do not mount partition")),
+                Empty()
+              )
             )
           )
         )
@@ -56,6 +94,10 @@ module Y2Partitioner
 
       def back_handler
         finish_dialog(:back)
+      end
+
+      def abort_handler
+        finish_dialog(:abort)
       end
 
       # Formerly :fs_options -> FileSystemOptions
