@@ -44,13 +44,13 @@ module Y2Partitioner
       def items
         @items ||=
           [
-            item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
+            item_for("all", @hostname, icon: Icons::ALL, subtree: machine_items),
             # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
+            item_for("devicegraph", _("Device Graph"), icon: Icons::GRAPH),
             # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
-            item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
-            item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
+            item_for("mountgraph", _("Mount Graph"), icon: Icons::GRAPH),
+            item_for("summary", _("Installation Summary"), icon: Icons::SUMMARY),
+            item_for("settings", _("Settings"), icon: Icons::SETTINGS)
           ]
       end
 
@@ -95,7 +95,7 @@ module Y2Partitioner
 
       def raid_items
         # TODO: real MD subtree
-        item_for(:raid, _("RAID"), icon: Icons::RAID, subtree: [])
+        item_for("raid", _("RAID"), icon: Icons::RAID, subtree: [])
       end
 
       def lvm_items
@@ -119,28 +119,28 @@ module Y2Partitioner
 
       def crypt_files_items
         # TODO: real subtree
-        item_for(:loop, _("Crypt Files"), icon: Icons::LOOP, subtree: [])
+        item_for("loop", _("Crypt Files"), icon: Icons::LOOP, subtree: [])
       end
 
       def device_mapper_items
         # TODO: real subtree
-        item_for(:dm, _("Device Mapper"), icon: Icons::DM, subtree: [])
+        item_for("dm", _("Device Mapper"), icon: Icons::DM, subtree: [])
       end
 
       def nfs_items
-        item_for(:nfs, _("NFS"), icon: Icons::NFS)
+        item_for("nfs", _("NFS"), icon: Icons::NFS)
       end
 
       def btrfs_items
-        item_for(:btrfs, _("Btrfs"), icon: Icons::NFS)
+        item_for("btrfs", _("Btrfs"), icon: Icons::NFS)
       end
 
       def tmpfs_items
-        item_for(:tmpfs, _("tmpfs"), icon: Icons::NFS)
+        item_for("tmpfs", _("tmpfs"), icon: Icons::NFS)
       end
 
       def unused_items
-        item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
+        item_for("unused", _("Unused Devices"), icon: Icons::UNUSED)
       end
 
       def item_for(id, label, widget: nil, icon: nil, subtree: [])
@@ -153,7 +153,7 @@ module Y2Partitioner
       end
 
       def open?(id)
-        id == :all
+        id == "all"
       end
     end
   end
