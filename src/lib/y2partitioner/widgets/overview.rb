@@ -5,6 +5,7 @@ require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_page"
 require "y2partitioner/widgets/disk_page"
 require "y2partitioner/widgets/lvm_page"
+require "y2partitioner/widgets/lvm_lv_page"
 require "y2partitioner/widgets/partition_page"
 
 Yast.import "Hostname"
@@ -117,8 +118,8 @@ module Y2Partitioner
 
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
-          id = "lvm_lv:" + lv.name
-          item_for(id, lv.lv_name)
+          page = LvmLvPage.new(lv)
+          CWM::PagerTreeItem.new(page)
         end
       end
 

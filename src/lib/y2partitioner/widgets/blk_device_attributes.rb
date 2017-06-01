@@ -83,9 +83,9 @@ module Y2Partitioner
           # TRANSLATORS: File system and its type as human string
           format(_("File System: %s"), fs_type ? fs_type.to_human : ""),
           # TRANSLATORS: File system and its type as human string
-          format(_("Mount Point: %s"), partition.filesystem_mountpoint || ""),
+          format(_("Mount Point: %s"), blk_device.filesystem_mountpoint || ""),
           # TRANSLATORS: Label associated with file system
-          format(_("Label: %s"), partition.filesystem_label || "")
+          format(_("Label: %s"), blk_device.filesystem_label || "")
         ]
       end
     end

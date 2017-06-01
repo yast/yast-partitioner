@@ -12,9 +12,9 @@ module Y2Partitioner
       include Yast::I18n
 
       # @param lvm_lv [Y2Storage::LvmLv] to describe
-      def initialize(_lvm_lv)
+      def initialize(lvm_lv)
         textdomain "storage"
-        @partition = partition
+        @lvm_lv = lvm_lv
       end
 
       # inits widget content
@@ -39,7 +39,7 @@ module Y2Partitioner
         # TRANSLATORS: heading for section about device
         output = Yast::HTML.Heading(_("Device:"))
         output << Yast::HTML.List(device_attributes_list)
-        output = Yast::HTML.Heading(_("LVM:"))
+        output << Yast::HTML.Heading(_("LVM:"))
         output << Yast::HTML.List([stripes])
         output << fs_text
       end
@@ -53,10 +53,10 @@ module Y2Partitioner
       end
 
       def stripes
-        val = if device.stripes <= 1
-          device.stripes.to_i
+        val = if lvm_lv.stripes <= 1
+          lvm_lv.stripes.to_i
         else
-          "#{device.stripes}(#{device.stripes_size.to_human_string})"
+          "#{lvm_lv.stripes}(#{lvm_lv.stripes_size.to_human_string})"
         end
 
         # TRANSLATORS: value for number of LVM stripes

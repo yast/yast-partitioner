@@ -59,8 +59,6 @@ module Y2Partitioner
           # TRANSLATORS: table header, where is device mounted. Can be empty. E.g. "/" or "/home"
           _("Mount Point"),
           # TRANSLATORS: table header, type of metadata
-          _("Metadata"),
-          # TRANSLATORS: table header, type of metadata
           _("PE Size"),
           # TRANSLATORS: table header, number of LVM LV stripes
           _("Stripes")
@@ -105,7 +103,6 @@ module Y2Partitioner
           [
             "",
             "",
-            "TODO", # TODO: ask arvin if it still make sense
             device.extent_size.to_human_string,
             ""
           ]
@@ -113,7 +110,6 @@ module Y2Partitioner
           [
             device.filesystem_label || "",
             device.filesystem_mountpoint || "",
-            "",
             "",
             lvm_lv_stripes(device)
           ]
