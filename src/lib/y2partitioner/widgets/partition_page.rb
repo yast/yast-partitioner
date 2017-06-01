@@ -1,4 +1,4 @@
-require "cwm/tree_pager"
+require "cwm/pager"
 
 require "y2partitioner/widgets/partition_description"
 

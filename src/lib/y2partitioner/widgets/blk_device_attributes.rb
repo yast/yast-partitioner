@@ -1,5 +1,7 @@
 require "yast/i18n"
 
+Yast.import "HTML"
+
 module Y2Partitioner
   module Widgets
     # helper to share helpers to print common attributes
@@ -65,6 +67,26 @@ module Y2Partitioner
       # @return [String]
       def device_encrypted
         format(_("Encrypted: %s"), blk_device.encrypted? ? _("Yes") : _("No"))
+      end
+
+      # Returns richtext description of File System on block device
+      def fs_text
+        # TRANSLATORS: heading for section about Filesystem on device
+        Yast::HTML.Heading(_("File System:")) +
+          Yast::HTML.List(filesystem_attributes_list)
+      end
+
+      # list of filesystem attributes
+      def filesystem_attributes_list
+        fs_type = blk_device.filesystem_type
+        [
+          # TRANSLATORS: File system and its type as human string
+          format(_("File System: %s"), fs_type ? fs_type.to_human : ""),
+          # TRANSLATORS: File system and its type as human string
+          format(_("Mount Point: %s"), partition.filesystem_mountpoint || ""),
+          # TRANSLATORS: Label associated with file system
+          format(_("Label: %s"), partition.filesystem_label || "")
+        ]
       end
     end
   end

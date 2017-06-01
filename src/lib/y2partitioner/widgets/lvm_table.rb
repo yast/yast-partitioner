@@ -113,7 +113,7 @@ module Y2Partitioner
       end
 
       def lvm_lv_stripes(device)
-        return device.stripes.to_i if device.stripes <= 1
+        return device.stripes.to_s if device.stripes <= 1
 
         "#{device.stripes}(#{device.stripes_size.to_human_string})"
       end
