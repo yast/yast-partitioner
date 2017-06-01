@@ -7,34 +7,35 @@ require "y2partitioner/widgets/blk_devices_table"
 
 module Y2Partitioner
   module Widgets
-    # Table widget to represent given list of Y2Storage::LvmVgs and Y2Storage::LvmLvs together.
-    # For displaying Y2Storage::LvmLvs only use specialized class (see LvmLvTable)
-    class LvmTable < CWM::Table
+    # Table widget to represent given list of Y2Storage::LvmLvs together.
+    class LvmLvTable < CWM::Table
       include BlkDevicesTable
 
-      # @param lvms [Array<Y2Storage::LvmVg|Y2Storage::LvmLv] devices to display
+      # @param lvms [Array<Y2Storage::LvmLv] devices to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
       #   if someone do not need this feature, make it only optional
-      def initialize(lvms, pager)
+      def initialize(lvs, pager)
         textdomain "storage"
-        @lvms = lvms
+        @lvs = lvs
         @pager = pager
       end
 
       # table items. See CWM::Table#items
       def items
-        @lvms.map do |device|
-          res = [
+        @lvs.map do |device|
+          [
             id_for_device(device), # use name as id
-            lvm_name(device),
+            device.name,
             device.size.to_human_string,
             # TODO: dasd format use "X", check it
             device.exists_in_probed? ? "" : _(BlkDevicesTable::FORMAT_FLAG),
             encryption_value_for(device),
             type_for(device),
-            fs_type_for(device)
+            fs_type_for(device),
+            device.filesystem_label || "",
+            device.filesystem_mountpoint || "",
+            lvm_lv_stripes(device)
           ]
-          res + device_specific_items(device)
         end
       end
 
@@ -58,8 +59,6 @@ module Y2Partitioner
           _("Label"),
           # TRANSLATORS: table header, where is device mounted. Can be empty. E.g. "/" or "/home"
           _("Mount Point"),
-          # TRANSLATORS: table header, type of metadata
-          _("PE Size"),
           # TRANSLATORS: table header, number of LVM LV stripes
           _("Stripes")
         ]
@@ -78,7 +77,8 @@ module Y2Partitioner
                    "<b>FS Type</b> is description of filesystem on device.<br>" \
                    "<b>Label</b> is label for given device if set.<br>" \
                    "<b>Mount Point</b> is where device is mounted or empty if not.<br>" \
-                   "TODO<br>"
+                   "<b>Stripes</b> shows the stripe number for LVM logical volumes and," \
+                   "if greater then one, the stripe size in parenthesis.<br>"
         ), format_flag: FORMAT_FLAG)
       end
 
@@ -86,36 +86,10 @@ module Y2Partitioner
 
       attr_reader :pager
 
-      def lvm_name(device)
-        # TODO: discuss this with ancor where it make sense to have it in y2-storage
-        device.is_a?(Y2Storage::LvmVg) ? "/dev/#{device.vg_name}" : device.name
-      end
-
       def lvm_lv_stripes(device)
         return device.stripes.to_s if device.stripes <= 1
 
         "#{device.stripes}(#{device.stripes_size.to_human_string})"
-      end
-
-      def device_specific_items(device)
-        case device
-        when Y2Storage::LvmVg
-          [
-            "",
-            "",
-            device.extent_size.to_human_string,
-            ""
-          ]
-        when Y2Storage::LvmLv
-          [
-            device.filesystem_label || "",
-            device.filesystem_mountpoint || "",
-            "",
-            lvm_lv_stripes(device)
-          ]
-        else
-          raise "Invalid device #{device.inspect}"
-        end
       end
     end
   end
