@@ -12,7 +12,7 @@ module Y2Partitioner
     class LvmTable < CWM::Table
       include BlkDevicesTable
 
-      # @param disks [Array<Y2Storage::LvmVg|Y2Storage::LvmLv] devices to display
+      # @param lvms [Array<Y2Storage::LvmVg|Y2Storage::LvmLv] devices to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
       #   if someone do not need this feature, make it only optional
       def initialize(lvms, pager)
@@ -32,28 +32,9 @@ module Y2Partitioner
             device.exists_in_probed? ? "" : _(BlkDevicesTable::FORMAT_FLAG),
             encryption_value_for(device),
             type_for(device),
-            fs_type_for(device),
+            fs_type_for(device)
           ]
-          case device
-          when Y2Storage::LvmVg
-            res.concat([
-              "",
-              "",
-              "TODO", # TODO: ask arvin if it still make sense
-              device.extent_size.to_human_string,
-              ""
-            ])
-          when Y2Storage::LvmLv
-            res.concat([
-              device.filesystem_label || "",
-              device.filesystem_mountpoint || "",
-              "",
-              "",
-              lvm_lv_stripes(device)
-            ])
-          else
-            raise "Invalid device #{device.inspect}"
-          end
+          res + device_specific_items(device)
         end
       end
 
@@ -116,6 +97,29 @@ module Y2Partitioner
         return device.stripes.to_s if device.stripes <= 1
 
         "#{device.stripes}(#{device.stripes_size.to_human_string})"
+      end
+
+      def device_specific_items(device)
+        case device
+        when Y2Storage::LvmVg
+          [
+            "",
+            "",
+            "TODO", # TODO: ask arvin if it still make sense
+            device.extent_size.to_human_string,
+            ""
+          ]
+        when Y2Storage::LvmLv
+          [
+            device.filesystem_label || "",
+            device.filesystem_mountpoint || "",
+            "",
+            "",
+            lvm_lv_stripes(device)
+          ]
+        else
+          raise "Invalid device #{device.inspect}"
+        end
       end
     end
   end

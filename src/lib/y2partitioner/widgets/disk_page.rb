@@ -1,7 +1,7 @@
 require "cwm/widget"
 require "cwm/tree_pager"
 
-require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/disk_table"
 require "y2partitioner/widgets/disk_bar_graph"
 require "y2partitioner/widgets/disk_description"
 require "y2partitioner/icons"
@@ -76,7 +76,7 @@ module Y2Partitioner
       def contents
         @contents ||= VBox(
           DiskBarGraph.new(@disk),
-          BlkDevicesTable.new(@disk.partitions, @pager)
+          DiskTable.new(@disk.partitions, @pager)
         )
       end
     end

@@ -12,7 +12,7 @@ module Y2Partitioner
       include Yast::I18n
 
       # @param lvm_lv [Y2Storage::LvmLv] to describe
-      def initialize(lvm_lv)
+      def initialize(_lvm_lv)
         textdomain "storage"
         @partition = partition
       end
@@ -48,7 +48,7 @@ module Y2Partitioner
         [
           device_name,
           device_size,
-          device_encrypted,
+          device_encrypted
         ]
       end
 

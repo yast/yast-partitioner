@@ -1,6 +1,6 @@
 require "cwm/tree_pager"
 
-require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/disk_table"
 require "y2partitioner/icons"
 
 module Y2Partitioner
@@ -34,7 +34,7 @@ module Y2Partitioner
               Heading(_("Hard Disks "))
             )
           ),
-          BlkDevicesTable.new(@devices, @pager)
+          DiskTable.new(@devices, @pager)
         )
       end
     end
