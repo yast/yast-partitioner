@@ -82,7 +82,7 @@ module Y2Partitioner
                    "<b>Mount Point</b> is where device is mounted or empty if not.<br>" \
                    "<b>Start</b> is the first sector on device.<br>" \
                    "<b>End</b> is the last sector on device.<br>"
-        ), format_flag: FORMAT_FLAG)
+        ), format_flag: BlkDevicesTable::FORMAT_FLAG)
       end
 
     private

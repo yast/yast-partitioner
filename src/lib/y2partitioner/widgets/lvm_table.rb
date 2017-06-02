@@ -79,7 +79,7 @@ module Y2Partitioner
                    "<b>Label</b> is label for given device if set.<br>" \
                    "<b>Mount Point</b> is where device is mounted or empty if not.<br>" \
                    "TODO<br>"
-        ), format_flag: FORMAT_FLAG)
+        ), format_flag: BlkDevicesTable::FORMAT_FLAG)
       end
 
     private
