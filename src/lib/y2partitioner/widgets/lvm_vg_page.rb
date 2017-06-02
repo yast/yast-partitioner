@@ -3,6 +3,7 @@ require "cwm/tree_pager"
 require "cwm/tabs"
 
 require "y2partitioner/widgets/lvm_lv_table"
+require "y2partitioner/widgets/lvm_pv_table"
 require "y2partitioner/widgets/lvm_vg_bar_graph"
 require "y2partitioner/widgets/lvm_vg_description"
 require "y2partitioner/icons"
@@ -35,7 +36,8 @@ module Y2Partitioner
           ),
           CWM::Tabs.new(
             LvmVgTab.new(@lvm_vg),
-            LvmLvTab.new(@lvm_vg, @pager)
+            LvmLvTab.new(@lvm_vg, @pager),
+            LvmPvTab.new(@lvm_vg, @pager)
           )
         )
       end
@@ -79,6 +81,26 @@ module Y2Partitioner
           LvmVgBarGraph.new(@lvm_vg),
           LvmLvTable.new(@lvm_vg.lvm_lvs, @pager)
         )
+      end
+    end
+
+    # A Tab for a LVM physical volumes
+    class LvmPvTab < CWM::Tab
+      def initialize(lvm_vg, pager)
+        textdomain "storage"
+        @lvm_vg = lvm_vg
+        @pager = pager
+      end
+
+      # @macro AW
+      def label
+        _("&Physical Volumes")
+      end
+
+      # @macro CW
+      def contents
+        # Page wants a WidgetTerm, not an AbstractWidget
+        @contents ||= VBox(LvmPvTable.new(@lvm_vg.lvm_pvs, @pager))
       end
     end
   end
