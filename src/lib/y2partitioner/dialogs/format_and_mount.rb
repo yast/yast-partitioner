@@ -30,7 +30,7 @@ module Y2Partitioner
       end
 
       def dialog_title
-        "Edit Partition %s" % @partition.name
+        format("Edit Partition %s", @partition.name)
       end
 
       # A generalized GreaseMonkey.Left*WithAttachment
@@ -52,38 +52,49 @@ module Y2Partitioner
         )
       end
 
-      def dialog_content
+      # @return [CWM::WidgetTerm]
+      def formatting_content
         fs_type = @partition.filesystem_type
         fs_type = fs_type ? fs_type.to_human : ""
+
+        item_plus_indented(
+          Label(_("Formatting Options")),
+          item_plus_indented(
+            RadioButton(_("Format partition")),
+            ComboBox(_("File &System"), [fs_type]),
+            PushButton(Id(:file_system_options), _("O&ptions..."))
+          ),
+          item_plus_indented(
+            RadioButton(_("Do not format partition")),
+            Empty()
+          )
+        )
+      end
+
+      # @return [CWM::WidgetTerm]
+      def mounting_content
         mount_point = @partition.filesystem_mountpoint || ""
 
+        item_plus_indented(
+          Label(_("Mounting Options")),
+          item_plus_indented(
+            RadioButton(_("Mount partition")),
+            ComboBox(_("&Mount Point"), [mount_point]),
+            PushButton(Id(:fstab_options), _("Fs&tab Options..."))
+          ),
+          item_plus_indented(
+            RadioButton(_("Do not mount partition")),
+            Empty()
+          )
+        )
+      end
+
+      def dialog_content
         HVSquash(
           HBox(
-            item_plus_indented(
-              Label(_("Formatting Options")),
-              item_plus_indented(
-                RadioButton(_("Format partition")),
-                ComboBox(_("File &System"), [fs_type]),
-                PushButton(Id(:file_system_options), _("O&ptions...")),
-              ),
-              item_plus_indented(
-                RadioButton(_("Do not format partition")),
-                Empty()
-              )
-            ),
+            formatting_content,
             HSpacing(4),
-            item_plus_indented(
-              Label(_("Mounting Options")),
-              item_plus_indented(
-                RadioButton(_("Mount partition")),
-                ComboBox(_("&Mount Point"), [mount_point]),
-                PushButton(Id(:fstab_options), _("Fs&tab Options..."))
-              ),
-              item_plus_indented(
-                RadioButton(_("Do not mount partition")),
-                Empty()
-              )
-            )
+            mounting_content
           )
         )
       end
