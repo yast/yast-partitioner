@@ -11,7 +11,7 @@ module Y2Partitioner
     class LvmLvTable < CWM::Table
       include BlkDevicesTable
 
-      # @param lvms [Array<Y2Storage::LvmLv] devices to display
+      # @param lvs [Array<Y2Storage::LvmLv] devices to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
       #   if someone do not need this feature, make it only optional
       def initialize(lvs, pager)
