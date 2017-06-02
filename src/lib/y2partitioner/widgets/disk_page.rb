@@ -61,6 +61,31 @@ module Y2Partitioner
 
     # A Tab for disk partitions
     class PartitionsTab < CWM::Tab
+      # A temporary UI to make a simple change to the system
+      # so that we can then test writing it.
+      class AddTestingPartitionButton < CWM::PushButton
+        # Y2Storage::Disk
+        def initialize(disk)
+          @disk = disk
+        end
+
+        def label
+          "If there is no partition table, make a GPT table"
+        end
+
+        def handle
+          pt = @disk.partition_table
+          p pt
+          if pt.nil?
+            type = Y2Storage::PartitionTables::Type.new("gpt")
+            @disk.create_partition_table(type)
+          end
+          pt = @disk.partition_table
+          p pt
+          nil
+        end
+      end
+
       def initialize(disk, pager)
         textdomain "storage"
         @disk = disk
@@ -76,7 +101,8 @@ module Y2Partitioner
       def contents
         @contents ||= VBox(
           DiskBarGraph.new(@disk),
-          BlkDevicesTable.new(@disk.partitions, @pager)
+          BlkDevicesTable.new(@disk.partitions, @pager),
+          AddTestingPartitionButton.new(@disk)
         )
       end
     end
