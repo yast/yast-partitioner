@@ -49,7 +49,7 @@ module Y2Partitioner
           # ideally three letters. Keep in sync with Enc used later for format marker.
           Center(_("Enc")),
           # TRANSLATORS: table header, type of disk or partition. Can be longer. E.g. "Linux swap"
-          _("Type"),
+          _("Type")
         ]
       end
 

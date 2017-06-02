@@ -105,4 +105,3 @@ module Y2Partitioner
     end
   end
 end
-
