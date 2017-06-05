@@ -1,6 +1,7 @@
 require "cwm/widget"
 require "cwm/tree_pager"
 
+require "y2partitioner/sequences/add_partition"
 require "y2partitioner/widgets/blk_devices_table"
 require "y2partitioner/widgets/disk_bar_graph"
 require "y2partitioner/widgets/disk_description"
@@ -61,6 +62,24 @@ module Y2Partitioner
 
     # A Tab for disk partitions
     class PartitionsTab < CWM::Tab
+      # Add a partition
+      class AddButton < CWM::PushButton
+        # Y2Storage::Disk
+        def initialize(disk)
+          textdomain "storage"
+          @disk = disk
+        end
+
+        def label
+          _("Add...")
+        end
+
+        def handle
+          Sequences::AddPartition.new(@disk).run
+          nil
+        end
+      end
+
       # A temporary UI to make a simple change to the system
       # so that we can then test writing it.
       class AddTestingPartitionButton < CWM::PushButton
@@ -122,6 +141,10 @@ module Y2Partitioner
         @pager = pager
       end
 
+      def initial
+        true
+      end
+
       # @macro AW
       def label
         _("&Partitions")
@@ -132,7 +155,10 @@ module Y2Partitioner
         @contents ||= VBox(
           DiskBarGraph.new(@disk),
           BlkDevicesTable.new(@disk.partitions, @pager),
-          AddTestingPartitionButton.new(@disk)
+          HBox(
+            AddButton.new(@disk),
+            AddTestingPartitionButton.new(@disk)
+          )
         )
       end
     end
