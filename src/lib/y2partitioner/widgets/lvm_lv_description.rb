@@ -34,6 +34,7 @@ module Y2Partitioner
       alias_method :blk_device, :lvm_lv
 
       include BlkDeviceAttributes
+      include LvmLvAttributes
 
       def lv_text
         # TODO: consider using e.g. erb for this kind of output
@@ -54,14 +55,8 @@ module Y2Partitioner
       end
 
       def stripes
-        val = if lvm_lv.stripes <= 1
-          lvm_lv.stripes.to_i
-        else
-          "#{lvm_lv.stripes} (#{lvm_lv.stripes_size.to_human_string})"
-        end
-
         # TRANSLATORS: value for number of LVM stripes
-        format(_("Stripes: %s"), val)
+        format(_("Stripes: %s"), stripes_info(lvm_lv))
       end
     end
   end

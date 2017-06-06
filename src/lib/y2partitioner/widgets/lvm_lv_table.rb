@@ -10,6 +10,7 @@ module Y2Partitioner
     # Table widget to represent given list of Y2Storage::LvmLvs together.
     class LvmLvTable < CWM::Table
       include BlkDevicesTable
+      include LvmLvAttributes
 
       # @param lvs [Array<Y2Storage::LvmLv] devices to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
@@ -34,7 +35,7 @@ module Y2Partitioner
             fs_type_for(device),
             device.filesystem_label || "",
             device.filesystem_mountpoint || "",
-            lvm_lv_stripes(device)
+            stripes_info(device)
           ]
         end
       end
@@ -86,12 +87,6 @@ module Y2Partitioner
     private
 
       attr_reader :pager
-
-      def lvm_lv_stripes(device)
-        return device.stripes.to_s if device.stripes <= 1
-
-        "#{device.stripes} (#{device.stripes_size.to_human_string})"
-      end
     end
   end
 end

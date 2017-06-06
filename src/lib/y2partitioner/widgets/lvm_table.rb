@@ -11,6 +11,7 @@ module Y2Partitioner
     # For displaying Y2Storage::LvmLvs only use specialized class (see LvmLvTable)
     class LvmTable < CWM::Table
       include BlkDevicesTable
+      include LvmLvAttributes
 
       # @param lvms [Array<Y2Storage::LvmVg|Y2Storage::LvmLv] devices to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
@@ -92,12 +93,6 @@ module Y2Partitioner
         device.is_a?(Y2Storage::LvmVg) ? "/dev/#{device.vg_name}" : device.name
       end
 
-      def lvm_lv_stripes(device)
-        return device.stripes.to_s if device.stripes <= 1
-
-        "#{device.stripes} (#{device.stripes_size.to_human_string})"
-      end
-
       def device_specific_items(device)
         case device
         when Y2Storage::LvmVg
@@ -112,7 +107,7 @@ module Y2Partitioner
             device.filesystem_label || "",
             device.filesystem_mountpoint || "",
             "",
-            lvm_lv_stripes(device)
+            stripes_info(device)
           ]
         else
           raise "Invalid device #{device.inspect}"
