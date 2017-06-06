@@ -67,6 +67,7 @@ module Y2Partitioner
 
       # @macro AW
       def help
+        # TODO: proofread it and test it on real user, if it need improvement
         format(_(
                  "Table shows selected devices with its attributes.<br>" \
                    "<b>Device</b> is kernel name for device.<br>" \

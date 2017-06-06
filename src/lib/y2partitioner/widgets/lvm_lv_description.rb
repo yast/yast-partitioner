@@ -24,6 +24,7 @@ module Y2Partitioner
 
       # @macro AW
       def help
+        # TODO: proofread it and test it on real user, if it need improvement
         _("Textual description of LVM Logical Volume")
       end
 
