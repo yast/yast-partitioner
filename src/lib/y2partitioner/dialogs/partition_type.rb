@@ -6,9 +6,10 @@ module Y2Partitioner
     # Formerly MiniWorkflowStepPartitionType
     class PartitionType < CWM::Dialog
       class Rbs < CWM::RadioButtons
-        def initialize(available_types)
+        def initialize(ptemplate, slots)
           textdomain "storage"
-          @ats = available_types
+          @ptemplate = ptemplate
+          @slots = slots
         end
 
         def label
@@ -21,6 +22,10 @@ module Y2Partitioner
         end
 
         def items
+          available_types = Y2Storage::PartitionType.all.map do |ty|
+            [ty.to_s, @slots.find { |s| s.possible?(ty) } != nil]
+          end.to_h
+
           [
             # radio button text
             ["primary", _("&Primary Partition")],
@@ -28,8 +33,15 @@ module Y2Partitioner
             ["extended", _("&Extended Partition")],
             # radio button text
             ["logical", _("&Logical Partition")]
-          ].find_all { |t, _l| @ats[t] }
+          ].find_all { |t, _l| available_types[t] }
+        end
 
+        def validate
+          value != nil
+        end
+
+        def store
+          @ptemplate.type = Y2Storage::PartitionType.new(value)
         end
       end
 
@@ -37,6 +49,7 @@ module Y2Partitioner
       def initialize(disk, slots)
         @disk = disk
         @slots = slots
+        @ptemplate = Struct.new(:type).new
         textdomain "storage"
       end
 
@@ -46,14 +59,10 @@ module Y2Partitioner
       end
           
       def contents
-        available_types = Y2Storage::PartitionType.all.map do |ty|
-          [ty.to_s, @slots.find { |s| s.possible?(ty) } != nil]
-        end.to_h
-
         # FIXME: ever can change this? or just create?
         type = :none
 
-        HVSquash(Rbs.new(available_types))
+        HVSquash(Rbs.new(@ptemplate, @slots))
       end
     end
   end

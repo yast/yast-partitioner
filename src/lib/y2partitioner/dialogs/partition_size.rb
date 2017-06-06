@@ -17,7 +17,10 @@ module Y2Partitioner
       end
 
       def contents
-        Label("fake partition size dialog")
+        txt = "fake partition size dialog"
+        w = CWM::InputField.new
+        w.define_singleton_method(:label, ->{txt})
+        VBox(w)
       end
     end
   end
