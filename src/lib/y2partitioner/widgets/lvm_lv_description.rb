@@ -3,6 +3,7 @@ require "cwm/widget"
 Yast.import "HTML"
 
 require "y2partitioner/widgets/blk_device_attributes"
+require "y2partitioner/widgets/lvm_lv_attributes"
 
 module Y2Partitioner
   # CWM widgets for partitioner
