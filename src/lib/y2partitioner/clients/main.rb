@@ -40,7 +40,11 @@ module Y2Partitioner
         )
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
-        res = Yast::CWM.show(contents, caption: _("Partitioner"))
+        res = nil
+        loop do
+          res = Yast::CWM.show(contents, caption: _("Partitioner"), skip_store_for: [:redraw])
+          break if res != :redraw
+        end
 
         # Running system: presenting "Expert Partitioner: Summary" step now
         # ep-main.rb SummaryDialog

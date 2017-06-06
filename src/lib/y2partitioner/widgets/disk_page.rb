@@ -80,6 +80,32 @@ module Y2Partitioner
         end
       end
 
+      # Edit a partition
+      class EditButton < CWM::PushButton
+        # Constructor
+        #
+        # @param disk [Y2Storage::Disk]
+        # @param table [Y2Storage::Widgets::BlkDevicesTable]
+        def initialize(disk, table)
+          textdomain "storage"
+          @disk  = disk
+          @table = table
+        end
+
+        def label
+          "Edit..."
+        end
+
+        def handle
+          name = @table.value[/table:partition:(.*)/, 1]
+          partition = @disk.partitions.detect { |p| p.name == name }
+
+          Dialogs::FormatAndMount.new(partition).run
+
+          :redraw
+        end
+      end
+
       # A temporary UI to make a simple change to the system
       # so that we can then test writing it.
       class AddTestingPartitionButton < CWM::PushButton
@@ -131,7 +157,8 @@ module Y2Partitioner
           # FIXME: tell the UI to show this new partition.
           # switching tabs on this disk is not enough;
           # switching to another disk and back helps
-          nil
+
+          :redraw
         end
       end
 
@@ -152,12 +179,14 @@ module Y2Partitioner
 
       # @macro CW
       def contents
+        @partitions_table = BlkDevicesTable.new(@disk.partitions, @pager)
         @contents ||= VBox(
           DiskBarGraph.new(@disk),
-          BlkDevicesTable.new(@disk.partitions, @pager),
+          @partitions_table,
           HBox(
             AddButton.new(@disk),
-            AddTestingPartitionButton.new(@disk)
+            AddTestingPartitionButton.new(@disk),
+            EditButton.new(@disk, @partitions_table)
           )
         )
       end
