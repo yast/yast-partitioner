@@ -57,7 +57,7 @@ module Y2Partitioner
         val = if lvm_lv.stripes <= 1
           lvm_lv.stripes.to_i
         else
-          "#{lvm_lv.stripes}(#{lvm_lv.stripes_size.to_human_string})"
+          "#{lvm_lv.stripes} (#{lvm_lv.stripes_size.to_human_string})"
         end
 
         # TRANSLATORS: value for number of LVM stripes

@@ -4,7 +4,7 @@ require "y2partitioner/widgets/lvm_table"
 
 module Y2Partitioner
   module Widgets
-    # A Page for a partition
+    # A Page for for given list of Y2Storage::LvmLV|Y2Storage::LvmVG.
     class LvmPage < CWM::Page
       # @param [Y2Storage::LvmLV|Y2Storage::LvmVG] devices to display
       def initialize(devices, pager)

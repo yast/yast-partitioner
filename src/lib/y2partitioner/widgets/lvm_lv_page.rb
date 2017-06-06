@@ -29,7 +29,7 @@ module Y2Partitioner
             HBox(
               Image(icon, ""),
               # TRANSLATORS: Heading. String followed by name of partition
-              Heading(format(_("Logical Volume: "), @lvm_lv.name))
+              Heading(format(_("Logical Volume: %s"), @lvm_lv.name))
             )
           ),
           LvmLvDescription.new(@lvm_lv)

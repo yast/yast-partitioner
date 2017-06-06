@@ -7,7 +7,7 @@ require "y2partitioner/widgets/blk_devices_table"
 
 module Y2Partitioner
   module Widgets
-    # Table widget to represent given list of Y2Storage::BlkDevice.
+    # Table widget to represent given list of Y2Storage::Disk|Y2Storage::Partition.
     class DiskTable < CWM::Table
       include BlkDevicesTable
 

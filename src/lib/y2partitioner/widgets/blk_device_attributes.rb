@@ -81,7 +81,7 @@ module Y2Partitioner
         fs_type = blk_device.filesystem_type
         [
           # TRANSLATORS: File system and its type as human string
-          format(_("File System: %s"), fs_type ? fs_type.to_human : ""),
+          format(_("File System: %s"), fs_type ? fs_type.to_human_string : ""),
           # TRANSLATORS: File system and its type as human string
           format(_("Mount Point: %s"), blk_device.filesystem_mountpoint || ""),
           # TRANSLATORS: Label associated with file system
