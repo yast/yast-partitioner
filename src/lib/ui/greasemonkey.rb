@@ -27,47 +27,23 @@
 # Lets see if this turns out to be useful.
 require "yast"
 
-module Yast
-  class GreasemonkeyClass < Module
-    def main
-      Yast.import "Directory"
+module UI
+  module Greasemonkey
+    include Yast
+    include Yast::UIShortcuts
+    extend self
+    Yast.import "Directory"
 
-
-      @handlers = {
-        :VStackFrames                  => fun_ref(
-          method(:VStackFrames),
-          "term (term)"
-        ),
-        :FrameWithMarginBox            => fun_ref(
-          method(:FrameWithMarginBox),
-          "term (term)"
-        ),
-        :ComboBoxSelected              => fun_ref(
-          method(:ComboBoxSelected),
-          "term (term)"
-        ),
-        :LeftRadioButton               => fun_ref(
-          method(:LeftRadioButton),
-          "term (term)"
-        ),
-        :LeftRadioButtonWithAttachment => fun_ref(
-          method(:LeftRadioButtonWithAttachment),
-          "term (term)"
-        ),
-        :LeftCheckBox                  => fun_ref(
-          method(:LeftCheckBox),
-          "term (term)"
-        ),
-        :LeftCheckBoxWithAttachment    => fun_ref(
-          method(:LeftCheckBoxWithAttachment),
-          "term (term)"
-        ),
-        :IconAndHeading                => fun_ref(
-          method(:IconAndHeading),
-          "term (term)"
-        )
-      }
-    end
+    @handlers = [
+      :VStackFrames,
+      :FrameWithMarginBox,
+      :ComboBoxSelected,
+      :LeftRadioButton,
+      :LeftRadioButtonWithAttachment,
+      :LeftCheckBox,
+      :LeftCheckBoxWithAttachment,
+      :IconAndHeading
+    ]
 
     def VStackFrames(old)
       old = deep_copy(old)
@@ -103,13 +79,13 @@ module Yast
     # `ComboBoxSelected(`id(`wish), `opt(`notify), "Wish",
     #                   [ `item(`id(`time), "Time"),
     #                     `item(`id(`love), "Love"),
-    # 			   `item(`id(`money), "Money") ],
+    #                     `item(`id(`money), "Money") ],
     #                   `id(`love))
     #
     # `ComboBox(`id(`wish), `opt(`notify), "Wish",
     #           [ `item(`id(`time), "Time", false),
     #             `item(`id(`love), "Love", true),
-    # 		   `item(`id(`money), "Money", false) ])
+    #             `item(`id(`money), "Money", false) ])
     def ComboBoxSelected(old)
       old = deep_copy(old)
       args = Builtins.argsof(old)
@@ -219,24 +195,11 @@ module Yast
       Left(HBox(Image(icon, ""), Heading(title)))
     end
 
-
-    def Register(s, handler)
-      handler = deep_copy(handler)
-      if Builtins.haskey(@handlers, s)
-        Builtins.y2error("handler for %1 already registered", s)
-        return false
-      else
-        Ops.set(@handlers, s, handler)
-        return true
-      end
-    end
-
-
     def Transform(old)
       old = deep_copy(old)
       s = Builtins.symbolof(old)
 
-      handler = Ops.get(@handlers, s)
+      handler = Greasemonkey.method(s) if @handlers.include?(s)
       return Transform(handler.call(old)) if handler != nil
 
       new = Builtins::List.reduce(Builtins.toterm(s), Builtins.argsof(old)) do |tmp, arg|
@@ -246,11 +209,7 @@ module Yast
 
       deep_copy(new)
     end
+    alias_method :transform, :Transform
 
-    publish :function => :Register, :type => "boolean (symbol, term (term))"
-    publish :function => :Transform, :type => "term (term)"
   end
-
-  Greasemonkey = GreasemonkeyClass.new
-  Greasemonkey.main
 end
