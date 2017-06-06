@@ -12,8 +12,9 @@ module Y2Partitioner
     class AddPartition < UI::Sequence
       include Yast::Logger
       # @param disk [Y2Storage::Disk]
-      def initialize(disk)
+      def initialize(disk, slots)
         @disk = disk
+        @slots = slots
         # collecting params of partition to be created?
         @params = {}
       end
@@ -37,7 +38,7 @@ module Y2Partitioner
       end
 
       def type
-        Dialogs::PartitionType.new(@disk).run
+        Dialogs::PartitionType.run(@disk, @slots)
       end
 
       def size

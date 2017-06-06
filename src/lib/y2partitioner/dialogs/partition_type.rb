@@ -1,68 +1,59 @@
 require "yast"
-require "ui/event_dispatcher"
+require "cwm/dialog"
 
 module Y2Partitioner
   module Dialogs
     # Formerly MiniWorkflowStepPartitionType
-    # FIXME: InnerDialog?!
-    class PartitionType
-      include Yast::UIShortcuts
-      include Yast::Logger
-      include Yast::I18n
+    class PartitionType < CWM::Dialog
+      class Rbs < CWM::RadioButtons
+        def initialize(available_types)
+          textdomain "storage"
+          @ats = available_types
+        end
 
-      include UI::EventDispatcher
+        def label
+          _("New Partition Type")
+        end
 
-      def initialize(_disk)
+        def help
+          # helptext
+          _("<p>Choose the partition type for the new partition.</p>")
+        end
+
+        def items
+          [
+            # radio button text
+            ["primary", _("&Primary Partition")],
+            # radio button text
+            ["extended", _("&Extended Partition")],
+            # radio button text
+            ["logical", _("&Logical Partition")]
+          ].find_all { |t, _l| @ats[t] }
+
+        end
+      end
+
+      # @param slots [Array<Y2Storage::PartitionTables::PartitionSlot>]
+      def initialize(disk, slots)
+        @disk = disk
+        @slots = slots
         textdomain "storage"
       end
 
-      def run
-        Yast::UI.ReplaceWidget(Id(:contents), contents)
-        event_loop
+      def title
+        # dialog title
+        Yast::Builtins.sformat(_("Add Partition on %1"), @disk.name)
       end
-
-      def next_handler
-        finish_dialog(:next)
-      end
-
-      def help
-        # helptext
-        _("<p>Choose the partition type for the new partition.</p>")
-      end
-
+          
       def contents
-        # FIXME: get actual data
-        available_types = {
-          primary:  true,
-          extended: true,
-          logical:  true
-        }
+        available_types = Y2Storage::PartitionType.all.map do |ty|
+          [ty.to_s, @slots.find { |s| s.possible?(ty) } != nil]
+        end.to_h
+
         # FIXME: ever can change this? or just create?
         type = :none
 
-        rbs = VBox()
-        mk_item = lambda(id, label) do
-          if available_types[id]
-            rbs << Left(RadioButton(Id(id), label, type == id))
-          end
-        end
-        # radio button text
-        mk_item.call(:primary, _("&Primary Partition"))
-        # radio button text
-        mk_item.call(:extended, _("&Extended Partition"))
-        # radio button text
-        mk_item.call(:logical, _("&Logical Partition"))
-
-        HVSquash(
-          Frame(
-            # heading for a frame in a dialog
-            _("New Partition Type"),
-            MarginBox(
-              1.45, 0.45,
-              RadioButtonGroup(Id(:partition_type), rbs)
-            )
-          )
-        )
+        HVSquash(Rbs.new(available_types))
       end
     end
   end

@@ -1,37 +1,23 @@
 require "yast"
-require "ui/event_dispatcher"
+require "cwm/dialog"
 
 module Y2Partitioner
   module Dialogs
     # Formerly MiniWorkflowStepPartitionSize
-    # FIXME: InnerDialog?!
-    class PartitionSize
-      include Yast::UIShortcuts
-      include Yast::Logger
-      include Yast::I18n
+    class PartitionSize < CWM::Dialog
 
-      include UI::EventDispatcher
-
-      def initialize(_disk)
+      def initialize(disk)
         textdomain "storage"
+        @disk = disk
       end
 
-      def run
-        Yast::UI.ReplaceWidget(Id(:contents), contents)
-        event_loop
-      end
-
-      def help
-        # helptext
-        _("<p>Choose the size for the new partition.</p>")
+      def title
+        # dialog title
+        Yast::Builtins.sformat(_("Add Partition on %1"), @disk.name)
       end
 
       def contents
         Label("fake partition size dialog")
-      end
-
-      def next_handler
-        finish_dialog(:next)
       end
     end
   end

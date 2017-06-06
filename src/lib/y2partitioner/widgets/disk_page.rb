@@ -75,8 +75,33 @@ module Y2Partitioner
         end
 
         def handle
-          Sequences::AddPartition.new(@disk).run
+          slots = slots!
+          return nil if slots.empty?
+          Sequences::AddPartition.new(@disk, slots).run
           nil
+        end
+
+        private
+
+        # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
+        # Make it DRY
+        def partition_table(disk)
+          disk.partition_table || disk.create_partition_table(disk.preferred_ptable_type)
+        end
+
+        # also tells the user if there's a problem
+        def slots!
+          pt = partition_table(@disk)
+          slots = pt.unused_partition_slots
+          if slots.empty?
+            Yast::Popup.Error(
+              Yast::Builtins.sformat(
+                _("It is not possible to create a partition on %1."),
+                @disk.name
+              )
+            )
+          end
+          slots
         end
       end
 
