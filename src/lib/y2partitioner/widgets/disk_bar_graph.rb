@@ -8,7 +8,7 @@ module Y2Partitioner
         @disk = disk
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         return Empty() unless Yast::UI.HasSpecialWidget(:BarGraph)
 

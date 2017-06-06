@@ -16,12 +16,12 @@ module Y2Partitioner
         textdomain "storage"
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def opt
         [:notify]
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def handle
         id = value[/table:(.*)/, 1]
         @pager.handle("ID" => id)

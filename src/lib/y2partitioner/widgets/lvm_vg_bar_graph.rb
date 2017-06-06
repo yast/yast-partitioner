@@ -8,7 +8,7 @@ module Y2Partitioner
         @lvm_vg = lvm_vg
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         return Empty() unless Yast::UI.HasSpecialWidget(:BarGraph)
 

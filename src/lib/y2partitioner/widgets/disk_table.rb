@@ -67,7 +67,7 @@ module Y2Partitioner
         ]
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def help
         format(_(
                  "Table shows selected devices with its attributes.<br>" \

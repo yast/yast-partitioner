@@ -14,12 +14,12 @@ module Y2Partitioner
         @pager = pager
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("Volume Management")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         return @contents if @contents
 

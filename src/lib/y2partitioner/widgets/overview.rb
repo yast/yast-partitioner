@@ -38,7 +38,7 @@ module Y2Partitioner
         @device_graph = device_graph
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("System View")
       end

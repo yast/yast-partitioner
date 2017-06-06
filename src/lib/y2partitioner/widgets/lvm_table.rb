@@ -65,7 +65,7 @@ module Y2Partitioner
         ]
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def help
         # TODO: proofread it and test it on real user, if it need improvement
         format(_(

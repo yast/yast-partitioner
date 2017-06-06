@@ -14,12 +14,12 @@ module Y2Partitioner
         self.widget_id = "lvm_lv:" + lvm_lv.name
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         @lvm_lv.lv_name
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         return @contents if @contents
 

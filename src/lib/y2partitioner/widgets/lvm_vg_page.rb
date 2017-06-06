@@ -19,12 +19,12 @@ module Y2Partitioner
         self.widget_id = "lvm_vg:" + lvm_vg.vg_name
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         @lvm_vg.vg_name
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         icon = Icons.small_icon(Icons::LVM)
         VBox(
@@ -50,12 +50,12 @@ module Y2Partitioner
         @lvm_vg = lvm_vg
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("&Overview")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents ||= VBox(LvmVgDescription.new(@lvm_vg))
@@ -70,12 +70,12 @@ module Y2Partitioner
         @pager = pager
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("Log&ical Volumes")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         @contents ||= VBox(
           LvmVgBarGraph.new(@lvm_vg),
@@ -92,12 +92,12 @@ module Y2Partitioner
         @pager = pager
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("&Physical Volumes")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents ||= VBox(LvmPvTable.new(@lvm_vg.lvm_pvs, @pager))

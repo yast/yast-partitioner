@@ -22,7 +22,7 @@ module Y2Partitioner
         self.value = lv_text
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def help
         # TODO: proofread it and test it on real user, if it need improvement
         _("Textual description of LVM Logical Volume")
