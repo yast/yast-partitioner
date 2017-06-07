@@ -29,11 +29,12 @@ module Y2Partitioner
           "password"     => { finish: :finish }
         }
 
-        sequence_hash = abortable(sequence_hash)
-        aliases = from_methods(sequence_hash)
-        Yast::Wizard.OpenNextBackDialog
-        res = self.class.run(aliases, sequence_hash)
-        Yast::Wizard.CloseDialog
+        begin
+          Yast::Wizard.OpenNextBackDialog
+          res = super(sequence: sequence_hash)
+        ensure
+          Yast::Wizard.CloseDialog
+        end
 
         ptable = @disk.partition_table
         name = next_free_primary_partition_name(@disk.name, ptable)
