@@ -28,10 +28,15 @@
 require "yast"
 
 module UI
+  # UI layout helpers.
+  #
+  # rubocop:disable Metrics/ModuleLength
   module Greasemonkey
     include Yast
+    extend Yast
     include Yast::UIShortcuts
-    extend self
+    extend Yast::UIShortcuts
+
     Yast.import "Directory"
 
     @handlers = [
@@ -44,6 +49,9 @@ module UI
       :LeftCheckBoxWithAttachment,
       :IconAndHeading
     ]
+
+    # The compatibility API needs CamelCase method names
+    # rubocop:disable MethodName
 
     def VStackFrames(old)
       old = deep_copy(old)
@@ -61,6 +69,7 @@ module UI
 
       deep_copy(new)
     end
+    module_function :VStackFrames
 
     def FrameWithMarginBox(old)
       old = deep_copy(old)
@@ -71,6 +80,7 @@ module UI
         Builtins.toterm(:MarginBox, Builtins.union([1.45, 0.45], args))
       )
     end
+    module_function :FrameWithMarginBox
 
     # ComboBoxSelected
     #
@@ -98,6 +108,7 @@ module UI
 
       Builtins.toterm(:ComboBox, Builtins.add(tmp, items))
     end
+    module_function :ComboBoxSelected
 
     # LeftRadioButton
     #
@@ -108,6 +119,7 @@ module UI
       old = deep_copy(old)
       Left(Builtins.toterm(:RadioButton, Builtins.argsof(old)))
     end
+    module_function :LeftRadioButton
 
     # LeftRadioButtonWithAttachment
     #
@@ -124,7 +136,7 @@ module UI
       tmp1 = Builtins.sublist(args, 0, Ops.subtract(Builtins.size(args), 1))
       tmp2 = Ops.get(args, Ops.subtract(Builtins.size(args), 1))
 
-      if tmp2 == Empty()
+      if tmp2 == Empty() # rubocop:disable Style/GuardClause
         return VBox(Builtins.toterm(:LeftRadioButton, tmp1))
       else
         return VBox(
@@ -133,6 +145,7 @@ module UI
         )
       end
     end
+    module_function :LeftRadioButtonWithAttachment
 
     # LeftCheckBox
     #
@@ -143,6 +156,7 @@ module UI
       old = deep_copy(old)
       Left(Builtins.toterm(:CheckBox, Builtins.argsof(old)))
     end
+    module_function :LeftCheckBox
 
     # LeftCheckBoxWithAttachment
     #
@@ -159,7 +173,7 @@ module UI
       tmp1 = Builtins.sublist(args, 0, Ops.subtract(Builtins.size(args), 1))
       tmp2 = Ops.get(args, Ops.subtract(Builtins.size(args), 1))
 
-      if tmp2 == Empty()
+      if tmp2 == Empty() # rubocop:disable Style/GuardClause
         return VBox(Builtins.toterm(:LeftCheckBox, tmp1))
       else
         return VBox(
@@ -168,6 +182,7 @@ module UI
         )
       end
     end
+    module_function :LeftCheckBoxWithAttachment
 
     # IconAndHeading
     #
@@ -187,6 +202,7 @@ module UI
 
       Left(HBox(Image(icon, ""), Heading(title)))
     end
+    module_function :IconAndHeading
 
     def Transform(old)
       old = deep_copy(old)
@@ -202,6 +218,9 @@ module UI
 
       deep_copy(new)
     end
+    module_function :Transform
+
     alias_method :transform, :Transform
+    module_function :transform
   end
 end
