@@ -77,11 +77,11 @@ module Y2Partitioner
         def handle
           slots = slots!
           return nil if slots.empty?
-          Sequences::AddPartition.new(@disk, slots).run
-          nil
+          res = Sequences::AddPartition.new(@disk, slots).run
+          res == :finish ? :redraw : nil
         end
 
-        private
+      private
 
         # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
         # Make it DRY

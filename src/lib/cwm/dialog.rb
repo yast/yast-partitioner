@@ -18,7 +18,7 @@ module CWM
     def self.run(*args)
       new(*args).run
     end
-    
+
     def run
       if should_open_dialog?
         wizard_create_dialog { run_assuming_open }
@@ -26,7 +26,7 @@ module CWM
         run_assuming_open
       end
     end
-    
+
     def wizard_create_dialog(&block)
       Yast::Wizard.CreateDialog
       block.call
@@ -54,7 +54,7 @@ module CWM
     # @return [CWM::WidgetTerm]
     abstract_method :contents
 
-    # @return [String]
+    # @return [String,nil] Set a title, or keep the existing title
     abstract_method :title
 
     # The :back button
@@ -80,7 +80,7 @@ module CWM
       []
     end
 
-    private
+  private
 
     def replace_true(value, replacement)
       if value == true

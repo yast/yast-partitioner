@@ -16,7 +16,7 @@ module Y2Partitioner
         @disk = disk
         @slots = slots
         # collecting params of partition to be created?
-        @params = {}
+        @ptemplate = Struct.new(:type, :region).new
       end
 
       def run
@@ -34,15 +34,20 @@ module Y2Partitioner
         Yast::Wizard.OpenNextBackDialog
         res = self.class.run(aliases, sequence_hash)
         Yast::Wizard.CloseDialog
+
+        ptable = @disk.partition_table
+        name = next_free_primary_partition_name(@disk.name, ptable)
+        ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
+
         res
       end
 
       def type
-        Dialogs::PartitionType.run(@disk, @slots)
+        Dialogs::PartitionType.run(@disk, @ptemplate, @slots)
       end
 
       def size
-        Dialogs::PartitionSize.new(@disk).run
+        Dialogs::PartitionSize.run(@disk, @ptemplate, @slots)
       end
 
       def role
@@ -61,6 +66,20 @@ module Y2Partitioner
       def password
         log.info "TODO: Partition PASSWORD dialog"
         :finish
+      end
+
+    private
+
+      # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
+      def next_free_primary_partition_name(disk_name, ptable)
+        # FIXME: This is broken by design. create_partition needs to return
+        # this information, not get it as an input parameter.
+        part_names = ptable.partitions.map(&:name)
+        1.upto(ptable.max_primary) do |i|
+          dev_name = "#{disk_name}#{i}"
+          return dev_name unless part_names.include?(dev_name)
+        end
+        raise NoMorePartitionSlotError
       end
     end
   end

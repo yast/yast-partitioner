@@ -23,7 +23,7 @@ module Y2Partitioner
 
         def items
           available_types = Y2Storage::PartitionType.all.map do |ty|
-            [ty.to_s, @slots.find { |s| s.possible?(ty) } != nil]
+            [ty.to_s, !@slots.find { |s| s.possible?(ty) }.nil?]
           end.to_h
 
           [
@@ -37,7 +37,7 @@ module Y2Partitioner
         end
 
         def validate
-          value != nil
+          !value.nil?
         end
 
         def store
@@ -46,10 +46,10 @@ module Y2Partitioner
       end
 
       # @param slots [Array<Y2Storage::PartitionTables::PartitionSlot>]
-      def initialize(disk, slots)
+      def initialize(disk, ptemplate, slots)
         @disk = disk
+        @ptemplate = ptemplate
         @slots = slots
-        @ptemplate = Struct.new(:type).new
         textdomain "storage"
       end
 
@@ -57,11 +57,8 @@ module Y2Partitioner
         # dialog title
         Yast::Builtins.sformat(_("Add Partition on %1"), @disk.name)
       end
-          
-      def contents
-        # FIXME: ever can change this? or just create?
-        type = :none
 
+      def contents
         HVSquash(Rbs.new(@ptemplate, @slots))
       end
     end

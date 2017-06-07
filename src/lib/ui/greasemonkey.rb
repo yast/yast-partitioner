@@ -49,8 +49,8 @@ module UI
       old = deep_copy(old)
       frames = Convert.convert(
         Builtins.argsof(old),
-        :from => "list",
-        :to   => "list <term>"
+        from: "list",
+        to:   "list <term>"
       )
 
       new = VBox()
@@ -62,7 +62,6 @@ module UI
       deep_copy(new)
     end
 
-
     def FrameWithMarginBox(old)
       old = deep_copy(old)
       title = Ops.get_string(old, 0, "error")
@@ -72,7 +71,6 @@ module UI
         Builtins.toterm(:MarginBox, Builtins.union([1.45, 0.45], args))
       )
     end
-
 
     # ComboBoxSelected
     #
@@ -101,7 +99,6 @@ module UI
       Builtins.toterm(:ComboBox, Builtins.add(tmp, items))
     end
 
-
     # LeftRadioButton
     #
     # `LeftRadioButton(`id(), `opt(), "text")
@@ -111,7 +108,6 @@ module UI
       old = deep_copy(old)
       Left(Builtins.toterm(:RadioButton, Builtins.argsof(old)))
     end
-
 
     # LeftRadioButtonWithAttachment
     #
@@ -138,7 +134,6 @@ module UI
       end
     end
 
-
     # LeftCheckBox
     #
     # `LeftCheckBox(`id(), `opt(), "text")
@@ -148,7 +143,6 @@ module UI
       old = deep_copy(old)
       Left(Builtins.toterm(:CheckBox, Builtins.argsof(old)))
     end
-
 
     # LeftCheckBoxWithAttachment
     #
@@ -175,7 +169,6 @@ module UI
       end
     end
 
-
     # IconAndHeading
     #
     # `IconAndHeading("title", "icon")
@@ -200,7 +193,7 @@ module UI
       s = Builtins.symbolof(old)
 
       handler = Greasemonkey.method(s) if @handlers.include?(s)
-      return Transform(handler.call(old)) if handler != nil
+      return Transform(handler.call(old)) if !handler.nil?
 
       new = Builtins::List.reduce(Builtins.toterm(s), Builtins.argsof(old)) do |tmp, arg|
         arg = Transform(Convert.to_term(arg)) if Ops.is_term?(arg)
@@ -210,6 +203,5 @@ module UI
       deep_copy(new)
     end
     alias_method :transform, :Transform
-
   end
 end
