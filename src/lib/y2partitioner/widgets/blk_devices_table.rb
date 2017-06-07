@@ -20,12 +20,12 @@ module Y2Partitioner
         @pager = pager
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def opt
         [:notify]
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def handle
         id = value[/table:(.*)/, 1]
         @pager.handle("ID" => id)
@@ -62,7 +62,7 @@ module Y2Partitioner
         ]
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def help
         format(_(
                  "Table shows selected devices with its attributes.<br>" \

@@ -22,7 +22,7 @@ module Y2Partitioner
         self.value = partition_text
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def help
         _("Textual description of partition data and configuratio")
       end

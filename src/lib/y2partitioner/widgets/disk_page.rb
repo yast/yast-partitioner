@@ -18,12 +18,12 @@ module Y2Partitioner
         self.widget_id = "disk:" + disk.name
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         @disk.sysfs_name
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         icon = Icons.small_icon(Icons::HD)
         VBox(
@@ -48,12 +48,12 @@ module Y2Partitioner
         @disk = disk
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("&Overview")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents ||= VBox(DiskDescription.new(@disk))
@@ -141,12 +141,12 @@ module Y2Partitioner
         true
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("&Partitions")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         @partitions_table = BlkDevicesTable.new(@disk.partitions, @pager)
         @contents ||= VBox(
