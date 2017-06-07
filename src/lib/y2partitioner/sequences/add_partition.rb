@@ -36,10 +36,11 @@ module Y2Partitioner
           Yast::Wizard.CloseDialog
         end
 
-        ptable = @disk.partition_table
-        name = next_free_primary_partition_name(@disk.name, ptable)
-        ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
-
+        if res == :finish
+          ptable = @disk.partition_table
+          name = next_free_primary_partition_name(@disk.name, ptable)
+          ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
+        end
         res
       end
 
