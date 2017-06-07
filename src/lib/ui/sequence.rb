@@ -25,7 +25,7 @@ module UI
       self.class.run(aliases, abortable(sequence))
     end
 
-    # Add {:abort => :abort} transitions if missing
+    # Add !{abort: :abort} transitions if missing
     # (an :abort from a dialog should :abort the whole sequence)
     def abortable(sequence_hash)
       sequence_hash.map do |name, destination|

@@ -1,4 +1,6 @@
+require_relative "../test_helper"
 require "ui/sequence"
+
 describe UI::Sequence do
   describe "#abortable" do
     it "adds aborting edges where missing" do
