@@ -5,8 +5,8 @@ Yast.import "Popup"
 
 module Y2Partitioner
   module Widgets
+    # Delete a partition
     class DeleteDiskPartitionButton < CWM::PushButton
-
       def initialize(device: nil, table: nil, device_graph: nil)
         textdomain "storage"
 
@@ -24,21 +24,7 @@ module Y2Partitioner
       end
 
       def handle
-        device = if @device
-          @device
-        else
-          # TODO: make it generic as it is used on several places
-          id = @table.value
-          if id.start_with?("table:partition")
-            partition_name = id[/table:partition:(.*)/, 1]
-            Y2Storage::Partition.find_by_name(@device_graph, partition_name)
-          elsif id.start_with?("table:disk")
-            disk_name = id[/table:disk:(.*)/, 1]
-            Y2Storage::Disk.find_by_name(@device_graph, partition_name)
-          else
-            raise "Unknown id in table '#{id}'"
-          end
-        end
+        device = @device || id_to_device(@table.value)
 
         # TODO: check for children that will die and if there are, use confirm_recursive_delete
         ret = Yast::Popup.YesNo(
@@ -60,18 +46,21 @@ module Y2Partitioner
 
     private
 
-      # TODO: copy and pasted code from old storage, feel free to improve
-      def confirm_recursive_delete(device, devices, headline, text_before, text_after)
-        devices = deep_copy(devices)
-        button_box = ButtonBox(
-          PushButton(Id(:yes), Opt(:okButton), Yast::Label.DeleteButton),
-          PushButton(
-            Id(:no_button),
-            Opt(:default, :cancelButton),
-            Yast::Label.CancelButton
-          )
-        )
+      def id_to_device(id)
+        if id.start_with?("table:partition")
+          partition_name = id[/table:partition:(.*)/, 1]
+          Y2Storage::Partition.find_by_name(@device_graph, partition_name)
+        elsif id.start_with?("table:disk")
+          disk_name = id[/table:disk:(.*)/, 1]
+          Y2Storage::Disk.find_by_name(@device_graph, disk_name)
+        else
+          raise "Unknown id in table '#{id}'"
+        end
+      end
 
+      # @param rich_text [String]
+      # @return [Boolean]
+      def fancy_question(headline, label_before, rich_text, label_after, button_term)
         display_info = Yast::UI.GetDisplayInfo || {}
         has_image_support = display_info["HasImageSupport"]
 
@@ -83,12 +72,12 @@ module Y2Partitioner
             VBox(
               Left(Heading(headline)),
               VSpacing(0.2),
-              Left(Label(text_before)),
+              Left(Label(label_before)),
               VSpacing(0.2),
-              Left(RichText(Yast::HTML.List(devices.sort))),
+              Left(RichText(rich_text)),
               VSpacing(0.2),
-              Left(Label(text_after)),
-              button_box
+              Left(Label(label_after)),
+              button_term
             )
           )
         )
@@ -98,6 +87,24 @@ module Y2Partitioner
         Yast::UI.CloseDialog
 
         ret == :yes
+      end
+
+      # TODO: copy and pasted code from old storage, feel free to improve
+      def confirm_recursive_delete(_device, devices, headline, label_before, label_after)
+        button_box = ButtonBox(
+          PushButton(Id(:yes), Opt(:okButton), Yast::Label.DeleteButton),
+          PushButton(
+            Id(:no_button),
+            Opt(:default, :cancelButton),
+            Yast::Label.CancelButton
+          )
+        )
+
+        fancy_question(headline,
+          label_before,
+          Yast::HTML.List(devices.sort),
+          label_after,
+          button_box)
       end
     end
   end
