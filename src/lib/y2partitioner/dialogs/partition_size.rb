@@ -25,6 +25,7 @@ module Y2Partitioner
         VBox(SizeWidget.new(@disk, @ptemplate, @slots))
       end
 
+      # Choose partition size: maximum, size based, start-end based.
       class SizeWidget < CWM::CustomWidget
         include Yast
         include Yast::UIShortcuts

@@ -5,7 +5,8 @@ module Y2Partitioner
   module Dialogs
     # Formerly MiniWorkflowStepPartitionType
     class PartitionType < CWM::Dialog
-      class Rbs < CWM::RadioButtons
+      # Choose partition type: primary/extended/logical.
+      class TypeChoice < CWM::RadioButtons
         def initialize(ptemplate, slots)
           textdomain "storage"
           @ptemplate = ptemplate
@@ -59,7 +60,7 @@ module Y2Partitioner
       end
 
       def contents
-        HVSquash(Rbs.new(@ptemplate, @slots))
+        HVSquash(TypeChoice.new(@ptemplate, @slots))
       end
     end
   end
