@@ -12,7 +12,6 @@ module Y2Partitioner
 
         @blk_device = blk_device
         @filesystem_widget = BlkDeviceFilesystem.new(@blk_device.filesystem_type.to_s)
-        @password = nil
 
         self.handle_all_events = true
       end
@@ -64,7 +63,7 @@ module Y2Partitioner
                     HSpacing(4),
                     Left(@filesystem_widget)
                   ),
-                  Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Format device")))
+                  Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Do not format device")))
                 )
               ),
               Left(CheckBox(Id(:encrypt_device), _("Encrypt Device")))
@@ -101,12 +100,22 @@ module Y2Partitioner
 
         @blk_device = blk_device
         @mount_point_widget = MountPoint.new(@blk_device.filesystem_mountpoint)
+        @fstab_options_widget = if @blk_device.filesystem
+          @blk_device.filesystem.fstab_options
+        else
+          []
+        end
 
         self.handle_all_events = true
       end
 
       def init
-        Yast::UI.ChangeWidget(Id(:no_mount_device), :Value, true)
+        if @blk_device.filesystem_mountpoint
+          Yast::UI.ChangeWidget(Id(:mount_device), :Value, true)
+        else
+          @mount_point_widget.disable
+          Yast::UI.ChangeWidget(Id(:no_mount_device), :Value, true)
+        end
       end
 
       def contents
@@ -127,7 +136,7 @@ module Y2Partitioner
                       Left(PushButton(Id(:fstab_options), _("Fstab options")))
                     )
                   ),
-                  Left(RadioButton(Id(:no_mount_device), Opt(:notify), _("No mount device")))
+                  Left(RadioButton(Id(:no_mount_device), Opt(:notify), _("Do not mount device")))
                 )
               )
             )
@@ -138,17 +147,22 @@ module Y2Partitioner
       def handle(event)
         case event["ID"]
         when :mount_device
-          Yast::UI.ChangeWidget(Id(:mount_point), :Enable, true)
+          @mount_point_widget.enable
         when :no_mount_device
-          Yast::UI.ChangeWidget(Id(:mount_point), :Enable, false)
+          @mount_point_widget.disable
         end
 
         nil
       end
 
       def store
-        # FIXME: MOUNT FILESYSTEM
+        @blk_device.filesystem.mountpoint = @mount_point_widget.value if mount?
+
         nil
+      end
+
+      def mount?
+        Yast::UI.QueryWidget(Id(:mount_device), :Value)
       end
     end
 
@@ -201,10 +215,6 @@ module Y2Partitioner
 
       def store
         @mount_point = value
-      end
-
-      def handle
-        nil
       end
 
       def items

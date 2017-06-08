@@ -32,9 +32,9 @@ module Y2Partitioner
       def validate
         return true if pw1 == pw2
 
-        Yast::Report.Error(_(
-                             "'Password' and 'Retype password'\ndo not match. Retype the password."
-        ))
+        Yast::Report.Error(
+          _("'Password' and 'Retype password'\ndo not match. Retype the password.")
+        )
 
         Yast::UI.SetFocus(Id(:pw1))
 

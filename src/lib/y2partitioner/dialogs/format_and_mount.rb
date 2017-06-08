@@ -12,7 +12,7 @@ module Y2Partitioner
       end
 
       def title
-        "Edit Partition #{@partition.name}"
+        "Edit Partition #{partition.name}"
       end
 
       def contents
