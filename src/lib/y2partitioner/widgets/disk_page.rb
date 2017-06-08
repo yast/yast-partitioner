@@ -3,6 +3,7 @@ require "cwm/tree_pager"
 
 require "y2partitioner/sequences/add_partition"
 require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/delete_disk_partition_button"
 require "y2partitioner/widgets/disk_bar_graph"
 require "y2partitioner/widgets/disk_description"
 require "y2partitioner/icons"
@@ -11,8 +12,9 @@ module Y2Partitioner
   module Widgets
     # A Page for a disk: contains {DiskTab} and {PartitionsTab}
     class DiskPage < CWM::Page
-      def initialize(disk, pager)
+      def initialize(device_graph, disk, pager)
         textdomain "storage"
+        @device_graph = device_graph
         @disk = disk
         @pager = pager
         self.widget_id = "disk:" + disk.name
@@ -35,7 +37,7 @@ module Y2Partitioner
           ),
           CWM::Tabs.new(
             DiskTab.new(@disk),
-            PartitionsTab.new(@disk, @pager)
+            PartitionsTab.new(@device_graph, @disk, @pager)
           )
         )
       end
@@ -110,7 +112,7 @@ module Y2Partitioner
         # Constructor
         #
         # @param disk [Y2Storage::Disk]
-        # @param table [Y2Storage::Widgets::BlkDevicesTable]
+        # @param table [Y2Partitioner::Widgets::BlkDevicesTable]
         def initialize(disk, table)
           textdomain "storage"
           @disk  = disk
@@ -131,8 +133,9 @@ module Y2Partitioner
         end
       end
 
-      def initialize(disk, pager)
+      def initialize(device_graph, disk, pager)
         textdomain "storage"
+        @device_graph = device_graph
         @disk = disk
         @pager = pager
       end
@@ -154,7 +157,9 @@ module Y2Partitioner
           @partitions_table,
           HBox(
             AddButton.new(@disk),
-            EditButton.new(@disk, @partitions_table)
+            EditButton.new(@disk, @partitions_table),
+            DeleteDiskPartitionButton.new(device_graph: @device_graph,
+                                          table:        @partitions_table)
           )
         )
       end

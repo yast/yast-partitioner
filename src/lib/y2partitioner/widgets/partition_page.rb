@@ -1,5 +1,6 @@
 require "cwm/tree_pager"
 
+require "y2partitioner/widgets/delete_disk_partition_button"
 require "y2partitioner/widgets/partition_description"
 require "y2partitioner/dialogs/format_and_mount"
 
@@ -61,7 +62,8 @@ module Y2Partitioner
             )
           ),
           PartitionDescription.new(@partition),
-          EditButton.new(@partition)
+          EditButton.new(@partition),
+          DeleteDiskPartitionButton.new(device: @partition)
         )
       end
     end

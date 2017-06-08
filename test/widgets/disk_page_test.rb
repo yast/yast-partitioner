@@ -15,6 +15,7 @@ end
 
 describe Y2Partitioner::Widgets::DiskPage do
   let(:pager) { double("Pager") }
+  let(:device_graph) { double("Devicegraph") }
   let(:disk) do
     double("Disk",
       name: "mydisk", sysfs_name: "sysmydisk",
@@ -27,7 +28,7 @@ describe Y2Partitioner::Widgets::DiskPage do
     double("BlkDevicesTable", value: "table:partition:/dev/hdf4")
   end
 
-  subject { described_class.new(disk, pager) }
+  subject { described_class.new(device_graph, disk, pager) }
 
   include_examples "CWM::Page"
 
@@ -38,7 +39,7 @@ describe Y2Partitioner::Widgets::DiskPage do
   end
 
   describe Y2Partitioner::Widgets::PartitionsTab do
-    subject { described_class.new(disk, pager) }
+    subject { described_class.new(device_graph, disk, pager) }
 
     include_examples "CWM::Tab"
   end

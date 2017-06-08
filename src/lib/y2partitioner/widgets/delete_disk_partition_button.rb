@@ -7,10 +7,12 @@ module Y2Partitioner
   module Widgets
     # Delete a partition
     class DeleteDiskPartitionButton < CWM::PushButton
+      # @param device
+      # @param table [Y2Partitioner::Widgets::BlkDevicesTable]
       def initialize(device: nil, table: nil, device_graph: nil)
         textdomain "storage"
 
-        if !device && (!table || !device_graph)
+        unless device || (table && device_graph)
           raise ArgumentError,
             "At least device or combination of table and device_graph have to be set"
         end
@@ -20,7 +22,7 @@ module Y2Partitioner
       end
 
       def label
-        _("Dele&te...")
+        _("Delete...")
       end
 
       def handle

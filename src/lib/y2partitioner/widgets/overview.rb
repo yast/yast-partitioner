@@ -81,7 +81,7 @@ module Y2Partitioner
 
       def disks_items
         @device_graph.disks.map do |disk|
-          page = DiskPage.new(disk, self)
+          page = DiskPage.new(@device_graph, disk, self)
           CWM::PagerTreeItem.new(page, children: partition_items(disk))
         end
       end
