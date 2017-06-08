@@ -1,36 +1,18 @@
-require "ui/installation_dialog"
 require "yast"
+require "y2partitioner/widgets/format_and_mount"
 
 module Y2Partitioner
   module Dialogs
     # Formerly MiniWorkflowStepFormatMount
-    class FormatAndMount < UI::Dialog
+    class FormatAndMount < CWM::Dialog
       # @param partition [Y2Storage::Partition] FIXME: unsure which type we want
       def initialize(partition)
         @partition = partition
-        super()
-        Yast.import "Popup"
         textdomain "storage"
       end
 
-      def create_dialog
-        # recreating the look of MiniWorkflow
-        help = ""
-        have_back = true
-        have_next = true
-        Yast::Wizard.OpenNextBackDialog
-        Yast::Wizard.SetContents(dialog_title, dialog_content,
-          help, have_back, have_next)
-        # FIXME: UI::Dialog raises if we return nil, WTF
-        true
-      end
-
-      def close_dialog
-        Yast::Wizard.CloseDialog
-      end
-
-      def dialog_title
-        format("Edit Partition %s", @partition.name)
+      def title
+        "Edit Partition #{@partition.name}"
       end
 
       # A generalized GreaseMonkey.Left*WithAttachment
@@ -89,36 +71,14 @@ module Y2Partitioner
         )
       end
 
-      def dialog_content
+      def contents
         HVSquash(
           HBox(
-            formatting_content,
+            Widgets::FormatOptions.new(@partition),
             HSpacing(4),
-            mounting_content
+            Widgets::MountOptions.new(@partition)
           )
         )
-      end
-
-      def next_handler
-        finish_dialog(:next)
-      end
-
-      def back_handler
-        finish_dialog(:back)
-      end
-
-      def abort_handler
-        finish_dialog(:abort)
-      end
-
-      # Formerly :fs_options -> FileSystemOptions
-      def file_system_options_handler
-        Yast::Popup.Message("Fake #{__method__}")
-      end
-
-      # Formerly :fstab_options -> FstabOptions
-      def fstab_options_handler
-        Yast::Popup.Message("Fake #{__method__}")
       end
     end
   end
