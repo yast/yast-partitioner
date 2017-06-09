@@ -22,14 +22,16 @@ module Y2Partitioner
 
       # table items. See CWM::Table#items
       def items
+        probed_graph = Y2Storage::StorageManager.instance.y2storage_probed
         @pvs.map do |pv|
           device = pv.plain_blk_device
+          formatted = device.to_be_formatted?(probed_graph)
           [
             id_for_device(device), # use name as id
             device.name,
             device.size.to_human_string,
             # TODO: dasd format use "X", check it
-            device.exists_in_probed? ? "" : _(BlkDevicesTable::FORMAT_FLAG),
+            formatted ? _(BlkDevicesTable::FORMAT_FLAG) : "",
             encryption_value_for(device),
             type_for(device)
           ]

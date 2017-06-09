@@ -25,13 +25,15 @@ module Y2Partitioner
 
       # table items. See CWM::Table#items
       def items
+        probed_graph = Y2Storage::StorageManager.instance.y2storage_probed
         @lvms.map do |device|
+          formatted = device.is?(:lvm_lv) && device.to_be_formatted?(probed_graph)
           res = [
             id_for_device(device), # use name as id
             lvm_name(device),
             device.size.to_human_string,
             # TODO: dasd format use "X", check it
-            device.exists_in_probed? ? "" : _(BlkDevicesTable::FORMAT_FLAG),
+            formatted ? _(BlkDevicesTable::FORMAT_FLAG) : "",
             encryption_value_for(device),
             type_for(device),
             fs_type_for(device)
