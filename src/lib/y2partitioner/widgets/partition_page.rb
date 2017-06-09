@@ -9,12 +9,15 @@ module Y2Partitioner
     # A Page for a partition
     class PartitionPage < CWM::Page
       # Edit a partition
+      # FIXME: this is NEARLY a duplicate of DiskPage::EditButton
+      # but that one works with a table.
+      # Analogous to DeleteDiskPartitionButton??
       class EditButton < CWM::PushButton
         # @param partition [Y2Storage::Partition] FIXME: unsure which type we want
-        def initialize(partition)
+        def initialize(partition_name)
           # do we need this in every little tiny class?
           textdomain "storage"
-          @partition = partition
+          @partition_name = partition_name
         end
 
         def label
@@ -29,8 +32,18 @@ module Y2Partitioner
           # Formerly:
           # EpEditPartition -> DlgEditPartition -> (MiniWorkflow:
           #   MiniWorkflowStepFormatMount, MiniWorkflowStepPassword)
-          Dialogs::FormatAndMount.new(@partition).run
-          nil # stay in UI loop
+          sym = nil
+          $dgm.transaction do
+            partition = Y2Storage::Partition.find_by_name($dgm.dg, @partition_name)
+
+            sym = Dialogs::FormatAndMount.new(partition).run
+            # this assumes there is no Password step
+            sym == :finish
+          end
+
+          # sym == :finish ? :redraw : nil
+          # must redraw because we've replaced the original dialog contents!
+          :redraw
         end
       end
 
@@ -62,7 +75,7 @@ module Y2Partitioner
             )
           ),
           PartitionDescription.new(@partition),
-          EditButton.new(@partition),
+          EditButton.new(@partition.name),
           DeleteDiskPartitionButton.new(device: @partition)
         )
       end

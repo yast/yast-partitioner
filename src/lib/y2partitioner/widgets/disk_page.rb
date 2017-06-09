@@ -91,14 +91,10 @@ module Y2Partitioner
         #
         # @param disk [Y2Storage::Disk]
         # @param table [Y2Partitioner::Widgets::BlkDevicesTable]
-        def initialize(disk_name, table)
+        def initialize(disk, table)
           textdomain "storage"
-          @disk_name = disk_name
+          @disk = disk
           @table = table
-        end
-
-        def disk
-          Y2Storage::Disk.find_by_name($dgm.dg, @disk_name)
         end
 
         def label
@@ -112,10 +108,17 @@ module Y2Partitioner
           end
 
           name = @table.value[/table:partition:(.*)/, 1]
-          partition = disk.partitions.detect { |p| p.name == name }
+          sym = nil
+          $dgm.transaction do
+            partition = @disk.partitions.detect { |p| p.name == name }
 
-          Dialogs::FormatAndMount.new(partition).run
+            sym = Dialogs::FormatAndMount.new(partition).run
+            # this assumes there is no Password step
+            sym == :finish
+          end
 
+          # sym == :finish ? :redraw : nil
+          # must redraw because we've replaced the original dialog contents!
           :redraw
         end
       end

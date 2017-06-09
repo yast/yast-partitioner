@@ -82,6 +82,7 @@ module Y2Partitioner
         log.info "TODO: Partition ROLE dialog"
         :next
       end
+      skip_stack :role
 
       def format_mount
         ptable = disk.partition_table
