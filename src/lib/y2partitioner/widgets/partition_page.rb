@@ -33,8 +33,9 @@ module Y2Partitioner
           # EpEditPartition -> DlgEditPartition -> (MiniWorkflow:
           #   MiniWorkflowStepFormatMount, MiniWorkflowStepPassword)
           sym = nil
-          $dgm.transaction do
-            partition = Y2Storage::Partition.find_by_name($dgm.dg, @partition_name)
+          DeviceGraphs.instance.transaction do
+            dg = DeviceGraphs.instance.current
+            partition = Y2Storage::Partition.find_by_name(dg, @partition_name)
 
             sym = Dialogs::FormatAndMount.new(partition).run
             # this assumes there is no Password step

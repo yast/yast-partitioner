@@ -15,7 +15,6 @@ end
 
 describe Y2Partitioner::Widgets::DiskPage do
   let(:pager) { double("Pager") }
-  let(:device_graph) { double("Devicegraph") }
   let(:disk) do
     double("Disk",
       name: "mydisk", sysfs_name: "sysmydisk",
@@ -25,10 +24,14 @@ describe Y2Partitioner::Widgets::DiskPage do
     double("PartitionTable", unused_partition_slots: [])
   end
   let(:ui_table) do
-    double("BlkDevicesTable", value: "table:partition:/dev/hdf4")
+    double("BlkDevicesTable", value: "table:partition:/dev/hdf4", items: ["a", "b"])
   end
 
-  subject { described_class.new(device_graph, disk, pager) }
+  subject { described_class.new("mydisk", pager) }
+  before do
+    allow(Y2Storage::Disk)
+      .to receive(:find_by_name).and_return(disk)
+  end
 
   include_examples "CWM::Page"
 
@@ -39,13 +42,13 @@ describe Y2Partitioner::Widgets::DiskPage do
   end
 
   describe Y2Partitioner::Widgets::PartitionsTab do
-    subject { described_class.new(device_graph, disk, pager) }
+    subject { described_class.new("mydisk", pager) }
 
     include_examples "CWM::Tab"
   end
 
   describe Y2Partitioner::Widgets::PartitionsTab::AddButton do
-    subject { described_class.new(disk) }
+    subject { described_class.new("mydisk") }
 
     include_examples "CWM::PushButton"
   end

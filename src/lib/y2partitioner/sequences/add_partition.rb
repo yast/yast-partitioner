@@ -1,6 +1,6 @@
-require "ostruct"
 require "yast"
 require "ui/sequence"
+require "y2partitioner/device_graphs"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
 
@@ -20,7 +20,8 @@ module Y2Partitioner
       end
 
       def disk
-        Y2Storage::Disk.find_by_name($dgm.dg, @disk_name)
+        dg = DeviceGraphs.instance.current
+        Y2Storage::Disk.find_by_name(dg, @disk_name)
       end
 
       def run
@@ -35,7 +36,7 @@ module Y2Partitioner
         }
 
         sym = nil
-        $dgm.transaction do
+        DeviceGraphs.instance.transaction do
           sym = wizard_next_back do
             super(sequence: sequence_hash)
           end
