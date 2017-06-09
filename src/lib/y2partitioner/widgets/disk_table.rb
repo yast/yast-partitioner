@@ -22,9 +22,8 @@ module Y2Partitioner
 
       # table items. See CWM::Table#items
       def items
-        probed_graph = Y2Storage::StorageManager.instance.y2storage_probed
         @disks.map do |device|
-          formatted = device.to_be_formatted?(probed_graph)
+          formatted = device.to_be_formatted?($dgm.original_graph)
           [
             id_for_device(device), # use name as id
             device.name,

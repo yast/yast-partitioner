@@ -1,5 +1,6 @@
 require "cwm/tree_pager"
 require "y2partitioner/widgets/overview"
+require "y2partitioner/device_graph_mutator"
 require "y2storage"
 
 Yast.import "CWM"
@@ -27,7 +28,9 @@ module Y2Partitioner
       def self.run
         textdomain "storage"
 
+        probed = Y2Storage::StorageManager.instance.y2storage_probed
         staging = Y2Storage::StorageManager.instance.y2storage_staging
+        $dgm = DevicegraphMutator.new(probed, staging)
         overview_w = CWM::TreePager.new(Widgets::OverviewTree.new(staging))
 
         contents = MarginBox(
