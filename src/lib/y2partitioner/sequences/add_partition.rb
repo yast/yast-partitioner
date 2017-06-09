@@ -12,21 +12,22 @@ module Y2Partitioner
     class AddPartition < UI::Sequence
       include Yast::Logger
       # @param disk [Y2Storage::Disk]
-      def initialize(disk, slots)
+      def initialize(disk)
+        textdomain "storage"
         @disk = disk
-        @slots = slots
         # collecting params of partition to be created?
         @ptemplate = Struct.new(:type, :region).new
       end
 
       def run
         sequence_hash = {
-          "ws_start"     => "type",
-          "type"         => { next: "size" },
-          "size"         => { next: "role", finish: :finish },
-          "role"         => { next: "format_mount" },
-          "format_mount" => { next: "password", finish: :finish },
-          "password"     => { finish: :finish }
+          "ws_start"      => "preconditions",
+          "preconditions" => { next: "type" },
+          "type"          => { next: "size" },
+          "size"          => { next: "role", finish: :finish },
+          "role"          => { next: "format_mount" },
+          "format_mount"  => { next: "password", finish: :finish },
+          "password"      => { finish: :finish }
         }
 
         begin
@@ -43,6 +44,23 @@ module Y2Partitioner
         end
         res
       end
+
+      def preconditions
+        pt = partition_table(@disk)
+        slots = pt.unused_partition_slots
+        if slots.empty?
+          Yast::Popup.Error(
+            Yast::Builtins.sformat(
+              _("It is not possible to create a partition on %1."),
+              @disk.name
+            )
+          )
+          return :back
+        end
+        @slots = slots
+        :next
+      end
+      skip_stack :preconditions
 
       def type
         Dialogs::PartitionType.run(@disk, @ptemplate, @slots)
@@ -82,6 +100,12 @@ module Y2Partitioner
           return dev_name unless part_names.include?(dev_name)
         end
         raise NoMorePartitionSlotError
+      end
+
+      # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
+      # Make it DRY
+      def partition_table(disk)
+        disk.partition_table || disk.create_partition_table(disk.preferred_ptable_type)
       end
     end
   end
