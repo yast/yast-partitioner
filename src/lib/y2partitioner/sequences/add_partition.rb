@@ -12,11 +12,15 @@ module Y2Partitioner
     class AddPartition < UI::Sequence
       include Yast::Logger
       # @param disk [Y2Storage::Disk]
-      def initialize(disk)
+      def initialize(disk_name)
         textdomain "storage"
-        @disk = disk
+        @disk_name = disk_name
         # collecting params of partition to be created?
         @ptemplate = Struct.new(:type, :region).new
+      end
+
+      def disk
+        Y2Storage::Disk.find_by_name($dgm.dg, @disk_name)
       end
 
       def run
@@ -30,29 +34,33 @@ module Y2Partitioner
           "password"      => { finish: :finish }
         }
 
-        begin
-          Yast::Wizard.OpenNextBackDialog
-          res = super(sequence: sequence_hash)
-        ensure
-          Yast::Wizard.CloseDialog
-        end
+        sym = nil
+        $dgm.transaction do
+          sym = wizard_next_back do
+            super(sequence: sequence_hash)
+          end
 
-        if res == :finish
-          ptable = @disk.partition_table
-          name = next_free_primary_partition_name(@disk.name, ptable)
-          ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
+          sym == :finish
         end
-        res
+        sym
+      end
+
+      # FIXME: move to Wizard
+      def wizard_next_back(&block)
+        Yast::Wizard.OpenNextBackDialog
+        block.call
+      ensure
+        Yast::Wizard.CloseDialog
       end
 
       def preconditions
-        pt = partition_table(@disk)
+        pt = partition_table(disk)
         slots = pt.unused_partition_slots
         if slots.empty?
           Yast::Popup.Error(
             Yast::Builtins.sformat(
               _("It is not possible to create a partition on %1."),
-              @disk.name
+              @disk_name
             )
           )
           return :back
@@ -63,11 +71,11 @@ module Y2Partitioner
       skip_stack :preconditions
 
       def type
-        Dialogs::PartitionType.run(@disk, @ptemplate, @slots)
+        Dialogs::PartitionType.run(disk, @ptemplate, @slots)
       end
 
       def size
-        Dialogs::PartitionSize.run(@disk, @ptemplate, @slots)
+        Dialogs::PartitionSize.run(disk, @ptemplate, @slots)
       end
 
       def role
@@ -76,10 +84,9 @@ module Y2Partitioner
       end
 
       def format_mount
-        # FIXME: where to get this while creating?
-        partition = OpenStruct.new
-        partition.name = "fake name"
-        partition.filesystem_mountpoint = "fake mount point"
+        ptable = disk.partition_table
+        name = next_free_primary_partition_name(@disk_name, ptable)
+        partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
         Dialogs::FormatAndMount.new(partition).run
       end
 

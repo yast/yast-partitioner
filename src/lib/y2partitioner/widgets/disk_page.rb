@@ -12,17 +12,20 @@ module Y2Partitioner
   module Widgets
     # A Page for a disk: contains {DiskTab} and {PartitionsTab}
     class DiskPage < CWM::Page
-      def initialize(device_graph, disk, pager)
+      def initialize(disk_name, pager)
         textdomain "storage"
-        @device_graph = device_graph
-        @disk = disk
+        @disk_name = disk_name
         @pager = pager
-        self.widget_id = "disk:" + disk.name
+        self.widget_id = "disk:" + disk_name
+      end
+
+      def disk
+        Y2Storage::Disk.find_by_name($dgm.dg, @disk_name)
       end
 
       # @macro seeAbstractWidget
       def label
-        @disk.sysfs_name
+        disk.sysfs_name
       end
 
       # @macro seeCustomWidget
@@ -32,12 +35,12 @@ module Y2Partitioner
           Left(
             HBox(
               Image(icon, ""),
-              Heading(format(_("Hard Disk: %s"), @disk.name))
+              Heading(format(_("Hard Disk: %s"), @disk_name))
             )
           ),
           CWM::Tabs.new(
-            DiskTab.new(@disk),
-            PartitionsTab.new(@device_graph, @disk, @pager)
+            DiskTab.new(disk),
+            PartitionsTab.new(@disk_name, @pager)
           )
         )
       end
@@ -67,9 +70,9 @@ module Y2Partitioner
       # Add a partition
       class AddButton < CWM::PushButton
         # Y2Storage::Disk
-        def initialize(disk)
+        def initialize(disk_name)
           textdomain "storage"
-          @disk = disk
+          @disk_name = disk_name
         end
 
         def label
@@ -77,7 +80,7 @@ module Y2Partitioner
         end
 
         def handle
-          res = Sequences::AddPartition.new(@disk).run
+          res = Sequences::AddPartition.new(@disk_name).run
           res == :finish ? :redraw : nil
         end
       end
@@ -88,10 +91,14 @@ module Y2Partitioner
         #
         # @param disk [Y2Storage::Disk]
         # @param table [Y2Partitioner::Widgets::BlkDevicesTable]
-        def initialize(disk, table)
+        def initialize(disk_name, table)
           textdomain "storage"
-          @disk  = disk
+          @disk_name = disk_name
           @table = table
+        end
+
+        def disk
+          Y2Storage::Disk.find_by_name($dgm.dg, @disk_name)
         end
 
         def label
@@ -100,7 +107,7 @@ module Y2Partitioner
 
         def handle
           name = @table.value[/table:partition:(.*)/, 1]
-          partition = @disk.partitions.detect { |p| p.name == name }
+          partition = disk.partitions.detect { |p| p.name == name }
 
           Dialogs::FormatAndMount.new(partition).run
 
@@ -108,11 +115,14 @@ module Y2Partitioner
         end
       end
 
-      def initialize(device_graph, disk, pager)
+      def initialize(disk_name, pager)
         textdomain "storage"
-        @device_graph = device_graph
-        @disk = disk
+        @disk_name = disk_name
         @pager = pager
+      end
+
+      def disk
+        Y2Storage::Disk.find_by_name($dgm.dg, @disk_name)
       end
 
       def initial
@@ -126,14 +136,14 @@ module Y2Partitioner
 
       # @macro seeCustomWidget
       def contents
-        @partitions_table = BlkDevicesTable.new(@disk.partitions, @pager)
+        @partitions_table = BlkDevicesTable.new(disk.partitions, @pager)
         @contents ||= VBox(
-          DiskBarGraph.new(@disk),
+          DiskBarGraph.new(disk),
           @partitions_table,
           HBox(
-            AddButton.new(@disk),
-            EditButton.new(@disk, @partitions_table),
-            DeleteDiskPartitionButton.new(device_graph: @device_graph,
+            AddButton.new(@disk_name),
+            EditButton.new(disk, @partitions_table),
+            DeleteDiskPartitionButton.new(device_graph: $dgm.dg,
                                           table:        @partitions_table)
           )
         )
