@@ -1,12 +1,12 @@
-module Y2Partitioner
-  class DevicegraphMutator
-    def initialize(original_device_graph, device_graph)
-      @original_graph = original_device_graph
-      @dg = device_graph
-    end
+require "singleton"
 
-    attr_reader :dg
-    attr_reader :original_graph
+module Y2Partitioner
+  # Object that holds and manipulates of storage device graphs.
+  class DeviceGraphs
+    include Singleton
+
+    attr_accessor :current
+    attr_accessor :original
 
     # Run a block with a **duplicate** of @dg.
     # If the block returns a truthy value,
@@ -16,15 +16,15 @@ module Y2Partitioner
     # @yieldreturn [Boolean]
     # @return What the block returned
     def transaction(&block)
-      old_dg = @dg
+      old_dg = current
       self.class.functional_transaction(old_dg) do |new_dg|
         begin
-          @dg = new_dg
+          self.current = new_dg
           res = block.call
-          @dg = old_dg if !res
+          self.current = old_dg if !res
           res
         rescue
-          @dg = old_dg
+          self.current = old_dg
           raise
         end
       end
@@ -43,5 +43,5 @@ module Y2Partitioner
       new_dg.copy(old_dg) if accepted
       accepted
     end
-end
+  end
 end

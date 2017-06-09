@@ -30,7 +30,8 @@ module Y2Partitioner
 
         probed = Y2Storage::StorageManager.instance.y2storage_probed
         staging = Y2Storage::StorageManager.instance.y2storage_staging
-        $dgm = DevicegraphMutator.new(probed, staging)
+        DeviceGraphs.instance.original = probed
+        DeviceGraphs.instance.current = staging
         overview_w = CWM::TreePager.new(Widgets::OverviewTree.new(staging))
 
         contents = MarginBox(
