@@ -114,7 +114,14 @@ module Y2Partitioner
           name = @table.value[/table:partition:(.*)/, 1]
           partition = disk.partitions.detect { |p| p.name == name }
 
-          Dialogs::FormatAndMount.new(partition).run
+          ret = nil
+          $dgm.transaction do
+            ret = Dialogs::FormatAndMount.new(partition).run
+
+            puts "ret is #{ret == :next}"
+
+            ret == :next
+          end
 
           :redraw
         end
@@ -147,7 +154,7 @@ module Y2Partitioner
           @partitions_table,
           HBox(
             AddButton.new(@disk_name),
-            EditButton.new(disk, @partitions_table),
+            EditButton.new(@disk_name, @partitions_table),
             DeleteDiskPartitionButton.new(device_graph: $dgm.dg,
                                           table:        @partitions_table)
           )

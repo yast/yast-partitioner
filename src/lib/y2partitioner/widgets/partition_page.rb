@@ -29,7 +29,14 @@ module Y2Partitioner
           # Formerly:
           # EpEditPartition -> DlgEditPartition -> (MiniWorkflow:
           #   MiniWorkflowStepFormatMount, MiniWorkflowStepPassword)
-          Dialogs::FormatAndMount.new(@partition).run
+          #
+          ret = nil
+          $dgm.transaction do
+            ret = Dialogs::FormatAndMount.new(@partition).run
+
+            ret == :next
+          end
+
           nil # stay in UI loop
         end
       end
