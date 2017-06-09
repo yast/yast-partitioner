@@ -38,6 +38,10 @@ describe UI::Sequence do
 
   describe "#from_methods" do
     class TestSequence < UI::Sequence
+      def skipped
+      end
+      skip_stack :skipped
+
       def first
       end
 
@@ -48,13 +52,15 @@ describe UI::Sequence do
 
     it "defines the aliases from instance methods" do
       seq = {
-        "ws_start" => "first",
+        "ws_start" => "skipped",
+        "skipped"  => { next: "first" },
         "first"    => { next: "second" },
         "second"   => { next: :next }
       }
       wanted = {
-        "first"  => subject.method(:first),
-        "second" => subject.method(:second)
+        "skipped" => [subject.method(:skipped), true],
+        "first"   => subject.method(:first),
+        "second"  => subject.method(:second)
       }
 
       expect(subject.from_methods(seq)).to eq(wanted)

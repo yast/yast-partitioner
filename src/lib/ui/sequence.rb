@@ -8,6 +8,8 @@ module UI
   # In the simple case it runs a sequence of dialogs
   # connected by Back and Next buttons.
   class Sequence
+    include Yast::I18n
+
     # A drop-in replacement for
     # {Yast::SequencerClass#Run Yast::Sequencer.Run}
     def self.run(aliases, sequence)
@@ -43,8 +45,27 @@ module UI
     def from_methods(sequence_hash)
       sequence_hash.keys.map do |name|
         next nil if name == "ws_start"
-        [name, method(name)]
+        if self.class.skip_stack?(name)
+          [name, [method(name), true]]
+        else
+          [name, method(name)]
+        end
       end.compact.to_h
+    end
+
+    class << self
+      # Declare that a method is skipped when going :back,
+      # useful for noninteractive steps.
+      # (also see Yast::SequencerClass#WS_special)
+      def skip_stack(method_symbol)
+        @skip_stack ||= {}
+        @skip_stack[method_symbol] = true
+      end
+
+      def skip_stack?(name)
+        @skip_stack ||= {}
+        @skip_stack[name.to_sym]
+      end
     end
   end
 end
