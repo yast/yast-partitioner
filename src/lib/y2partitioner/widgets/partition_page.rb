@@ -39,10 +39,10 @@ module Y2Partitioner
 
             sym = Dialogs::FormatAndMount.new(partition).run
             # this assumes there is no Password step
-            sym == :finish
+            sym == :next
           end
 
-          # sym == :finish ? :redraw : nil
+          # sym == :next ? :redraw : nil
           # must redraw because we've replaced the original dialog contents!
           :redraw
         end
