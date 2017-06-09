@@ -106,6 +106,11 @@ module Y2Partitioner
         end
 
         def handle
+          if @table.items.empty? || !@table.value
+            Yast::Popup.Error(_("There are no partitions to edit."))
+            return nil
+          end
+
           name = @table.value[/table:partition:(.*)/, 1]
           partition = disk.partitions.detect { |p| p.name == name }
 
