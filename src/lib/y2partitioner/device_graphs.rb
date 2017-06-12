@@ -11,15 +11,20 @@ module Y2Partitioner
     # Run a block with a **duplicate** of @dg.
     # If the block returns a truthy value,
     # the new dg is copied to the old one
-    # (which is useful if the orig one was the `staging` one)
+    # (which is useful if the orig one was the `current` one)
     # otherwise (also for an exception) @dg points to the old one.
     # @yieldreturn [Boolean]
     # @return What the block returned
     def transaction(&block)
       old_dg = current.dup
-      res = block.call
+      begin
+        res = block.call
 
-      self.current = old_dg if !res
+        self.current = old_dg if !res
+      rescue
+        self.current = old_dg
+        raise
+      end
 
       res
     end
