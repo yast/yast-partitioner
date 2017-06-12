@@ -32,15 +32,10 @@ module Y2Partitioner
           # Formerly:
           # EpEditPartition -> DlgEditPartition -> (MiniWorkflow:
           #   MiniWorkflowStepFormatMount, MiniWorkflowStepPassword)
-          sym = nil
-          DeviceGraphs.instance.transaction do
-            dg = DeviceGraphs.instance.current
-            partition = Y2Storage::Partition.find_by_name(dg, @partition_name)
+          dg = DeviceGraphs.instance.current
+          partition = Y2Storage::Partition.find_by_name(dg, @partition_name)
 
-            sym = Dialogs::FormatAndMount.new(partition).run
-            # this assumes there is no Password step
-            sym == :next
-          end
+          Sequences::EditBlkDevice.new(partition).run
 
           # sym == :next ? :redraw : nil
           # must redraw because we've replaced the original dialog contents!
@@ -58,7 +53,7 @@ module Y2Partitioner
 
       # @macro seeAbstractWidget
       def label
-        @partition.sysfs_name
+        @partition.name.split("/").last
       end
 
       # @macro seeCustomWidget
