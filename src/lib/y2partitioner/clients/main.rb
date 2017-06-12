@@ -30,21 +30,17 @@ module Y2Partitioner
       def self.run
         textdomain "storage"
 
-        probed = Y2Storage::StorageManager.instance.y2storage_probed
-        staging = Y2Storage::StorageManager.instance.y2storage_staging
-        DeviceGraphs.instance.original = probed
-        DeviceGraphs.instance.current = staging
-        overview_w = CWM::TreePager.new(Widgets::OverviewTree.new(staging))
-
-        contents = MarginBox(
-          0.5,
-          0.5,
-          overview_w
-        )
+        DeviceGraphs.instance.original = Y2Storage::StorageManager.instance.y2storage_probed
+        DeviceGraphs.instance.current = Y2Storage::StorageManager.instance.y2storage_staging.dup
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
         res = nil
         loop do
+          contents = MarginBox(
+            0.5,
+            0.5,
+            CWM::TreePager.new(Widgets::OverviewTree.new(DeviceGraphs.instance.current))
+          )
           res = Yast::CWM.show(contents, caption: _("Partitioner"), skip_store_for: [:redraw])
           break if res != :redraw
         end
@@ -52,7 +48,8 @@ module Y2Partitioner
         # Running system: presenting "Expert Partitioner: Summary" step now
         # ep-main.rb SummaryDialog
         if res == :next && Yast::Popup.ContinueCancel("(potentially) d3stR0y Ur DATA?!??")
-          storage.commit
+          Y2Storage::StorageManager.instance.staging = DeviceGraphs.instance.current
+          Y2Storage::StorageManager.instance.commit
         end
         Yast::Wizard.CloseDialog unless Yast::Stage.initial
       end

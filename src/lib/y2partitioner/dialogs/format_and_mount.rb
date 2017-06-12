@@ -9,6 +9,9 @@ module Y2Partitioner
       def initialize(partition)
         @partition = partition
         textdomain "storage"
+
+        @format_widget = Widgets::FormatOptions.new(@partition)
+        @mount_widget  = Widgets::MountOptions.new(@partition)
       end
 
       def title
@@ -18,9 +21,9 @@ module Y2Partitioner
       def contents
         HVSquash(
           HBox(
-            Widgets::FormatOptions.new(@partition),
+            @format_widget,
             HSpacing(4),
-            Widgets::MountOptions.new(@partition)
+            @mount_widget
           )
         )
       end

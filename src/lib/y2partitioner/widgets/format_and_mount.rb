@@ -11,22 +11,27 @@ module Y2Partitioner
         textdomain "storage"
 
         @blk_device = blk_device
+        @format  = false
+        @encrypt = false
+
+        @encrypt_widget    = EncryptBlkDevice.new(@encrypt)
         @filesystem_widget = BlkDeviceFilesystem.new(@blk_device.filesystem_type.to_s)
 
         self.handle_all_events = true
       end
 
       def init
-        select_no_format
-        Yast::UI.ChangeWidget(Id(:no_format_device), :Value, true)
+        @format ? select_format : select_no_format
       end
 
       def store
         @blk_device.remove_descendants if encrypt? || format?
 
+        @encrypt = encrypt?
+        @format  = format?
+
         if encrypt?
           @blk_device = @blk_device.create_encryption(dm_name_for(@blk_device))
-          Dialogs::EncryptPassword.new(@blk_device).run
         end
 
         @blk_device.create_filesystem(@filesystem_widget.selected_filesystem) if format?
@@ -66,7 +71,7 @@ module Y2Partitioner
                   Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Do not format device")))
                 )
               ),
-              Left(CheckBox(Id(:encrypt_device), _("Encrypt Device")))
+              Left(@encrypt_widget)
             )
           )
         )
@@ -74,10 +79,14 @@ module Y2Partitioner
 
       def select_format
         @filesystem_widget.enable
+        Yast::UI.ChangeWidget(Id(:format_device), :Value, true)
+        @format = true
       end
 
       def select_no_format
         @filesystem_widget.disable
+        Yast::UI.ChangeWidget(Id(:no_format_device), :Value, true)
+        @format = false
       end
 
       def format?
@@ -85,7 +94,7 @@ module Y2Partitioner
       end
 
       def encrypt?
-        Yast::UI::QueryWidget(Id(:encrypt_device), :Value)
+        @encrypt_widget.value
       end
 
       def encrypter
@@ -100,11 +109,9 @@ module Y2Partitioner
 
         @blk_device = blk_device
         @mount_point_widget = MountPoint.new(@blk_device.filesystem_mountpoint)
-        @fstab_options_widget = if @blk_device.filesystem
-          @blk_device.filesystem.fstab_options
-        else
-          []
-        end
+        fstab_options = @blk_device.filesystem ? @blk_device.filesystem.fstab_options : []
+
+        @fstab_options_widget = FstabOptionsButton.new(fstab_options)
 
         self.handle_all_events = true
       end
@@ -133,7 +140,7 @@ module Y2Partitioner
                     HSpacing(4),
                     VBox(
                       Left(@mount_point_widget),
-                      Left(PushButton(Id(:fstab_options), _("Fstab options")))
+                      Left(@fstab_options_widget)
                     )
                   ),
                   Left(RadioButton(Id(:no_mount_device), Opt(:notify), _("Do not mount device")))
@@ -188,6 +195,10 @@ module Y2Partitioner
         end
       end
 
+      def store
+        @filesystem = value
+      end
+
       def selected_filesystem
         Y2Storage::Filesystems::Type.all.detect do |fs|
           fs.to_s == value
@@ -219,6 +230,115 @@ module Y2Partitioner
 
       def items
         %w(/root /home /opt /var).map { |mp| [mp, mp] }
+      end
+    end
+
+    class EncryptBlkDevice < CWM::CheckBox
+      def initialize(encrypt)
+        @encrypt = encrypt
+      end
+
+      def label
+        _("Encrypt Device")
+      end
+
+      def init
+        self.value = @encrypt
+      end
+
+      def store
+        @encrypt = self.value
+      end
+    end
+
+    class FstabOptionsButton < CWM::PushButton
+      def initialize(options)
+        @options = options
+      end
+
+      def label
+        _("Fstab options")
+      end
+
+      def handle
+        Yast::UI.OpenDialog(Opt(:decorated),layout)
+        ret = Yast::UI.UserInput
+        Yast::UI.CloseDialog()
+
+        nil
+      end
+
+      def layout
+        VBox(
+          HSpacing(50),
+          # heading text
+          Left(Heading(_("Fstab Options:"))),
+          VStretch(),
+          VSpacing(1),
+          HBox(HStretch(), HSpacing(1), dialog, HStretch(), HSpacing(1)),
+          VSpacing(1),
+          VStretch(),
+          ButtonBox(
+            PushButton(Id(:help), Opt(:helpButton), Yast::Label.HelpButton),
+            PushButton(Id(:ok), Opt(:default), Yast::Label.OKButton),
+            PushButton(Id(:cancel), Yast::Label.CancelButton)
+          )
+        )
+      end
+
+      def dialog
+        VBox(
+          RadioButtonGroup(
+            Id(:mt_group),
+            VBox(
+              # label text
+              Left(Label(_("Mount in /etc/fstab by"))),
+              HBox(
+                VBox(
+                  Left(
+                    RadioButton(
+                      Id(:device),
+                      # label text
+                      _("&Device Name")
+                    )
+                  ),
+                  Left(
+                    RadioButton(
+                      Id(:label),
+                      # label text
+                      _("Volume &Label")
+                    )
+                  ),
+                  Left(
+                    RadioButton(
+                      Id(:uuid),
+                      # label text
+                      _("&UUID")
+                    )
+                  )
+                ),
+                Top(
+                  VBox(
+                    Left(
+                      RadioButton(
+                        Id(:id),
+                        # label text
+                        _("Device &ID")
+                      )
+                    ),
+                    Left(
+                      RadioButton(
+                        Id(:path),
+                        # label text
+                        _("Device &Path")
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
       end
     end
   end
