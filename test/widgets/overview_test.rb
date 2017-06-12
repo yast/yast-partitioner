@@ -1,6 +1,6 @@
 require_relative "../test_helper"
 
-# require "cwm/rspec"
+require "cwm/rspec"
 require "y2partitioner/widgets/overview"
 
 describe Y2Partitioner::Widgets::OverviewTree do
@@ -11,5 +11,5 @@ describe Y2Partitioner::Widgets::OverviewTree do
   subject { described_class.new(device_graph) }
 
   # TODO: shared_examples for CWM::Tree?
-  # include_examples "CWM::CustomWidget"
+  include_examples "CWM::CustomWidget"
 end
