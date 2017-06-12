@@ -33,7 +33,7 @@ module Y2Partitioner
         @items = items
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("System View")
       end
