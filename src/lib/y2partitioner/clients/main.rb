@@ -32,7 +32,7 @@ module Y2Partitioner
         staging = Y2Storage::StorageManager.instance.y2storage_staging
         DeviceGraphs.instance.original = probed
         DeviceGraphs.instance.current = staging
-        overview_w = CWM::TreePager.new(Widgets::OverviewTree.new(staging))
+        overview_w = Widgets::OverviewTreePager.new(staging)
 
         contents = MarginBox(
           0.5,

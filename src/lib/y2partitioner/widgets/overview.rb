@@ -25,17 +25,12 @@ module Y2Partitioner
       end
     end
 
-    # Widget representing partitioner overview.
-    #
-    # It has replace point where it displays more details
-    # about selected element in partitioning.
+    # A tree that is told what its items are.
+    # We need a tree whose items include Pages that point to the OverviewTreePager.
     class OverviewTree < CWM::Tree
-      # creates new widget for given device graph
-      # @param [Y2Storage::Devicegraph] device_graph
-      def initialize(device_graph)
+      def initialize(items)
         textdomain "storage"
-        @hostname = Yast::Hostname.CurrentHostname
-        @device_graph = device_graph
+        @items = items
       end
 
       # @macro seeAbstractWidget
@@ -43,18 +38,34 @@ module Y2Partitioner
         _("System View")
       end
 
+      attr_reader :items
+    end
+
+    # Widget representing partitioner overview pager with tree on left side and rest on right side.
+    #
+    # It has replace point where it displays more details
+    # about selected element in partitioning.
+    class OverviewTreePager < CWM::TreePager
+      # creates new widget for given device graph
+      # @param [Y2Storage::Devicegraph] device_graph
+      def initialize(device_graph)
+        textdomain "storage"
+        @hostname = Yast::Hostname.CurrentHostname
+        @device_graph = device_graph
+        super(OverviewTree.new(items))
+      end
+
       # @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FTree:items
       def items
-        @items ||=
-          [
-            item_for("all", @hostname, icon: Icons::ALL, subtree: machine_items),
-            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for("devicegraph", _("Device Graph"), icon: Icons::GRAPH),
-            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for("mountgraph", _("Mount Graph"), icon: Icons::GRAPH),
-            item_for("summary", _("Installation Summary"), icon: Icons::SUMMARY),
-            item_for("settings", _("Settings"), icon: Icons::SETTINGS)
-          ]
+        [
+          item_for("all", @hostname, icon: Icons::ALL, subtree: machine_items),
+          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+          item_for("devicegraph", _("Device Graph"), icon: Icons::GRAPH),
+          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+          item_for("mountgraph", _("Mount Graph"), icon: Icons::GRAPH),
+          item_for("summary", _("Installation Summary"), icon: Icons::SUMMARY),
+          item_for("settings", _("Settings"), icon: Icons::SETTINGS)
+        ]
       end
 
     private
