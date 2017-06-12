@@ -40,7 +40,7 @@ module Y2Partitioner
           contents = MarginBox(
             0.5,
             0.5,
-            CWM::TreePager.new(Widgets::OverviewTree.new(DeviceGraphs.instance.current))
+            Widgets::OverviewTreePager.new(DeviceGraphs.instance.current)
           )
           res = Yast::CWM.show(contents, caption: _("Partitioner"), skip_store_for: [:redraw])
           break if res != :redraw

@@ -3,6 +3,7 @@ require "cwm/widget"
 Yast.import "HTML"
 
 require "y2partitioner/widgets/blk_device_attributes"
+require "y2partitioner/widgets/help"
 
 module Y2Partitioner
   # CWM widgets for partitioner
@@ -10,6 +11,7 @@ module Y2Partitioner
     # Widget that is richtext filled with description of partition passed in constructor
     class PartitionDescription < CWM::RichText
       include Yast::I18n
+      include Help
 
       # @param partition [Y2Storage::Partition] to describe
       def initialize(partition)
@@ -22,9 +24,16 @@ module Y2Partitioner
         self.value = partition_text
       end
 
+      HELP_FIELDS = [:device, :size, :encrypted, :udev_path, :udev_id, :fs_id, :fs_type,
+                     :mount_point, :label].freeze
       # @macro seeAbstractWidget
       def help
-        _("Textual description of partition data and configuratio")
+        header = _(
+          "<p>This view shows detailed information about the\nselected partition.</p>" \
+          "<p>The overview contains:</p>" \
+        )
+        fields = HELP_FIELDS.map { |f| helptext_for(f) }.join("\n")
+        header + fields
       end
 
     private
