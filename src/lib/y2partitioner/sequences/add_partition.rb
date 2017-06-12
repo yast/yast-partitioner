@@ -11,7 +11,7 @@ module Y2Partitioner
     # formerly EpCreatePartition, DlgCreatePartition
     class AddPartition < UI::Sequence
       include Yast::Logger
-      # @param disk [Y2Storage::Disk]
+      # @param disk_name [String]
       def initialize(disk_name)
         textdomain "storage"
         @disk_name = disk_name

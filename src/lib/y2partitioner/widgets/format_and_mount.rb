@@ -5,7 +5,7 @@ require "y2partitioner/dialogs/encrypt_password"
 
 module Y2Partitioner
   module Widgets
-    # Format options for {BlkDevice}
+    # Format options for {Y2Storage::BlkDevice}
     class FormatOptions < CWM::CustomWidget
       def initialize(blk_device)
         textdomain "storage"
@@ -102,7 +102,7 @@ module Y2Partitioner
       end
     end
 
-    # Mount options for {BlkDevice}
+    # Mount options for {Y2Storage::BlkDevice}
     class MountOptions < CWM::CustomWidget
       def initialize(blk_device)
         textdomain "storage"

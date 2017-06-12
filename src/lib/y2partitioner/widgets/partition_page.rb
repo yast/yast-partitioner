@@ -13,7 +13,7 @@ module Y2Partitioner
       # but that one works with a table.
       # Analogous to DeleteDiskPartitionButton??
       class EditButton < CWM::PushButton
-        # @param partition [Y2Storage::Partition] FIXME: unsure which type we want
+        # @param partition_name [String] FIXME: unsure which type we want
         def initialize(partition_name)
           # do we need this in every little tiny class?
           textdomain "storage"

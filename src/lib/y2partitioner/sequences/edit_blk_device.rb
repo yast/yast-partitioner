@@ -11,7 +11,7 @@ module Y2Partitioner
     # BlkDevice edition
     class EditBlkDevice < UI::Sequence
       include Yast::Logger
-      # @param disk [Y2Storage::Disk]
+      # @param partition [Y2Storage::BlkDevice]
       def initialize(partition)
         textdomain "storage"
         @partition = partition

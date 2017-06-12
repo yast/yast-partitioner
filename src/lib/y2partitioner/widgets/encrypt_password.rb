@@ -4,7 +4,7 @@ require "y2storage"
 
 module Y2Partitioner
   module Widgets
-    # Encrypted {BlkDevice} password
+    # Encrypted {Y2Storage::BlkDevice} password
     class EncryptPassword < CWM::CustomWidget
       def initialize(blk_device)
         textdomain "storage"
