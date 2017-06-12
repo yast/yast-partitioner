@@ -1,6 +1,6 @@
 require "cwm/tree_pager"
 require "y2partitioner/widgets/overview"
-require "y2partitioner/device_graph_mutator"
+require "y2partitioner/device_graphs"
 require "y2storage"
 
 Yast.import "CWM"
