@@ -31,7 +31,7 @@ module Y2Partitioner
         textdomain "storage"
 
         DeviceGraphs.instance.original = Y2Storage::StorageManager.instance.y2storage_probed
-        DeviceGraphs.instance.current = Y2Storage::StorageManager.instance.y2storage_staging
+        DeviceGraphs.instance.current = Y2Storage::StorageManager.instance.y2storage_staging.dup
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
         res = nil
@@ -48,6 +48,7 @@ module Y2Partitioner
         # Running system: presenting "Expert Partitioner: Summary" step now
         # ep-main.rb SummaryDialog
         if res == :next && Yast::Popup.ContinueCancel("(potentially) d3stR0y Ur DATA?!??")
+          Y2Storage::StorageManager.instance.staging = DeviceGraphs.instance.current
           Y2Storage::StorageManager.instance.commit
         end
         Yast::Wizard.CloseDialog unless Yast::Stage.initial
