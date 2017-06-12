@@ -1,5 +1,6 @@
 require "cwm/tree_pager"
 require "y2partitioner/widgets/overview"
+require "y2partitioner/device_graphs"
 require "y2storage"
 
 Yast.import "CWM"
@@ -9,9 +10,9 @@ Yast.import "Wizard"
 # Work around YARD inability to link across repos/gems:
 # (declaring macros here works because YARD sorts by filename size(!))
 
-# @!macro [new] AW
+# @!macro [new] seeAbstractWidget
 #   @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FAbstractWidget:${0}
-# @!macro [new] CW
+# @!macro [new] seeCustomWidget
 #   @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FCustomWidget:${0}
 
 # The main module for this package
@@ -27,7 +28,10 @@ module Y2Partitioner
       def self.run
         textdomain "storage"
 
+        probed = Y2Storage::StorageManager.instance.y2storage_probed
         staging = Y2Storage::StorageManager.instance.y2storage_staging
+        DeviceGraphs.instance.original = probed
+        DeviceGraphs.instance.current = staging
         overview_w = Widgets::OverviewTreePager.new(staging)
 
         contents = MarginBox(

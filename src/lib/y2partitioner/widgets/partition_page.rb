@@ -1,4 +1,4 @@
-require "cwm/tree_pager"
+require "cwm/pager"
 
 require "y2partitioner/widgets/partition_description"
 
@@ -14,12 +14,12 @@ module Y2Partitioner
         self.widget_id = "partition:" + partition.name
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         @partition.sysfs_name
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         # FIXME: this is called dozens of times per single click!!
         return @contents if @contents

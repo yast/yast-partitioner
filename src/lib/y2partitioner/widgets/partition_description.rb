@@ -22,7 +22,7 @@ module Y2Partitioner
         self.value = partition_text
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def help
         _("Textual description of partition data and configuratio")
       end
@@ -40,20 +40,7 @@ module Y2Partitioner
         output = Yast::HTML.Heading(_("Device:"))
         output << Yast::HTML.List(device_attributes_list)
         # TRANSLATORS: heading for section about Filesystem on device
-        output << Yast::HTML.Heading(_("File System:"))
-        output << Yast::HTML.List(filesystem_attributes_list)
-      end
-
-      def filesystem_attributes_list
-        fs_type = partition.filesystem_type
-        [
-          # TRANSLATORS: File system and its type as human string
-          format(_("File System: %s"), fs_type ? fs_type.to_human : ""),
-          # TRANSLATORS: File system and its type as human string
-          format(_("Mount Point: %s"), partition.filesystem_mountpoint || ""),
-          # TRANSLATORS: Label associated with file system
-          format(_("Label: %s"), partition.filesystem_label || "")
-        ]
+        output << fs_text
       end
 
       def device_attributes_list

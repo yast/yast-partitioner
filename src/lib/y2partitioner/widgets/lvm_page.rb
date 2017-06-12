@@ -1,14 +1,12 @@
-require "cwm/tree_pager"
+require "cwm/pager"
 
-require "y2partitioner/widgets/disk_table"
-require "y2partitioner/icons"
+require "y2partitioner/widgets/lvm_table"
 
 module Y2Partitioner
   module Widgets
-    # A Page for block devices: contains a {BlkDevicesTable}
-    class BlkDevicesPage < CWM::Page
-      include Yast::I18n
-
+    # A Page for for given list of Y2Storage::LvmLV|Y2Storage::LvmVG.
+    class LvmPage < CWM::Page
+      # @param [Y2Storage::LvmLV|Y2Storage::LvmVG] devices to display
       def initialize(devices, pager)
         textdomain "storage"
 
@@ -18,23 +16,23 @@ module Y2Partitioner
 
       # @macro seeAbstractWidget
       def label
-        _("Hard Disks")
+        _("Volume Management")
       end
 
       # @macro seeCustomWidget
       def contents
         return @contents if @contents
 
-        icon = Icons.small_icon(Icons::HD)
+        icon = Icons.small_icon(Icons::LVM)
         @contents = VBox(
           Left(
             HBox(
               Image(icon, ""),
-              # TRANSLATORS: Heading. String followed by name of partition
-              Heading(_("Hard Disks "))
+              # TRANSLATORS: Heading
+              Heading(_("Volume Management"))
             )
           ),
-          DiskTable.new(@devices, @pager)
+          LvmTable.new(@devices, @pager)
         )
       end
     end
