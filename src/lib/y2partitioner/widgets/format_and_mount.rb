@@ -233,6 +233,7 @@ module Y2Partitioner
       end
     end
 
+    # Encryption selector
     class EncryptBlkDevice < CWM::CheckBox
       def initialize(encrypt)
         @encrypt = encrypt
@@ -251,6 +252,7 @@ module Y2Partitioner
       end
     end
 
+    # FIME(WIP)
     class FstabOptionsButton < CWM::PushButton
       def initialize(options)
         @options = options
@@ -262,7 +264,10 @@ module Y2Partitioner
 
       def handle
         Yast::UI.OpenDialog(Opt(:decorated), layout)
-        ret = Yast::UI.UserInput
+
+        # FIXME: Handle edition
+        Yast::UI.UserInput
+
         Yast::UI.CloseDialog()
 
         nil
@@ -275,7 +280,7 @@ module Y2Partitioner
           Left(Heading(_("Fstab Options:"))),
           VStretch(),
           VSpacing(1),
-          HBox(HStretch(), HSpacing(1), dialog, HStretch(), HSpacing(1)),
+          HBox(HStretch(), HSpacing(1), VBox(dialog), HStretch(), HSpacing(1)),
           VSpacing(1),
           VStretch(),
           ButtonBox(
@@ -287,53 +292,21 @@ module Y2Partitioner
       end
 
       def dialog
-        VBox(
-          RadioButtonGroup(
-            Id(:mt_group),
-            VBox(
-              # label text
-              Left(Label(_("Mount in /etc/fstab by"))),
-              HBox(
+        RadioButtonGroup(
+          Id(:mt_group),
+          VBox(
+            # label text
+            Left(Label(_("Mount in /etc/fstab by"))),
+            HBox(
+              VBox(
+                Left(RadioButton(Id(:device), _("&Device Name"))),
+                Left(RadioButton(Id(:label), _("Volume &Label"))),
+                Left(RadioButton(Id(:uuid), _("&UUID")))
+              ),
+              Top(
                 VBox(
-                  Left(
-                    RadioButton(
-                      Id(:device),
-                      # label text
-                      _("&Device Name")
-                    )
-                  ),
-                  Left(
-                    RadioButton(
-                      Id(:label),
-                      # label text
-                      _("Volume &Label")
-                    )
-                  ),
-                  Left(
-                    RadioButton(
-                      Id(:uuid),
-                      # label text
-                      _("&UUID")
-                    )
-                  )
-                ),
-                Top(
-                  VBox(
-                    Left(
-                      RadioButton(
-                        Id(:id),
-                        # label text
-                        _("Device &ID")
-                      )
-                    ),
-                    Left(
-                      RadioButton(
-                        Id(:path),
-                        # label text
-                        _("Device &Path")
-                      )
-                    )
-                  )
+                  Left(RadioButton(Id(:id), _("Device &ID"))),
+                  Left(RadioButton(Id(:path), _("Device &Path")))
                 )
               )
             )

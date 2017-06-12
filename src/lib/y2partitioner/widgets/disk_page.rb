@@ -111,8 +111,6 @@ module Y2Partitioner
           end
 
           name = @table.value[/table:partition:(.*)/, 1]
-          sym = nil
-
           partition = @disk.partitions.detect { |p| p.name == name }
 
           Sequences::EditBlkDevice.new(partition).run
