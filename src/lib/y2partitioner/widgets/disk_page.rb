@@ -1,7 +1,7 @@
 require "cwm/widget"
 require "cwm/tree_pager"
 
-require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/disk_table"
 require "y2partitioner/widgets/disk_bar_graph"
 require "y2partitioner/widgets/disk_description"
 require "y2partitioner/icons"
@@ -17,12 +17,12 @@ module Y2Partitioner
         self.widget_id = "disk:" + disk.name
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         @disk.sysfs_name
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         icon = Icons.small_icon(Icons::HD)
         VBox(
@@ -47,12 +47,12 @@ module Y2Partitioner
         @disk = disk
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("&Overview")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         # Page wants a WidgetTerm, not an AbstractWidget
         @contents ||= VBox(DiskDescription.new(@disk))
@@ -67,16 +67,16 @@ module Y2Partitioner
         @pager = pager
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("&Partitions")
       end
 
-      # @macro CW
+      # @macro seeCustomWidget
       def contents
         @contents ||= VBox(
           DiskBarGraph.new(@disk),
-          BlkDevicesTable.new(@disk.partitions, @pager)
+          DiskTable.new(@disk.partitions, @pager)
         )
       end
     end

@@ -6,26 +6,22 @@ require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
-    # Table widget to represent given list of Y2Storage::BlkDevice.
-    class BlkDevicesTable < CWM::Table
+    # Module for tables that have block devices. Provides set of helpers.
+    # Requires to have method pager which returns CWM::Pager
+    module BlkDevicesTable
       include Yast::I18n
       extend Yast::I18n
 
-      # @param blk_devices [Array<Y2Storage::BlkDevice>] devices to display
-      # @param pager [CWM::Pager] table have feature, that double click change content of pager
-      #   if someone do not need this feature, make it only optional
-      def initialize(blk_devices, pager)
+      def included(_obj)
         textdomain "storage"
-        @blk_devices = blk_devices
-        @pager = pager
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def opt
         [:notify]
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def handle
         id = value[/table:(.*)/, 1]
         @pager.handle("ID" => id)
@@ -35,73 +31,10 @@ module Y2Partitioner
       # ideally single letter.
       FORMAT_FLAG = N_("F")
 
-      # headers of table
-      def header
-        [
-          # TRANSLATORS: table header, Device is physical name of block device
-          # like partition or disk e.g. "/dev/sda1"
-          _("Device"),
-          # TRANSLATORS: table header, size of block device e.g. "8.00 GiB"
-          Right(_("Size")),
-          Center(_(FORMAT_FLAG)),
-          # TRANSLATORS: table header, flag if device is encrypted. Keep it short,
-          # ideally three letters. Keep in sync with Enc used later for format marker.
-          Center(_("Enc")),
-          # TRANSLATORS: table header, type of disk or partition. Can be longer. E.g. "Linux swap"
-          _("Type"),
-          # TRANSLATORS: table header, Files system type. Can be empty E.g. "BtrFS"
-          _("FS Type"),
-          # TRANSLATORS: table header, disk or partition label. Can be empty.
-          _("Label"),
-          # TRANSLATORS: table header, where is device mounted. Can be empty. E.g. "/" or "/home"
-          _("Mount Point"),
-          # TRANSLATORS: table header, which sector is the first one for device. E.g. "0"
-          Right(_("Start")),
-          # TRANSLATORS: table header, which sector is the the last for device. E.g. "126"
-          Right(_("End"))
-        ]
-      end
-
-      # @macro AW
-      def help
-        format(_(
-                 "Table shows selected devices with its attributes.<br>" \
-                   "<b>Device</b> is kernel name for device.<br>" \
-                   "<b>Size</b> is size of device in reasonable units. " \
-                   "Units can be different for each device.<br>" \
-                   "<b>%{format_flag}</b> is flag if device is going to be formatted.<br>" \
-                   "<b>Enc</b> is flag is content on device will be encrypted.<br>" \
-                   "<b>Type</b> is description for type of device.<br>" \
-                   "<b>FS Type</b> is description of filesystem on device.<br>" \
-                   "<b>Label</b> is label for given device if set.<br>" \
-                   "<b>Mount Point</b> is where device is mounted or empty if not.<br>" \
-                   "<b>Start</b> is the first sector on device.<br>" \
-                   "<b>End</b> is the last sector on device.<br>"
-        ), format_flag: FORMAT_FLAG)
-      end
-
-      # table items. See CWM::Table#items
-      def items
-        @blk_devices.map do |device|
-          [
-            id_for_device(device), # use name as id
-            device.name,
-            device.size.to_human_string,
-            device.exists_in_probed? ? "" : _(FORMAT_FLAG), # TODO: dasd format use "X", check it
-            encryption_value_for(device),
-            type_for(device),
-            fs_type_for(device),
-            device.filesystem_label || "",
-            device.filesystem_mountpoint || "",
-            device.region.start,
-            device.region.end
-          ]
-        end
-      end
-
-    private
+    protected
 
       def encryption_value_for(device)
+        return "" unless device.respond_to?(:encrypted?)
         return "" unless device.encrypted?
 
         if Yast::UI.GetDisplayInfo["HasIconSupport"]
@@ -124,6 +57,8 @@ module Y2Partitioner
           res << "encryption:#{device.name}"
         elsif device.is?(:lvm_lv)
           res << "lvm_lv:#{device.lv_name}"
+        elsif device.is?(:lvm_vg)
+          res << "lvm_vg:#{device.vg_name}"
         else
           raise "unsuported type #{device.inspect}"
         end
@@ -139,6 +74,8 @@ module Y2Partitioner
       end
 
       def fs_type_for(device)
+        return "" unless device.respond_to?(:filesystem) # device which cannot have fs
+
         fs_type = device.filesystem_type
 
         fs_type ? fs_type.to_human : ""

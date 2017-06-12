@@ -4,6 +4,9 @@ require "cwm/tree"
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_page"
 require "y2partitioner/widgets/disk_page"
+require "y2partitioner/widgets/lvm_page"
+require "y2partitioner/widgets/lvm_lv_page"
+require "y2partitioner/widgets/lvm_vg_page"
 require "y2partitioner/widgets/partition_page"
 
 Yast.import "Hostname"
@@ -35,7 +38,7 @@ module Y2Partitioner
         @device_graph = device_graph
       end
 
-      # @macro AW
+      # @macro seeAbstractWidget
       def label
         _("System View")
       end
@@ -44,13 +47,13 @@ module Y2Partitioner
       def items
         @items ||=
           [
-            item_for(:all, @hostname, icon: Icons::ALL, subtree: machine_items),
+            item_for("all", @hostname, icon: Icons::ALL, subtree: machine_items),
             # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for(:devicegraph, _("Device Graph"), icon: Icons::GRAPH),
+            item_for("devicegraph", _("Device Graph"), icon: Icons::GRAPH),
             # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for(:mountgraph, _("Mount Graph"), icon: Icons::GRAPH),
-            item_for(:summary, _("Installation Summary"), icon: Icons::SUMMARY),
-            item_for(:settings, _("Settings"), icon: Icons::SETTINGS)
+            item_for("mountgraph", _("Mount Graph"), icon: Icons::GRAPH),
+            item_for("summary", _("Installation Summary"), icon: Icons::SUMMARY),
+            item_for("settings", _("Settings"), icon: Icons::SETTINGS)
           ]
       end
 
@@ -95,52 +98,56 @@ module Y2Partitioner
 
       def raid_items
         # TODO: real MD subtree
-        item_for(:raid, _("RAID"), icon: Icons::RAID, subtree: [])
+        item_for("raid", _("RAID"), icon: Icons::RAID, subtree: [])
       end
 
       def lvm_items
-        item_for(:lvm, _("Volume Management"), icon:    Icons::LVM,
-                                               subtree: lvm_vgs_items)
+        lvms = @device_graph.lvm_vgs.reduce([]) do |acc, lvm_vg|
+          acc << lvm_vg
+          acc.concat(lvm_vg.lvm_lvs)
+        end
+        page = LvmPage.new(lvms, self)
+        CWM::PagerTreeItem.new(page, children: lvm_vgs_items, icon: Icons::LVM)
       end
 
       def lvm_vgs_items
         @device_graph.lvm_vgs.map do |vg|
-          id = "lvm_vg:" + vg.vg_name
-          item_for(id, vg.vg_name, subtree: lvm_lvs_items(vg))
+          page = LvmVgPage.new(vg, self)
+          CWM::PagerTreeItem.new(page, children: lvm_lvs_items(vg))
         end
       end
 
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
-          id = "lvm_lv:" + lv.name
-          item_for(id, lv.lv_name)
+          page = LvmLvPage.new(lv)
+          CWM::PagerTreeItem.new(page)
         end
       end
 
       def crypt_files_items
         # TODO: real subtree
-        item_for(:loop, _("Crypt Files"), icon: Icons::LOOP, subtree: [])
+        item_for("loop", _("Crypt Files"), icon: Icons::LOOP, subtree: [])
       end
 
       def device_mapper_items
         # TODO: real subtree
-        item_for(:dm, _("Device Mapper"), icon: Icons::DM, subtree: [])
+        item_for("dm", _("Device Mapper"), icon: Icons::DM, subtree: [])
       end
 
       def nfs_items
-        item_for(:nfs, _("NFS"), icon: Icons::NFS)
+        item_for("nfs", _("NFS"), icon: Icons::NFS)
       end
 
       def btrfs_items
-        item_for(:btrfs, _("Btrfs"), icon: Icons::NFS)
+        item_for("btrfs", _("Btrfs"), icon: Icons::NFS)
       end
 
       def tmpfs_items
-        item_for(:tmpfs, _("tmpfs"), icon: Icons::NFS)
+        item_for("tmpfs", _("tmpfs"), icon: Icons::NFS)
       end
 
       def unused_items
-        item_for(:unused, _("Unused Devices"), icon: Icons::UNUSED)
+        item_for("unused", _("Unused Devices"), icon: Icons::UNUSED)
       end
 
       def item_for(id, label, widget: nil, icon: nil, subtree: [])
@@ -153,7 +160,7 @@ module Y2Partitioner
       end
 
       def open?(id)
-        id == :all
+        id == "all"
       end
     end
   end
