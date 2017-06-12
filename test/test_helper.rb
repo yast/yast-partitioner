@@ -24,11 +24,16 @@ if ENV["COVERAGE"]
 end
 
 require "y2storage"
+require "y2partitioner/device_graphs"
 
 def devicegraph_stub(name)
   path = File.join(File.dirname(__FILE__), "data", name)
   storage = Y2Storage::StorageManager.fake_from_yaml(path)
   storage.probed.copy(storage.staging)
+  dgs = Y2Partitioner::DeviceGraphs.instance
+  dgs.current = storage.staging
+  dgs.original = storage.probed
+
 
   storage
 end
