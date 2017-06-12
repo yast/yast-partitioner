@@ -247,7 +247,7 @@ module Y2Partitioner
       end
 
       def store
-        @encrypt = self.value
+        @encrypt = value
       end
     end
 
@@ -261,7 +261,7 @@ module Y2Partitioner
       end
 
       def handle
-        Yast::UI.OpenDialog(Opt(:decorated),layout)
+        Yast::UI.OpenDialog(Opt(:decorated), layout)
         ret = Yast::UI.UserInput
         Yast::UI.CloseDialog()
 

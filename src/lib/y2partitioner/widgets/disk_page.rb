@@ -117,7 +117,6 @@ module Y2Partitioner
 
           Sequences::EditBlkDevice.new(partition).run
 
-
           # sym == :next ? :redraw : nil
           # must redraw because we've replaced the original dialog contents!
           :redraw
