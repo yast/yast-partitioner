@@ -19,9 +19,9 @@ module Y2Partitioner
 
       def run
         sequence_hash = {
-          "ws_start"      => "format_mount",
-          "format_mount"  => { next: "password", finish: :finish },
-          "password"      => { finish: :finish }
+          "ws_start"     => "format_mount",
+          "format_mount" => { next: "password", finish: :finish },
+          "password"     => { finish: :finish }
         }
 
         sym = nil
@@ -56,26 +56,6 @@ module Y2Partitioner
         else
           :finish
         end
-      end
-
-    private
-
-      # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
-      def next_free_primary_partition_name(disk_name, ptable)
-        # FIXME: This is broken by design. create_partition needs to return
-        # this information, not get it as an input parameter.
-        part_names = ptable.partitions.map(&:name)
-        1.upto(ptable.max_primary) do |i|
-          dev_name = "#{disk_name}#{i}"
-          return dev_name unless part_names.include?(dev_name)
-        end
-        raise NoMorePartitionSlotError
-      end
-
-      # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
-      # Make it DRY
-      def partition_table(disk)
-        disk.partition_table || disk.create_partition_table(disk.preferred_ptable_type)
       end
     end
   end
