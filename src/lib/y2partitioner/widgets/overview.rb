@@ -22,6 +22,8 @@ module Y2Partitioner
       end
     end
 
+    # widget that is overview tree, but its items is passed by, because
+    # items include pages, that needs reference to pager.
     class OverviewTree < CWM::Tree
       def initialize(items)
         textdomain "storage"
@@ -52,15 +54,15 @@ module Y2Partitioner
 
       # @see http://www.rubydoc.info/github/yast/yast-yast2/CWM%2FTree:items
       def items
-          [
-            item_for("all", @hostname, icon: Icons::ALL, subtree: machine_items),
-            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for("devicegraph", _("Device Graph"), icon: Icons::GRAPH),
-            # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
-            item_for("mountgraph", _("Mount Graph"), icon: Icons::GRAPH),
-            item_for("summary", _("Installation Summary"), icon: Icons::SUMMARY),
-            item_for("settings", _("Settings"), icon: Icons::SETTINGS)
-          ]
+        [
+          item_for("all", @hostname, icon: Icons::ALL, subtree: machine_items),
+          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+          item_for("devicegraph", _("Device Graph"), icon: Icons::GRAPH),
+          # TODO: only if there is graph support UI.HasSpecialWidget(:Graph)
+          item_for("mountgraph", _("Mount Graph"), icon: Icons::GRAPH),
+          item_for("summary", _("Installation Summary"), icon: Icons::SUMMARY),
+          item_for("settings", _("Settings"), icon: Icons::SETTINGS)
+        ]
       end
 
     private
