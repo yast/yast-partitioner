@@ -25,8 +25,8 @@ module Y2Partitioner
       end
     end
 
-    # widget that is overview tree, but its items is passed by, because
-    # items include pages, that needs reference to pager.
+    # A tree that is told what its items are.
+    # We need a tree whose items include Pages that point to the OverviewTreePager.
     class OverviewTree < CWM::Tree
       def initialize(items)
         textdomain "storage"
