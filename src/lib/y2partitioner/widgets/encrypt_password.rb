@@ -10,7 +10,6 @@ module Y2Partitioner
         textdomain "storage"
 
         @blk_device = blk_device
-        self.handle_all_events = true
       end
 
       def helptext
@@ -42,7 +41,7 @@ module Y2Partitioner
       end
 
       def store
-        @blk_device.password = pw1
+        @blk_device.encryption.password = pw1 if @blk_device.encryption
       end
 
       def contents

@@ -1,4 +1,5 @@
 require "yast"
+require "cwm/dialog"
 require "y2partitioner/widgets/encrypt_password"
 
 module Y2Partitioner
