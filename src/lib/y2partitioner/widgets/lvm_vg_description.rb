@@ -25,7 +25,7 @@ module Y2Partitioner
       # @macro seeAbstractWidget
       def help
         header = _(
-          "<p>his view shows detailed information about the\nselected volume group.</p>" \
+          "<p>This view shows detailed information about the\nselected volume group.</p>" \
           "<p>The overview contains:</p>"
         )
         fields = HELP_FIELDS.map { |f| helptext_for(f) }.join("\n")
