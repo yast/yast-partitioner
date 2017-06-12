@@ -28,7 +28,7 @@ module Y2Partitioner
         textdomain "storage"
 
         staging = Y2Storage::StorageManager.instance.y2storage_staging
-        overview_w = CWM::TreePager.new(Widgets::OverviewTree.new(staging))
+        overview_w = Widgets::OverviewTreePager.new(staging)
 
         contents = MarginBox(
           0.5,
