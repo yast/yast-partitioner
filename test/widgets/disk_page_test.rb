@@ -3,16 +3,6 @@ require_relative "../test_helper"
 require "cwm/rspec"
 require "y2partitioner/widgets/disk_page"
 
-# FIXME: remove these once they are in cwm/rspec
-# (a duplicate definition does work)
-RSpec.shared_examples "CWM::Page" do
-  include_examples "CWM::CustomWidget"
-end
-
-RSpec.shared_examples "CWM::PushButton" do
-  include_examples "CWM::AbstractWidget"
-end
-
 describe Y2Partitioner::Widgets::DiskPage do
   let(:pager) { double("Pager") }
   let(:disk) do
