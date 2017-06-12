@@ -1,4 +1,5 @@
 require "cwm/widget"
+require "y2partitioner/widgets/help"
 
 Yast.import "HTML"
 
@@ -7,6 +8,7 @@ module Y2Partitioner
     # Widget that is richtext filled with description of LVM volume group passed in constructor
     class LvmVgDescription < CWM::RichText
       include Yast::I18n
+      include Help
 
       # @param lvm_vg [Y2Storage::LvmVg] to describe
       def initialize(lvm_vg)
@@ -19,11 +21,15 @@ module Y2Partitioner
         self.value = lvm_vg_text
       end
 
+      HELP_FIELDS = [:device, :size, :pe_size].freeze
       # @macro seeAbstractWidget
       def help
-        # TODO: proofread it and test it on real user, if it need improvement
-        _("Textual description of LVM Volume Group data and configuration. "\
-          "<b>PE Size</b> is physical extend size.")
+        header = _(
+          "<p>his view shows detailed information about the\nselected volume group.</p>" \
+          "<p>The overview contains:</p>"
+        )
+        fields = HELP_FIELDS.map { |f| helptext_for(f) }.join("\n")
+        header + fields
       end
 
     private

@@ -4,12 +4,14 @@ require "cwm/table"
 
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_table"
+require "y2partitioner/widgets/help"
 
 module Y2Partitioner
   module Widgets
     # Table widget to represent given list of Y2Storage::LvmLvs together.
     class LvmPvTable < CWM::Table
       include BlkDevicesTable
+      include Help
 
       # @param pvs [Array<Y2Storage::LvmPv] devices to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
@@ -54,18 +56,15 @@ module Y2Partitioner
         ]
       end
 
+      HELP_FIELDS = [:device, :size, :format, :encrypted, :type].freeze
       # @macro seeAbstractWidget
       def help
-        # TODO: proofread it and test it on real user, if it need improvement
-        format(_(
-                 "Table shows selected devices with its attributes.<br>" \
-                   "<b>Device</b> is kernel name for device.<br>" \
-                   "<b>Size</b> is size of device in reasonable units. " \
-                   "Units can be different for each device.<br>" \
-                   "<b>%{format_flag}</b> is flag if device is going to be formatted.<br>" \
-                   "<b>Enc</b> is flag is content on device will be encrypted.<br>" \
-                   "<b>Type</b> is description for type of device.<br>"
-        ), format_flag: BlkDevicesTable::FORMAT_FLAG)
+        header = _(
+          "<p>This view shows all physical volumes used by\nthe selected volume group.</p>" \
+          "<p>The overview contains:</p>" \
+        )
+        fields = HELP_FIELDS.map { |f| helptext_for(f) }.join("\n")
+        header + fields
       end
 
     private

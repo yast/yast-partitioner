@@ -4,6 +4,7 @@ Yast.import "HTML"
 
 require "y2partitioner/widgets/blk_device_attributes"
 require "y2partitioner/widgets/lvm_lv_attributes"
+require "y2partitioner/widgets/help"
 
 module Y2Partitioner
   # CWM widgets for partitioner
@@ -11,6 +12,7 @@ module Y2Partitioner
     # Widget that is richtext filled with description of logical volume passed in constructor
     class LvmLvDescription < CWM::RichText
       include Yast::I18n
+      include Help
 
       # @param lvm_lv [Y2Storage::LvmLv] to describe
       def initialize(lvm_lv)
@@ -23,10 +25,16 @@ module Y2Partitioner
         self.value = lv_text
       end
 
+      HELP_FIELDS = [:device, :size, :encrypted, :udev_path, :udev_id, :fs_id, :fs_type,
+                     :mount_point, :label].freeze
       # @macro seeAbstractWidget
       def help
-        # TODO: proofread it and test it on real user, if it need improvement
-        _("Textual description of LVM Logical Volume")
+        header = _(
+          "<p>This view shows detailed information about the\nselected logical volume.</p>" \
+          "<p>The overview contains:</p>"
+        )
+        fields = HELP_FIELDS.map { |f| helptext_for(f) }.join("\n")
+        header + fields
       end
 
     private
