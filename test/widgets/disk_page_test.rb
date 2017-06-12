@@ -56,7 +56,7 @@ describe Y2Partitioner::Widgets::DiskPage do
   describe Y2Partitioner::Widgets::PartitionsTab::EditButton do
     subject { described_class.new(disk, ui_table) }
     before do
-      allow(Y2Partitioner::Dialogs::FormatAndMount)
+      allow(Y2Partitioner::Sequences::EditBlkDevice)
         .to receive(:new).and_return(double(run: :next))
     end
 
