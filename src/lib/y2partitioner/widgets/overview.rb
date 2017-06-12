@@ -5,6 +5,9 @@ require "y2partitioner/device_graphs"
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_page"
 require "y2partitioner/widgets/disk_page"
+require "y2partitioner/widgets/lvm_page"
+require "y2partitioner/widgets/lvm_lv_page"
+require "y2partitioner/widgets/lvm_vg_page"
 require "y2partitioner/widgets/partition_page"
 
 Yast.import "Hostname"
@@ -100,21 +103,25 @@ module Y2Partitioner
       end
 
       def lvm_items
-        item_for(:lvm, _("Volume Management"), icon:    Icons::LVM,
-                                               subtree: lvm_vgs_items)
+        lvms = @device_graph.lvm_vgs.reduce([]) do |acc, lvm_vg|
+          acc << lvm_vg
+          acc.concat(lvm_vg.lvm_lvs)
+        end
+        page = LvmPage.new(lvms, self)
+        CWM::PagerTreeItem.new(page, children: lvm_vgs_items, icon: Icons::LVM)
       end
 
       def lvm_vgs_items
         @device_graph.lvm_vgs.map do |vg|
-          id = "lvm_vg:" + vg.vg_name
-          item_for(id, vg.vg_name, subtree: lvm_lvs_items(vg))
+          page = LvmVgPage.new(vg, self)
+          CWM::PagerTreeItem.new(page, children: lvm_lvs_items(vg))
         end
       end
 
       def lvm_lvs_items(vg)
         vg.lvm_lvs.map do |lv|
-          id = "lvm_lv:" + lv.name
-          item_for(id, lv.lv_name)
+          page = LvmLvPage.new(lv)
+          CWM::PagerTreeItem.new(page)
         end
       end
 
