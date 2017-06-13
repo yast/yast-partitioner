@@ -103,8 +103,8 @@ module Y2Partitioner
         vendor:           N_("<b>Vendor</b> shows the device vendor.")
       }.freeze
 
-      # help texts appended to common help only in Mode.normal
-      NORMAT_MODE_TEXTS = {
+      # help texts that are appended to the common help only in Mode.normal
+      NORMAL_MODE_TEXTS = {
         mount_by:    N_("A question mark (?) indicates that\n" \
                   "the file system is not listed in <tt>/etc/fstab</tt>. It is either mounted\n" \
                   "manually or by some automount system. When changing settings for this volume\n" \
@@ -120,11 +120,11 @@ module Y2Partitioner
       def helptext_for(field)
         ret = "<p>"
 
-        text = TEXTS[field] or raise "Unknown field #{field}"
+        text = TEXTS.fetch(field)
         ret << _(text)
         if Yast::Mode.normal
-          text2 = NORMAT_MODE_TEXTS[field]
-          ret << _(text2) if text2
+          text2 = NORMAL_MODE_TEXTS[field]
+          ret << " " << _(text2) if text2
         end
 
         ret << "</p>"
