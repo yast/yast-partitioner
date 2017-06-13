@@ -31,8 +31,9 @@ module Y2Partitioner
       def self.run
         textdomain "storage"
 
-        DeviceGraphs.instance.original = Y2Storage::StorageManager.instance.y2storage_probed
-        DeviceGraphs.instance.current = Y2Storage::StorageManager.instance.y2storage_staging.dup
+        system = Y2Storage::StorageManager.instance.y2storage_probed
+        current = Y2Storage::StorageManager.instance.y2storage_staging
+        DeviceGraphs.create_instance(system, current)
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
         res = nil

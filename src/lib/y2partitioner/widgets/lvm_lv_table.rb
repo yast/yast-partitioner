@@ -27,7 +27,7 @@ module Y2Partitioner
       # table items. See CWM::Table#items
       def items
         @lvs.map do |device|
-          formatted = device.to_be_formatted?(DeviceGraphs.instance.original)
+          formatted = device.to_be_formatted?(DeviceGraphs.instance.system)
           [
             id_for_device(device), # use name as id
             device.name,
