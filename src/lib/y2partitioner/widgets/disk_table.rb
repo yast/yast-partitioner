@@ -15,8 +15,9 @@ module Y2Partitioner
       include Help
 
       # @param disks [Array<Y2Storage::Disk|Y2Storage::Partition>] devices to display
-      # @param pager [CWM::Pager] table have feature, that double click change content of pager
-      #   if someone do not need this feature, make it only optional
+      # @param pager [CWM::Pager] the table has feature, that double click on its row
+      #   switch pager. If someone would like to reuse this table, but without feature,
+      #   then it is possible to make it optional
       def initialize(disks, pager)
         textdomain "storage"
         @disks = disks

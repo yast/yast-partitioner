@@ -10,7 +10,7 @@ require "y2partitioner/icons"
 
 module Y2Partitioner
   module Widgets
-    # A Page for a disk: contains {DiskTab} and {PartitionsTab}
+    # A Page for a LVM Volume Group. It contains several tabs.
     class LvmVgPage < CWM::Page
       def initialize(lvm_vg, pager)
         textdomain "storage"
