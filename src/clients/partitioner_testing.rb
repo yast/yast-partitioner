@@ -20,6 +20,17 @@ module Y2Storage
 end
 
 arg = Yast::WFM.Args.first
-storage = Y2Storage::StorageManager.fake_from_yaml(arg)
-storage.probed.copy(storage.staging)
+case arg
+when /.ya?ml$/
+  storage = Y2Storage::StorageManager.fake_from_yaml(arg)
+  storage.probed.copy(storage.staging)
+when /.xml$/
+  # note: support only xml device graph, not xml output of probing commands
+  env = Storage::Environment.new(false, Storage::ProbeMode_READ_DEVICEGRAPH,
+    Storage::TargetMode_DIRECT)
+  env.devicegraph_filename = arg
+  Y2Storage::StorageManager.create_instance(env)
+else
+  raise "Invalid testing parameter #{arg}"
+end
 Y2Partitioner::Clients::Main.run
