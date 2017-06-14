@@ -28,11 +28,13 @@ module Y2Partitioner
       extend Yast::Logger
 
       # Run the client
-      def self.run
+      # @param allow_commit [Boolean] can we pass the point of no return
+      def self.run(allow_commit: true)
         textdomain "storage"
 
-        system = Y2Storage::StorageManager.instance.y2storage_probed
-        current = Y2Storage::StorageManager.instance.y2storage_staging
+        smanager = Y2Storage::StorageManager.instance
+        system = smanager.y2storage_probed
+        current = smanager.y2storage_staging
         DeviceGraphs.create_instance(system, current)
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
@@ -49,11 +51,25 @@ module Y2Partitioner
 
         # Running system: presenting "Expert Partitioner: Summary" step now
         # ep-main.rb SummaryDialog
-        if res == :next && Yast::Popup.ContinueCancel("(potentially) d3stR0y Ur DATA?!??")
-          Y2Storage::StorageManager.instance.staging = DeviceGraphs.instance.current
-          Y2Storage::StorageManager.instance.commit
+        if res == :next && should_commit?(allow_commit)
+          smanager.staging = DeviceGraphs.instance.current
+          smanager.commit
         end
         Yast::Wizard.CloseDialog unless Yast::Stage.initial
+      end
+
+      # Ask whether to proceed with changing the disks;
+      # or inform that we will not do it.
+      # @return [Boolean] proceed
+      def self.should_commit?(allow_commit)
+        if allow_commit
+          q = "Modify the disks and potentially destroy your data?"
+          Yast::Popup.ContinueCancel(q)
+        else
+          m = "Nothing gets written, because the device graph is fake."
+          Yast::Popup.Message(m)
+          false
+        end
       end
     end
   end
