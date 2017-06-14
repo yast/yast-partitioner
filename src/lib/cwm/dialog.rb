@@ -47,8 +47,7 @@ module CWM
     end
 
     def should_open_dialog?
-      # FIXME: is this correct?
-      !Yast::UI.WidgetExists(Id(:contents))
+      !Yast::Wizard.IsWizardDialog
     end
 
     # @return [CWM::WidgetTerm]
