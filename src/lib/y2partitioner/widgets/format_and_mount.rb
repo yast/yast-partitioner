@@ -74,6 +74,8 @@ module Y2Partitioner
 
     private
 
+      # FIXME: This method has been copied from {Y2Storage::Proposal::Encrypter}
+      # and should be moved probably to {Y2Storage::Encription}
       def dm_name_for(device)
         name = device.name.split("/").last
         "cr_#{name}"
