@@ -3,6 +3,8 @@ require "y2partitioner/widgets/format_and_mount"
 
 module Y2Partitioner
   module Dialogs
+    # Which filesystem (and options) to use and where to mount it (with options).
+    # Part of {Sequences::AddPartition} and {Sequences::EditBlkDevice}.
     # Formerly MiniWorkflowStepFormatMount
     class FormatAndMount < CWM::Dialog
       # @param partition [Y2Storage::Partition] FIXME: unsure which type we want

@@ -4,7 +4,9 @@ require "y2partitioner/widgets/encrypt_password"
 
 module Y2Partitioner
   module Dialogs
-    # Formerly MiniWorkflowStepFormatMount
+    # Ask for a password to assign to an encrypted device.
+    # Part of {Sequences::AddPartition} and {Sequences::EditBlkDevice}.
+    # Formerly MiniWorkflowStepPassword
     class EncryptPassword < CWM::Dialog
       def initialize(blk_device)
         textdomain "storage"

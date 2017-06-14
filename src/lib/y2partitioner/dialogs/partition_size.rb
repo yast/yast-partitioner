@@ -4,6 +4,9 @@ require "ui/greasemonkey"
 
 module Y2Partitioner
   module Dialogs
+    # Determine the size of a partition to be created, in the form
+    # of a {Y2Storage::Region}.
+    # Part of {Sequences::AddPartition}.
     # Formerly MiniWorkflowStepPartitionSize
     class PartitionSize < CWM::Dialog
       # @param disk []

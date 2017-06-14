@@ -3,6 +3,9 @@ require "cwm/dialog"
 
 module Y2Partitioner
   module Dialogs
+    # Determine the type (primary/extended/logical)
+    # of a partition to be created.
+    # Part of {Sequences::AddPartition}.
     # Formerly MiniWorkflowStepPartitionType
     class PartitionType < CWM::Dialog
       # Choose partition type: primary/extended/logical.
