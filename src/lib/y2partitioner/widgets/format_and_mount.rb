@@ -48,11 +48,6 @@ module Y2Partitioner
         nil
       end
 
-      def dm_name_for(device)
-        name = device.name.split("/").last
-        "cr_#{name}"
-      end
-
       def contents
         Frame(
           _("Format Options"),
@@ -77,6 +72,13 @@ module Y2Partitioner
         )
       end
 
+    private
+
+      def dm_name_for(device)
+        name = device.name.split("/").last
+        "cr_#{name}"
+      end
+
       def select_format
         @filesystem_widget.enable
         Yast::UI.ChangeWidget(Id(:format_device), :Value, true)
@@ -95,10 +97,6 @@ module Y2Partitioner
 
       def encrypt?
         @encrypt_widget.value
-      end
-
-      def encrypter
-        @encrypter ||= Y2Storage::Proposal::Encrypter.new
       end
     end
 
@@ -167,6 +165,8 @@ module Y2Partitioner
 
         nil
       end
+
+    private
 
       def mount?
         Yast::UI.QueryWidget(Id(:mount_device), :Value)
