@@ -16,7 +16,7 @@
 #
 
 Name:		yast2-partitioner
-Version:        3.3.2
+Version:        3.3.3
 Release:	0
 BuildArch:	noarch
 

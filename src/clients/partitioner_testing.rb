@@ -22,4 +22,4 @@ end
 arg = Yast::WFM.Args.first
 storage = Y2Storage::StorageManager.fake_from_yaml(arg)
 storage.probed.copy(storage.staging)
-Y2Partitioner::Clients::Main.run
+Y2Partitioner::Clients::Main.run(allow_commit: false)
