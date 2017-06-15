@@ -7,17 +7,17 @@ module Y2Partitioner
     # Part of {Sequences::AddPartition} and {Sequences::EditBlkDevice}.
     # Formerly MiniWorkflowStepFormatMount
     class FormatAndMount < CWM::Dialog
-      # @param partition [Y2Storage::Partition] FIXME: unsure which type we want
-      def initialize(partition)
-        @partition = partition
+      # @param options [Y2Partitioner::FormatMountOptions]
+      def initialize(options)
         textdomain "storage"
 
-        @format_widget = Widgets::FormatOptions.new(@partition)
-        @mount_widget  = Widgets::MountOptions.new(@partition)
+        @options = options
+        @format_widget = Widgets::FormatOptions.new(@options)
+        @mount_widget  = Widgets::MountOptions.new(@options)
       end
 
       def title
-        "Edit Partition #{@partition.name}"
+        "Edit Partition #{@options.name}"
       end
 
       def contents

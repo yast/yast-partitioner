@@ -1,40 +1,32 @@
 require "yast"
 require "cwm"
 require "y2storage"
+require "y2partitioner/format_mount_options"
 require "y2partitioner/dialogs/encrypt_password"
 
 module Y2Partitioner
   module Widgets
     # Format options for {Y2Storage::BlkDevice}
     class FormatOptions < CWM::CustomWidget
-      def initialize(blk_device)
+      def initialize(options)
         textdomain "storage"
 
-        @blk_device = blk_device
-        @format  = false
-        @encrypt = false
+        @options = options
 
-        @encrypt_widget    = EncryptBlkDevice.new(@encrypt)
-        @filesystem_widget = BlkDeviceFilesystem.new(@blk_device.filesystem_type.to_s)
+        @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
+        @filesystem_widget = BlkDeviceFilesystem.new(@options.filesystem.to_s)
 
         self.handle_all_events = true
       end
 
       def init
-        @format ? select_format : select_no_format
+        @options.format ? select_format : select_no_format
       end
 
       def store
-        @blk_device.remove_descendants if encrypt? || format?
-
-        @encrypt = encrypt?
-        @format  = format?
-
-        if encrypt?
-          @blk_device = @blk_device.create_encryption(dm_name_for(@blk_device))
-        end
-
-        @blk_device.create_filesystem(@filesystem_widget.selected_filesystem) if format?
+        @options.format = format?
+        @options.encrypt = encrypt?
+        @options.filesystem = @filesystem_widget.selected_filesystem
       end
 
       def handle(event)
@@ -104,23 +96,25 @@ module Y2Partitioner
 
     # Mount options for {Y2Storage::BlkDevice}
     class MountOptions < CWM::CustomWidget
-      def initialize(blk_device)
+      def initialize(options)
         textdomain "storage"
 
-        @blk_device = blk_device
-        @mount_point_widget = MountPoint.new(@blk_device.filesystem_mountpoint)
-        fstab_options = @blk_device.filesystem ? @blk_device.filesystem.fstab_options : []
+        @options = options
+        fstab_options = []
 
+        @mount_point_widget = MountPoint.new(@options.mount_point)
         @fstab_options_widget = FstabOptionsButton.new(fstab_options)
 
         self.handle_all_events = true
       end
 
       def init
-        if @blk_device.filesystem_mountpoint
+        if @options.mount
+          @fstab_options_widget.enable
           Yast::UI.ChangeWidget(Id(:mount_device), :Value, true)
         else
           @mount_point_widget.disable
+          @fstab_options_widget.disable
           Yast::UI.ChangeWidget(Id(:no_mount_device), :Value, true)
         end
       end
@@ -155,7 +149,9 @@ module Y2Partitioner
         case event["ID"]
         when :mount_device
           @mount_point_widget.enable
+          @fstab_options_widget.enable
         when :no_mount_device
+          @fstab_options_widget.disable
           @mount_point_widget.disable
         end
 
@@ -163,7 +159,8 @@ module Y2Partitioner
       end
 
       def store
-        @blk_device.filesystem.mountpoint = @mount_point_widget.value if mount?
+        @options.mount = mount?
+        @options.mount_point = @mount_point_widget.value
 
         nil
       end
@@ -282,7 +279,7 @@ module Y2Partitioner
           Left(Heading(_("Fstab Options:"))),
           VStretch(),
           VSpacing(1),
-          HBox(HStretch(), HSpacing(1), VBox(dialog), HStretch(), HSpacing(1)),
+          HBox(HStretch(), HSpacing(1), dialog, HStretch(), HSpacing(1)),
           VSpacing(1),
           VStretch(),
           ButtonBox(
@@ -293,7 +290,35 @@ module Y2Partitioner
         )
       end
 
+    private
+
       def dialog
+        VBox(
+          mount_by_content,
+          TextEntry(Id(:vol_label), Opt(:hstretch), _("Volume &Label")),
+          VSpacing(1),
+          Left(CheckBox(Id("opt_readonly"), _("Mount &Read-Only"), false)),
+          Left(CheckBox(Id("opt_noatime"), _("No &Access Time"), false)),
+          Left(CheckBox(Id("opt_user"), _("Mountable by User"), false)),
+          Left(
+            CheckBox(
+              Id("opt_noauto"),
+              Opt(:notify),
+              _("Do Not Mount at System &Start-up"), false
+            )
+          ),
+          Left(
+            CheckBox(
+              Id("opt_quota"),
+              Opt(:notify),
+              _("Enable &Quota Support"),
+              false
+            )
+          ),
+        )
+      end
+
+      def mount_by_content
         RadioButtonGroup(
           Id(:mt_group),
           VBox(
