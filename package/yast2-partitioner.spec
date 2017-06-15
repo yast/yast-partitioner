@@ -26,10 +26,10 @@ Source:		%{name}-%{version}.tar.bz2
 # CWM::Tree
 Requires:	yast2 >= 3.2.32
 Requires:	yast2-ruby-bindings
-Requires:	yast2-storage-ng
+Requires:	yast2-storage-ng >= 0.1.18
 
 BuildRequires:	update-desktop-files
-BuildRequires:	yast2-storage-ng
+BuildRequires:	yast2-storage-ng >= 0.1.18
 BuildRequires:	yast2-ruby-bindings
 BuildRequires:	yast2-devtools
 BuildRequires:	yast2 >= 3.2.32

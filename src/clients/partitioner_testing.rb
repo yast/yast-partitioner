@@ -22,14 +22,10 @@ end
 arg = Yast::WFM.Args.first
 case arg
 when /.ya?ml$/
-  storage = Y2Storage::StorageManager.fake_from_yaml(arg)
-  storage.probed.copy(storage.staging)
+  Y2Storage::StorageManager.fake_from_yaml(arg)
 when /.xml$/
   # note: support only xml device graph, not xml output of probing commands
-  env = Storage::Environment.new(false, Storage::ProbeMode_READ_DEVICEGRAPH,
-    Storage::TargetMode_DIRECT)
-  env.devicegraph_filename = arg
-  Y2Storage::StorageManager.create_instance(env)
+  Y2Storage::StorageManager.fake_from_xml(arg)
 else
   raise "Invalid testing parameter #{arg}"
 end
