@@ -1,6 +1,42 @@
+require "y2storage"
 require "yast"
 require "cwm/dialog"
 require "ui/greasemonkey"
+
+Yast.import "Popup"
+
+module Y2Storage
+  # Monkey-patched Region to get a size
+  class Region
+    def size
+      block_size * length
+    end
+
+    def last
+      start + length - 1
+    end
+
+    # @return [Boolean] is *block* inside the region?
+    def cover?(block)
+      start <= block && block <= last
+    end
+  end
+
+  # Monkey-patched DiskSize to get a human_floor
+  class DiskSize
+    def human_ceil
+      return "unlimited" if unlimited?
+      float, unit_s = human_string_components
+      "#{(float * 100).ceil / 100.0} #{unit_s}"
+    end
+
+    def human_floor
+      return "unlimited" if unlimited?
+      float, unit_s = human_string_components
+      "#{(float * 100).floor / 100.0} #{unit_s}"
+    end
+  end
+end
 
 module Y2Partitioner
   module Dialogs
@@ -28,9 +64,15 @@ module Y2Partitioner
         HVSquash(SizeWidget.new(@disk, @ptemplate, @slots))
       end
 
-      # Like CWM::RadioButtons but the items are triples, not pairs:
-      # The third element is a WidgetTerm.
+      # Like CWM::RadioButtons but each RB has a subordinate indented widget.
+      # This is kind of like Pager, but all Pages being visible at once,
+      # and enabled/disabled.
+      # Besides `items` there are also `widgets`
       class ControllerRadioButtons < CWM::CustomWidget
+        def initialize
+          self.handle_all_events = true
+        end
+
         def contents
           Frame(
             label,
@@ -41,12 +83,40 @@ module Y2Partitioner
           )
         end
 
+        # @return [Array<Array(String,String)>]
+        abstract_method :items
+
+        # FIXME: allow {WidgetTerm}
+        # @return [Array<AbstractWidget>]
+        abstract_method :widgets
+
         def hspacing
           1.45
         end
 
         def vspacing
           0.45
+        end
+
+        def handle(event)
+          eid = event["ID"]
+          @ids ||= items.map(&:first)
+          @ids.zip(widgets).each do |id, widget|
+            if id == eid
+              widget.enable
+            else
+              widget.disable
+            end
+          end
+          nil
+        end
+
+        def value
+          Yast::UI.QueryWidget(Id(widget_id), :CurrentButton)
+        end
+
+        def value=(val)
+          Yast::UI.ChangeWidget(Id(widget_id), :CurrentButton, val)
         end
 
       private
@@ -58,7 +128,7 @@ module Y2Partitioner
 
           terms = items.zip(widgets).map do |(id, text), widget|
             VBox(
-              Left(RadioButton(Id(id), text)),
+              Left(RadioButton(Id(id), Opt(:notify), text)),
               Left(HBox(HSpacing(4), VBox(widget)))
             )
           end
@@ -77,16 +147,7 @@ module Y2Partitioner
           @disk = disk
           @ptemplate = ptemplate
           @slots = slots
-
-          # FIXME: how much should we support multiple slots?
-          # Maximum size: largest slot
-          # Custom size: smallest slot possible
-          # Custom region: inside any slot
-          @slot = slots.first
-          r = @slot.region
-          # should Region have a #size?
-
-          @max_size = r.block_size * r.length
+          @largest_region = @slots.map(&:region).max_by(&:size)
         end
 
         def label
@@ -94,8 +155,8 @@ module Y2Partitioner
         end
 
         def items
-          max_size_label = Builtins.sformat(_("Maximum Size (%1)"),
-            @max_size.to_human_string)
+          max_size_label = Yast::Builtins.sformat(_("Maximum Size (%1)"),
+            @largest_region.size.human_floor)
           [
             [:max_size, max_size_label],
             [:custom_size, _("Custom Size")],
@@ -105,36 +166,71 @@ module Y2Partitioner
 
         def widgets
           @widgets ||= [
-            ::CWM::Empty.new(@empty_id ||= new_id),
-            # MinWidth(15, CustomSizeInput.new),
-            CustomSizeInput.new,
-            CustomRegion.new(@disk, @slots)
+            MaxSizeDummy.new(@largest_region),
+            CustomSizeInput.new(@slots),
+            CustomRegion.new(@slots)
           ]
         end
 
         def init
-          Yast::UI.ChangeWidget(Id(:max_size), :Enabled, false)
-          Yast::UI.ChangeWidget(Id(:manual_size), :Enabled, false)
+          self.value = :max_size
+          # trigger disabling the other subwidgets
+          handle("ID" => value)
         end
 
         def store
-          start_block = Yast::UI.QueryWidget(Id(:start_block), :Value)
-          end_block = Yast::UI.QueryWidget(Id(:end_block), :Value)
-          len = end_block - start_block + 1
-          bsize = @slot.region.block_size # where does this come from?
-          region = Y2Storage::Region.create(start_block, len, bsize)
-          @ptemplate.region = region
+          v = value
+          @ids ||= items.map(&:first)
+          w = widgets[@ids.index(v)]
+          w.store
+          @ptemplate.region = w.region
+        end
+      end
+
+      # An invisible widget that knows a Region
+      class MaxSizeDummy < CWM::Empty
+        attr_reader :region
+
+        def initialize(region)
+          @region = region
         end
 
-        def new_id
-          "id_#{rand 65536}"
+        def store
+          # nothing to do, that's OK
         end
       end
 
       # Enter a human readable size
       class CustomSizeInput < CWM::InputField
-        def initialize
+        # @return [Y2Storage::DiskSize]
+        attr_accessor :size
+
+        # @return [Y2Storage::DiskSize]
+        attr_reader :min_size, :max_size
+
+        def initialize(slots)
           textdomain "storage"
+          @slots = slots
+          largest_region = @slots.map(&:region).max_by(&:size)
+          @size = @max_size = largest_region.size
+          @min_size = Y2Storage::DiskSize.new(1)
+        end
+
+        # @return [Y2Storage::Region] of the smallest slot
+        #   that can contain the chosen size
+        def parent_region
+          regions = @slots.map(&:region)
+          suitable_rs = regions.find_all { |r| r.size >= size }
+          suitable_rs.min_by(&:size)
+        end
+
+        # @return [Y2Storage::Region] create it in the smallest slot
+        #   that can contain the chosen size
+        def region
+          parent = parent_region
+          bsize = parent.block_size
+          length = (size.to_i / bsize.to_i.to_f).ceil
+          Y2Storage::Region.create(parent.start, length, bsize)
         end
 
         def label
@@ -142,46 +238,100 @@ module Y2Partitioner
         end
 
         def init
+          self.value = size
         end
 
         def store
+          self.size = value
+        end
+
+        def validate
+          v = value
+          if v.nil? || v > max_size
+            min_s = min_size.human_ceil
+            max_s = max_size.human_floor
+            Yast::Popup.Error(
+              Yast::Builtins.sformat(
+                # error popup, %1 and %2 are replaced by sizes
+                _("The size entered is invalid. Enter a size between %1 and %2."),
+                min_s, max_s
+              )
+            )
+            # TODO: Let CWM set the focus
+            Yast::UI.SetFocus(Id(widget_id))
+            false
+          else
+            true
+          end
+        end
+
+        # @return [Y2Storage::DiskSize,nil]
+        def value
+          Y2Storage::DiskSize.from_human_string(super)
+        rescue ArgumentError
+          nil
+        end
+
+        # @param v [Y2Storage::DiskSize]
+        def value=(v)
+          super(v.human_floor)
         end
       end
 
       # Specify start+end of the region
       class CustomRegion < CWM::CustomWidget
-        def initialize(disk, slots)
-          @disk = disk
-          @slot = slots.first
+        def initialize(slots)
+          raise ArgumentError if slots.empty?
           textdomain "storage"
+          @regions = slots.map(&:region)
+
+          largest_region = @regions.max_by(&:size)
+          self.start_block = largest_region.start
+          self.end_block = largest_region.last
         end
 
-        def contents
-          min_block = @disk.region.start
-          # FIXME: libyui widget overflow :-(
-          max_block = min_block + @disk.region.length - 1
-          start_block = @slot.region.start
-          end_block = start_block + @slot.region.length - 1
+        attr_accessor :start_block, :end_block
 
+        def contents
+          min_block = @regions.map(&:start).min
+          # FIXME: libyui widget overflow :-(
+          max_block = @regions.map(&:last).max
+
+          int_field = lambda do |id, label, val|
+            MinWidth(
+              10,
+              IntField(Id(id), label, min_block, max_block, val)
+            )
+          end
           VBox(
             Id(widget_id),
-            MinWidth(
-              10,
-              IntField(
-                Id(:start_block),
-                _("Start Block"),
-                min_block, max_block, start_block
-              )
-            ),
-            MinWidth(
-              10,
-              IntField(
-                Id(:end_block),
-                _("End Block"),
-                min_block, max_block, end_block
-              )
-            )
+            int_field.call(:start_block, _("Start Block"), start_block),
+            int_field.call(:end_block, _("End Block"), end_block)
           )
+        end
+
+        def store
+          self.start_block = Yast::UI.QueryWidget(Id(:start_block), :Value)
+          self.end_block = Yast::UI.QueryWidget(Id(:end_block), :Value)
+        end
+
+        def validate
+          # starting block must be in a region,
+          # ending block must be in the same region
+          store
+          parent = @regions.find { |r| r.cover?(start_block) }
+          return true if parent && parent.cover?(end_block)
+          # TODO: a better description why
+          # error popup
+          Yast::Popup.Error(_("The region entered is invalid."))
+          Yast::UI.SetFocus(Id(:start_block))
+          false
+        end
+
+        def region
+          len = end_block - start_block + 1
+          bsize = @regions.first.block_size # where does this come from?
+          Y2Storage::Region.create(start_block, len, bsize)
         end
       end
     end
