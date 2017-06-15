@@ -25,11 +25,50 @@ module Y2Partitioner
       end
 
       def contents
-        VBox(SizeWidget.new(@disk, @ptemplate, @slots))
+        HVSquash(SizeWidget.new(@disk, @ptemplate, @slots))
       end
 
-      # Choose partition size: maximum, size based, start-end based.
-      class SizeWidget < CWM::CustomWidget
+      # Like CWM::RadioButtons but the items are triples, not pairs:
+      # The third element is a WidgetTerm.
+      class ControllerRadioButtons < CWM::CustomWidget
+        def contents
+          Frame(
+            label,
+            MarginBox(
+              hspacing, vspacing,
+              RadioButtonGroup(Id(widget_id), buttons_with_widgets)
+            )
+          )
+        end
+
+        def hspacing
+          1.45
+        end
+
+        def vspacing
+          0.45
+        end
+
+      private
+
+        def buttons_with_widgets
+          items = self.items
+          widgets = self.widgets
+          raise ArgumentError unless items.size == widgets.size
+
+          terms = items.zip(widgets).map do |(id, text), widget|
+            VBox(
+              Left(RadioButton(Id(id), text)),
+              Left(HBox(HSpacing(4), VBox(widget)))
+            )
+          end
+          VBox(*terms)
+        end
+      end
+
+      # Choose a size (region, really) for a new partition
+      # from several options: use maximum, enter size, enter start+end
+      class SizeWidget < ControllerRadioButtons
         include Yast
         include Yast::UIShortcuts
 
@@ -50,6 +89,29 @@ module Y2Partitioner
           @max_size = r.block_size * r.length
         end
 
+        def label
+          _("New Partition Size")
+        end
+
+        def items
+          max_size_label = Builtins.sformat(_("Maximum Size (%1)"),
+            @max_size.to_human_string)
+          [
+            [:max_size, max_size_label],
+            [:custom_size, _("Custom Size")],
+            [:custom_region, _("Custom Region")]
+          ]
+        end
+
+        def widgets
+          @widgets ||= [
+            ::CWM::Empty.new(@empty_id ||= new_id),
+            # MinWidth(15, CustomSizeInput.new),
+            CustomSizeInput.new,
+            CustomRegion.new(@disk, @slots)
+          ]
+        end
+
         def init
           Yast::UI.ChangeWidget(Id(:max_size), :Enabled, false)
           Yast::UI.ChangeWidget(Id(:manual_size), :Enabled, false)
@@ -64,88 +126,62 @@ module Y2Partitioner
           @ptemplate.region = region
         end
 
-        def max_size_term
-          term(
-            :LeftRadioButton,
-            Id(:max_size),
-            Opt(:notify),
-            # radio button text, %1 is replaced by size
-            Builtins.sformat(
-              _("Maximum Size (%1)"),
-              @max_size.to_human_string
-            )
-          )
+        def new_id
+          "id_#{rand 65536}"
+        end
+      end
+
+      # Enter a human readable size
+      class CustomSizeInput < CWM::InputField
+        def initialize
+          textdomain "storage"
         end
 
-        def manual_size_term
-          # radio button text
-          term(
-            :LeftRadioButtonWithAttachment,
-            Id(:manual_size),
-            Opt(:notify),
-            _("Custom Size"),
-            VBox(
-              Id(:manual_size_attachment),
-              MinWidth(
-                15,
-                InputField(Id(:size_input), Opt(:shrinkable), _("Size"))
-              )
-            )
-          )
+        def label
+          _("Size")
         end
 
-        def manual_region_term
+        def init
+        end
+
+        def store
+        end
+      end
+
+      # Specify start+end of the region
+      class CustomRegion < CWM::CustomWidget
+        def initialize(disk, slots)
+          @disk = disk
+          @slot = slots.first
+          textdomain "storage"
+        end
+
+        def contents
           min_block = @disk.region.start
           # FIXME: libyui widget overflow :-(
           max_block = min_block + @disk.region.length - 1
           start_block = @slot.region.start
           end_block = start_block + @slot.region.length - 1
 
-          # radio button text
-          term(
-            :LeftRadioButtonWithAttachment,
-            Id(:manual_region),
-            Opt(:notify),
-            _("Custom Region"),
-            VBox(
-              Id(:manual_region_attachment),
-              MinWidth(
-                10,
-                IntField(
-                  Id(:start_block),
-                  _("Start Block"),
-                  min_block, max_block, start_block
-                )
-              ),
-              MinWidth(
-                10,
-                IntField(
-                  Id(:end_block),
-                  _("End Block"),
-                  min_block, max_block, end_block
-                )
+          VBox(
+            Id(widget_id),
+            MinWidth(
+              10,
+              IntField(
+                Id(:start_block),
+                _("Start Block"),
+                min_block, max_block, start_block
+              )
+            ),
+            MinWidth(
+              10,
+              IntField(
+                Id(:end_block),
+                _("End Block"),
+                min_block, max_block, end_block
               )
             )
           )
-        end
-
-        def contents
-          contents = HVSquash(
-            # frame heading
-            term(
-              :FrameWithMarginBox,
-              _("New Partition Size"),
-              RadioButtonGroup(
-                Id(:size),
-                VBox(
-                  max_size_term,
-                  manual_size_term,
-                  manual_region_term
-                )
-              )
-            )
-          )
-          ::UI::Greasemonkey.transform(contents)
         end
       end
     end
