@@ -44,6 +44,10 @@ module Y2Partitioner
           !value.nil?
         end
 
+        def init
+          self.value = items.first.first
+        end
+
         def store
           @ptemplate.type = Y2Storage::PartitionType.new(value)
         end
