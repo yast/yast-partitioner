@@ -26,7 +26,7 @@ module Y2Partitioner
       def items
         @pvs.map do |pv|
           device = pv.plain_blk_device
-          formatted = device.to_be_formatted?(DeviceGraphs.instance.original)
+          formatted = device.to_be_formatted?(DeviceGraphs.instance.system)
           [
             id_for_device(device), # use name as id
             device.name,

@@ -1,4 +1,6 @@
 ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
+# Find cwm/rspec
+$LOAD_PATH << File.expand_path("..", __FILE__)
 
 require "yast"
 require "yast/rspec"
@@ -29,11 +31,7 @@ require "y2partitioner/device_graphs"
 def devicegraph_stub(name)
   path = File.join(File.dirname(__FILE__), "data", name)
   storage = Y2Storage::StorageManager.fake_from_yaml(path)
-  storage.probed.copy(storage.staging)
 
-  dgs = Y2Partitioner::DeviceGraphs.instance
-  dgs.current = storage.staging
-  dgs.original = storage.probed
-
+  Y2Partitioner::DeviceGraphs.create_instance(storage.probed, storage.staging)
   storage
 end

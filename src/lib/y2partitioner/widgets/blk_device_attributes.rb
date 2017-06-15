@@ -52,7 +52,7 @@ module Y2Partitioner
       def device_udev_by_id
         ids = blk_device.udev_ids
         if ids.size > 1
-          paths.each_with_index.map do |id, index|
+          ids.each_with_index.map do |id, index|
             # TRANSLATORS: Device ID is udev ID for device,
             # %i is number when there are more paths
             format(_("Device ID %i: %s"), index + 1, id)

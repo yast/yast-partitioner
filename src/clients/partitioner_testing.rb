@@ -29,4 +29,4 @@ when /.xml$/
 else
   raise "Invalid testing parameter #{arg}"
 end
-Y2Partitioner::Clients::Main.run
+Y2Partitioner::Clients::Main.run(allow_commit: false)

@@ -1,9 +1,11 @@
 require "cwm/tree_pager"
+require "y2partitioner/device_graphs"
 require "y2partitioner/widgets/overview"
 require "y2partitioner/device_graphs"
 require "y2storage"
 
 Yast.import "CWM"
+Yast.import "Popup"
 Yast.import "Stage"
 Yast.import "Wizard"
 
@@ -23,26 +25,51 @@ module Y2Partitioner
     class Main
       extend Yast::I18n
       extend Yast::UIShortcuts
+      extend Yast::Logger
 
       # Run the client
-      def self.run
+      # @param allow_commit [Boolean] can we pass the point of no return
+      def self.run(allow_commit: true)
         textdomain "storage"
 
-        probed = Y2Storage::StorageManager.instance.y2storage_probed
-        staging = Y2Storage::StorageManager.instance.y2storage_staging
-        DeviceGraphs.instance.original = probed
-        DeviceGraphs.instance.current = staging
-        overview_w = Widgets::OverviewTreePager.new(staging)
-
-        contents = MarginBox(
-          0.5,
-          0.5,
-          overview_w
-        )
+        smanager = Y2Storage::StorageManager.instance
+        system = smanager.y2storage_probed
+        current = smanager.y2storage_staging
+        DeviceGraphs.create_instance(system, current)
 
         Yast::Wizard.CreateDialog unless Yast::Stage.initial
-        Yast::CWM.show(contents, caption: _("Partitioner"))
+        res = nil
+        loop do
+          contents = MarginBox(
+            0.5,
+            0.5,
+            Widgets::OverviewTreePager.new(DeviceGraphs.instance.current)
+          )
+          res = Yast::CWM.show(contents, caption: _("Partitioner"), skip_store_for: [:redraw])
+          break if res != :redraw
+        end
+
+        # Running system: presenting "Expert Partitioner: Summary" step now
+        # ep-main.rb SummaryDialog
+        if res == :next && should_commit?(allow_commit)
+          smanager.staging = DeviceGraphs.instance.current
+          smanager.commit
+        end
         Yast::Wizard.CloseDialog unless Yast::Stage.initial
+      end
+
+      # Ask whether to proceed with changing the disks;
+      # or inform that we will not do it.
+      # @return [Boolean] proceed
+      def self.should_commit?(allow_commit)
+        if allow_commit
+          q = "Modify the disks and potentially destroy your data?"
+          Yast::Popup.ContinueCancel(q)
+        else
+          m = "Nothing gets written, because the device graph is fake."
+          Yast::Popup.Message(m)
+          false
+        end
       end
     end
   end

@@ -1,6 +1,7 @@
 require "cwm/widget"
 require "cwm/tree"
 
+require "y2partitioner/device_graphs"
 require "y2partitioner/icons"
 require "y2partitioner/widgets/blk_devices_page"
 require "y2partitioner/widgets/disk_page"
@@ -95,7 +96,7 @@ module Y2Partitioner
 
       def disks_items
         @device_graph.disks.map do |disk|
-          page = DiskPage.new(disk, self)
+          page = DiskPage.new(disk.name, self)
           CWM::PagerTreeItem.new(page, children: partition_items(disk))
         end
       end
