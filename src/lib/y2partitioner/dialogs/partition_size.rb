@@ -1,39 +1,50 @@
 require "y2storage"
 require "yast"
 require "cwm/dialog"
-require "ui/greasemonkey"
 
 Yast.import "Popup"
 
 module Y2Storage
   # Monkey-patched Region to get a size
   class Region
+    # @return [Y2Storage::DiskSize] {#block_size} * {#length}
     def size
       block_size * length
     end
 
-    def last
-      start + length - 1
-    end
+    # #cover? like Range#cover?
 
+    # @param block [Fixnum] disk block number
     # @return [Boolean] is *block* inside the region?
     def cover?(block)
-      start <= block && block <= last
+      start <= block && block <= self.end
     end
   end
 
-  # Monkey-patched DiskSize to get a human_floor
+  # Monkey-patched DiskSize to get #human_floor
   class DiskSize
-    def human_ceil
-      return "unlimited" if unlimited?
-      float, unit_s = human_string_components
-      "#{(float * 100).ceil / 100.0} #{unit_s}"
-    end
-
+    # A human readable representation that does not exceed the exact size.
+    #
+    # If we have 4.999 GiB of space and prefill the "Size" widget
+    # with a "5.00 GiB" it will then fail validation. We must round down.
+    #
+    # @see to_human_string
     def human_floor
       return "unlimited" if unlimited?
       float, unit_s = human_string_components
       "#{(float * 100).floor / 100.0} #{unit_s}"
+    end
+
+    # A human readable representation that is at least the exact size.
+    #
+    # (This seems unnecessary because actual minimum sizes
+    # have few significant digits, but we use it for symmetry)
+    #
+    # @see to_human_string
+    def human_ceil
+      return "unlimited" if unlimited?
+      float, unit_s = human_string_components
+      "#{(float * 100).ceil / 100.0} #{unit_s}"
     end
   end
 end
@@ -287,7 +298,7 @@ module Y2Partitioner
 
           largest_region = @regions.max_by(&:size)
           self.start_block = largest_region.start
-          self.end_block = largest_region.last
+          self.end_block = largest_region.end
         end
 
         attr_accessor :start_block, :end_block
@@ -295,7 +306,7 @@ module Y2Partitioner
         def contents
           min_block = @regions.map(&:start).min
           # FIXME: libyui widget overflow :-(
-          max_block = @regions.map(&:last).max
+          max_block = @regions.map(&:end).max
 
           int_field = lambda do |id, label, val|
             MinWidth(

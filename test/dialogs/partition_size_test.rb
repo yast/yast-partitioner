@@ -15,7 +15,7 @@ describe "Partition Size widgets" do
     double("Region",
       block_size: Y2Storage::DiskSize.new(1000),
       cover?:     true,
-      last:       2999,
+      end:        2999,
       length:     1000,
       size:       Y2Storage::DiskSize.new(1_000_000),
       start:      2000)
