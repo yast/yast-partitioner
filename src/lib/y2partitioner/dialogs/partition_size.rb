@@ -78,41 +78,45 @@ module Y2Partitioner
       # Like CWM::RadioButtons but each RB has a subordinate indented widget.
       # This is kind of like Pager, but all Pages being visible at once,
       # and enabled/disabled.
-      # Besides `items` there are also `widgets`
+      # Besides {#items} you need to define also {#widgets}.
       class ControllerRadioButtons < CWM::CustomWidget
         def initialize
           self.handle_all_events = true
         end
 
+        # @return [WidgetTerm]
         def contents
           Frame(
             label,
-            MarginBox(
-              hspacing, vspacing,
-              RadioButtonGroup(Id(widget_id), buttons_with_widgets)
+            HBox(
+              HSpacing(hspacing),
+              RadioButtonGroup(Id(widget_id), buttons_with_widgets),
+              HSpacing(hspacing)
             )
           )
         end
 
-        # @return [Array<Array(String,String)>]
+        # @return [Numeric] margin at both sides of the options list
+        def hspacing
+          1.45
+        end
+
+        # @return [Numeric] margin above, between, and below the options
+        def vspacing
+          0.45
+        end
+
+        # @return [Array<Array(id,String)>]
         abstract_method :items
 
         # FIXME: allow {WidgetTerm}
         # @return [Array<AbstractWidget>]
         abstract_method :widgets
 
-        def hspacing
-          1.45
-        end
-
-        def vspacing
-          0.45
-        end
-
+        # @param event [Hash] UI event
         def handle(event)
           eid = event["ID"]
-          @ids ||= items.map(&:first)
-          @ids.zip(widgets).each do |id, widget|
+          ids.zip(widgets).each do |id, widget|
             if id == eid
               widget.enable
             else
@@ -130,7 +134,19 @@ module Y2Partitioner
           Yast::UI.ChangeWidget(Id(widget_id), :CurrentButton, val)
         end
 
+        # @return [AbstractWidget] the widget corresponding
+        #   to the currently selected option
+        def current_widget
+          idx = ids.index(value)
+          widgets[idx]
+        end
+
       private
+
+        # @return [Array<id>]
+        def ids
+          @ids ||= items.map(&:first)
+        end
 
         def buttons_with_widgets
           items = self.items
@@ -139,11 +155,12 @@ module Y2Partitioner
 
           terms = items.zip(widgets).map do |(id, text), widget|
             VBox(
+              VSpacing(vspacing),
               Left(RadioButton(Id(id), Opt(:notify), text)),
               Left(HBox(HSpacing(4), VBox(widget)))
             )
           end
-          VBox(*terms)
+          VBox(*terms, VSpacing(vspacing))
         end
       end
 
@@ -190,9 +207,7 @@ module Y2Partitioner
         end
 
         def store
-          v = value
-          @ids ||= items.map(&:first)
-          w = widgets[@ids.index(v)]
+          w = current_widget
           w.store
           @ptemplate.region = w.region
         end
