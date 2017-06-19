@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Thu Jun 29 07:48:18 UTC 2017 - mvidner@suse.com
+
+- moved CWM bits to yast2.rpm
+
+-------------------------------------------------------------------
 Tue Jun 27 08:20:22 UTC 2017 - mvidner@suse.com
 
 - Partition size dialog allows Maximum size, Custom size,
