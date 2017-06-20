@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun 20 11:37:00 UTC 2017 - mvidner@suse.com
+
+- Fixed building with newest yast2.rpm.
+- 3.3.4
+
+-------------------------------------------------------------------
 Mon Jun 12 07:54:55 UTC 2017 - mvidner@suse.com
 
 - Adding, editing, deleting partitions
