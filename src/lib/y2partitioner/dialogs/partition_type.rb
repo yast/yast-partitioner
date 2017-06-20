@@ -1,5 +1,6 @@
 require "yast"
 require "cwm/dialog"
+require "cwm/common_widgets"
 
 module Y2Partitioner
   module Dialogs

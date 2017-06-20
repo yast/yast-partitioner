@@ -35,3 +35,5 @@ def devicegraph_stub(name)
   Y2Partitioner::DeviceGraphs.create_instance(storage.probed, storage.staging)
   storage
 end
+
+devicegraph_stub("one-empty-disk.yml")

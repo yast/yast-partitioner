@@ -1,5 +1,6 @@
 require "yast"
 require "cwm/dialog"
+require "cwm/custom_widget"
 require "ui/greasemonkey"
 
 module Y2Partitioner

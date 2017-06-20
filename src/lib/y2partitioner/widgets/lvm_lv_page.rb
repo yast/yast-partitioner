@@ -1,5 +1,6 @@
 require "cwm/pager"
 
+require "y2partitioner/icons"
 require "y2partitioner/widgets/lvm_lv_description"
 
 module Y2Partitioner
