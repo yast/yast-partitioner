@@ -27,6 +27,6 @@ when /.xml$/
   # note: support only xml device graph, not xml output of probing commands
   Y2Storage::StorageManager.fake_from_xml(arg)
 else
-  raise "Invalid testing parameter #{arg}"
+  raise "Invalid testing parameter #{arg}, expecting foo.yml or foo.xml."
 end
 Y2Partitioner::Clients::Main.run(allow_commit: false)
