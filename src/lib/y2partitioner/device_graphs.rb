@@ -41,7 +41,7 @@ module Y2Partitioner
 
     class << self
       def instance
-        create_instance(system: nil, initial: nil) unless @instance
+        create_instance(nil, nil) unless @instance
         @instance
       end
 
