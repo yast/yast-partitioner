@@ -1,9 +1,9 @@
 ENV["Y2DIR"] = File.expand_path("../../src", __FILE__)
-# Find cwm/rspec
-$LOAD_PATH << File.expand_path("..", __FILE__)
 
 require "yast"
 require "yast/rspec"
+# Find cwm/rspec
+$LOAD_PATH.unshift File.expand_path("..", __FILE__)
 
 if ENV["COVERAGE"]
   require "simplecov"
