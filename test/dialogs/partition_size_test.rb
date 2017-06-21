@@ -4,25 +4,18 @@ require "cwm/rspec"
 require "y2partitioner/dialogs/partition_size"
 
 describe "Partition Size widgets" do
-  let(:disk) do
-    double("Disk",
-      name:   "mydisk",
-      region: region)
+  let(:ptemplate) do
+    double("partition template",
+      region:      region,
+      custom_size: Y2Storage::DiskSize.MiB(1))
   end
-  let(:ptemplate) { double("partition template") }
-  let(:slots) { [double("Slot", region: region)] }
+  let(:regions) { [region] }
   let(:region) do
-    double("Region",
-      block_size: Y2Storage::DiskSize.new(1000),
-      cover?:     true,
-      end:        2999,
-      length:     1000,
-      size:       Y2Storage::DiskSize.new(1_000_000),
-      start:      2000)
+    Y2Storage::Region.create(2000, 1000, Y2Storage::DiskSize.new(1500))
   end
 
   describe Y2Partitioner::Dialogs::PartitionSize do
-    subject { described_class.new(disk, ptemplate, slots) }
+    subject { described_class.new("mydisk", ptemplate, regions) }
 
     before do
       allow(Y2Partitioner::Dialogs::PartitionSize::SizeWidget)
@@ -32,13 +25,13 @@ describe "Partition Size widgets" do
   end
 
   describe Y2Partitioner::Dialogs::PartitionSize::SizeWidget do
-    subject { described_class.new(disk, ptemplate, slots) }
+    subject { described_class.new(ptemplate, regions) }
 
     include_examples "CWM::CustomWidget"
   end
 
   describe Y2Partitioner::Dialogs::PartitionSize::CustomSizeInput do
-    subject { described_class.new(slots) }
+    subject { described_class.new(ptemplate, regions) }
 
     before do
       allow(subject).to receive(:value).and_return nil
@@ -68,7 +61,11 @@ describe "Partition Size widgets" do
   end
 
   describe Y2Partitioner::Dialogs::PartitionSize::CustomRegion do
-    subject { described_class.new(slots) }
+    subject { described_class.new(ptemplate, regions) }
+    before do
+      allow(subject).to receive(:query_widgets)
+        .and_return [2200, 2500]
+    end
 
     include_examples "CWM::CustomWidget"
 

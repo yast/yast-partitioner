@@ -8,6 +8,21 @@ Yast.import "Wizard"
 
 module Y2Partitioner
   module Sequences
+    # Collecting params of partition to be created
+    # and remembering them across dialogs
+    class PartitionTemplate
+      # @return [Y2Storage::PartitionType]
+      attr_accessor :type
+      # @return [:max_size,:custom_size,:custom_region]
+      attr_accessor :size_choice
+      # for {#size_choice} == :custom_size
+      # @return [Y2Storage::DiskSize]
+      attr_accessor :custom_size
+      # for any {#size_choice} value this ends up with a valid value
+      # @return [Y2Storage::Region]
+      attr_accessor :region
+    end
+
     # formerly EpCreatePartition, DlgCreatePartition
     class AddPartition < UI::Sequence
       include Yast::Logger
@@ -15,8 +30,7 @@ module Y2Partitioner
       def initialize(disk_name)
         textdomain "storage"
         @disk_name = disk_name
-        # collecting params of partition to be created?
-        @ptemplate = Struct.new(:type, :region).new
+        @ptemplate = PartitionTemplate.new
       end
 
       def disk
@@ -72,11 +86,11 @@ module Y2Partitioner
       skip_stack :preconditions
 
       def type
-        Dialogs::PartitionType.run(disk, @ptemplate, @slots)
+        Dialogs::PartitionType.run(disk.name, @ptemplate, @slots)
       end
 
       def size
-        Dialogs::PartitionSize.run(disk, @ptemplate, @slots)
+        Dialogs::PartitionSize.run(disk.name, @ptemplate, @slots.map(&:region))
       end
 
       def role

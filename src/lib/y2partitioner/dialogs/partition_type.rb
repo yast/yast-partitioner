@@ -11,6 +11,7 @@ module Y2Partitioner
     class PartitionType < CWM::Dialog
       # Choose partition type: primary/extended/logical.
       class TypeChoice < CWM::RadioButtons
+        # @param ptemplate [#type] a Y2Storage::PartitionType field
         def initialize(ptemplate, slots)
           textdomain "storage"
           @ptemplate = ptemplate
@@ -46,7 +47,9 @@ module Y2Partitioner
         end
 
         def init
-          self.value = items.first.first
+          # Pick the first one available
+          default_pt = Y2Storage::PartitionType.new(items.first.first)
+          self.value = (@ptemplate.type ||= default_pt).to_s
         end
 
         def store
@@ -55,8 +58,8 @@ module Y2Partitioner
       end
 
       # @param slots [Array<Y2Storage::PartitionTables::PartitionSlot>]
-      def initialize(disk, ptemplate, slots)
-        @disk = disk
+      def initialize(disk_name, ptemplate, slots)
+        @disk_name = disk_name
         @ptemplate = ptemplate
         @slots = slots
         textdomain "storage"
@@ -64,7 +67,7 @@ module Y2Partitioner
 
       def title
         # dialog title
-        Yast::Builtins.sformat(_("Add Partition on %1"), @disk.name)
+        Yast::Builtins.sformat(_("Add Partition on %1"), @disk_name)
       end
 
       def contents

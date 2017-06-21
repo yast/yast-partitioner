@@ -12,23 +12,23 @@ module Y2Partitioner
     # Part of {Sequences::AddPartition}.
     # Formerly MiniWorkflowStepPartitionSize
     class PartitionSize < CWM::Dialog
-      # @param disk []
-      # @param ptemplate []
-      # @param slots []
-      def initialize(disk, ptemplate, slots)
+      # @param disk_name [String]
+      # @param ptemplate [#region]
+      # @param regions [Array<Y2Storage::Region>]
+      def initialize(disk_name, ptemplate, regions)
         textdomain "storage"
-        @disk = disk
+        @disk_name = disk_name
         @ptemplate = ptemplate
-        @slots = slots
+        @regions = regions
       end
 
       def title
         # dialog title
-        Yast::Builtins.sformat(_("Add Partition on %1"), @disk.name)
+        Yast::Builtins.sformat(_("Add Partition on %1"), @disk_name)
       end
 
       def contents
-        HVSquash(SizeWidget.new(@disk, @ptemplate, @slots))
+        HVSquash(SizeWidget.new(@ptemplate, @regions))
       end
 
       # Like CWM::RadioButtons but each RB has a subordinate indented widget.
@@ -126,12 +126,11 @@ module Y2Partitioner
         include Yast
         include Yast::UIShortcuts
 
-        def initialize(disk, ptemplate, slots)
+        def initialize(ptemplate, regions)
           textdomain "storage"
-          @disk = disk
           @ptemplate = ptemplate
-          @slots = slots
-          @largest_region = @slots.map(&:region).max_by(&:size)
+          @regions = regions
+          @largest_region = @regions.max_by(&:size)
         end
 
         def label
@@ -151,13 +150,13 @@ module Y2Partitioner
         def widgets
           @widgets ||= [
             MaxSizeDummy.new(@largest_region),
-            CustomSizeInput.new(@slots),
-            CustomRegion.new(@slots)
+            CustomSizeInput.new(@ptemplate, @regions),
+            CustomRegion.new(@ptemplate, @regions)
           ]
         end
 
         def init
-          self.value = :max_size
+          self.value = (@ptemplate.size_choice ||= :max_size)
           # trigger disabling the other subwidgets
           handle("ID" => value)
         end
@@ -166,6 +165,7 @@ module Y2Partitioner
           w = current_widget
           w.store
           @ptemplate.region = w.region
+          @ptemplate.size_choice = value
         end
       end
 
@@ -185,28 +185,33 @@ module Y2Partitioner
       # Enter a human readable size
       class CustomSizeInput < CWM::InputField
         # @return [Y2Storage::DiskSize]
-        attr_accessor :size
-
-        # @return [Y2Storage::DiskSize]
         attr_reader :min_size, :max_size
 
-        def initialize(slots)
+        def initialize(ptemplate, regions)
           textdomain "storage"
-          @slots = slots
-          largest_region = @slots.map(&:region).max_by(&:size)
-          @size = @max_size = largest_region.size
+          @ptemplate = ptemplate
+          @regions = regions
+          largest_region = @regions.max_by(&:size)
+          @max_size = largest_region.size
           @min_size = Y2Storage::DiskSize.new(1)
         end
 
-        # @return [Y2Storage::Region] of the smallest slot
+        def size
+          @ptemplate.custom_size
+        end
+
+        def size=(v)
+          @ptemplate.custom_size = v
+        end
+
+        # @return [Y2Storage::Region] the smallest region
         #   that can contain the chosen size
         def parent_region
-          regions = @slots.map(&:region)
-          suitable_rs = regions.find_all { |r| r.size >= size }
+          suitable_rs = @regions.find_all { |r| r.size >= size }
           suitable_rs.min_by(&:size)
         end
 
-        # @return [Y2Storage::Region] create it in the smallest slot
+        # @return [Y2Storage::Region] create it in the smallest region
         #   that can contain the chosen size
         def region
           parent = parent_region
@@ -220,6 +225,7 @@ module Y2Partitioner
         end
 
         def init
+          self.size ||= max_size
           self.value = size
         end
 
@@ -262,17 +268,14 @@ module Y2Partitioner
 
       # Specify start+end of the region
       class CustomRegion < CWM::CustomWidget
-        def initialize(slots)
-          raise ArgumentError if slots.empty?
+        def initialize(ptemplate, regions)
+          raise ArgumentError if regions.empty?
           textdomain "storage"
-          @regions = slots.map(&:region)
+          @ptemplate = ptemplate
+          @regions = regions
 
-          largest_region = @regions.max_by(&:size)
-          self.start_block = largest_region.start
-          self.end_block = largest_region.end
+          @ptemplate.region ||= @regions.max_by(&:size)
         end
-
-        attr_accessor :start_block, :end_block
 
         def contents
           min_block = @regions.map(&:start).min
@@ -287,20 +290,29 @@ module Y2Partitioner
           end
           VBox(
             Id(widget_id),
-            int_field.call(:start_block, _("Start Block"), start_block),
-            int_field.call(:end_block, _("End Block"), end_block)
+            int_field.call(:start_block, _("Start Block"), region.start),
+            int_field.call(:end_block, _("End Block"), region.end)
           )
         end
 
+        def query_widgets
+          [
+            Yast::UI.QueryWidget(Id(:start_block), :Value),
+            Yast::UI.QueryWidget(Id(:end_block), :Value)
+          ]
+        end
+
         def store
-          self.start_block = Yast::UI.QueryWidget(Id(:start_block), :Value)
-          self.end_block = Yast::UI.QueryWidget(Id(:end_block), :Value)
+          start_block, end_block = query_widgets
+          len = end_block - start_block + 1
+          bsize = @regions.first.block_size # where does this come from?
+          @ptemplate.region = Y2Storage::Region.create(start_block, len, bsize)
         end
 
         def validate
+          start_block, end_block = query_widgets
           # starting block must be in a region,
           # ending block must be in the same region
-          store
           parent = @regions.find { |r| r.cover?(start_block) }
           return true if parent && parent.cover?(end_block)
           # TODO: a better description why
@@ -311,9 +323,7 @@ module Y2Partitioner
         end
 
         def region
-          len = end_block - start_block + 1
-          bsize = @regions.first.block_size # where does this come from?
-          Y2Storage::Region.create(start_block, len, bsize)
+          @ptemplate.region
         end
       end
     end
