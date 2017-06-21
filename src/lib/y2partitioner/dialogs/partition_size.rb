@@ -1,6 +1,7 @@
 require "y2storage"
 require "yast"
 require "cwm/dialog"
+require "cwm/custom_widget"
 
 Yast.import "Popup"
 
