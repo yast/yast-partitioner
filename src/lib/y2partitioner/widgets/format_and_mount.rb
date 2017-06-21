@@ -2,19 +2,22 @@ require "yast"
 require "cwm"
 require "y2storage"
 require "y2partitioner/format_mount_options"
-require "y2partitioner/dialogs/encrypt_password"
+require "y2partitioner/dialogs/fstab_options"
+require "y2partitioner/widgets/fstab_options"
 
 module Y2Partitioner
   module Widgets
     # Format options for {Y2Storage::BlkDevice}
     class FormatOptions < CWM::CustomWidget
-      def initialize(options)
+      def initialize(options, mount_widget)
         textdomain "storage"
 
         @options = options
 
         @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
         @filesystem_widget = BlkDeviceFilesystem.new(@options.filesystem.to_s)
+
+        @mount_widget = mount_widget
 
         self.handle_all_events = true
       end
@@ -35,6 +38,10 @@ module Y2Partitioner
           select_format
         when :no_format_device
           select_no_format
+        when @filesystem_widget.widget_id
+          store
+
+          @mount_widget.reload
         end
 
         nil
@@ -100,12 +107,15 @@ module Y2Partitioner
         textdomain "storage"
 
         @options = options
-        fstab_options = []
 
-        @mount_point_widget = MountPoint.new(@options.mount_point)
-        @fstab_options_widget = FstabOptionsButton.new(fstab_options)
+        @mount_point_widget = MountPoint.new(@options)
+        @fstab_options_widget = FstabOptionsButton.new(@options)
 
         self.handle_all_events = true
+      end
+
+      def reload
+        @mount_point_widget.init
       end
 
       def init
@@ -180,6 +190,10 @@ module Y2Partitioner
         @filesystem = filesystem
       end
 
+      def opt
+        [:notify]
+      end
+
       def init
         self.value = @filesystem
       end
@@ -189,9 +203,13 @@ module Y2Partitioner
       end
 
       def items
-        Y2Storage::Filesystems::Type.all.map do |fs|
+        Y2Storage::Filesystems::Type.all.select { |fs| supported?(fs) }.map do |fs|
           [fs.to_s, fs.to_human_string]
         end
+      end
+
+      def supported?(fs)
+        [:reiserfs, :ext2, :ext3, :ext4, :vfat, :xfs, :btrfs].include? fs.to_sym
       end
 
       def store
@@ -207,12 +225,12 @@ module Y2Partitioner
 
     # MountPoint selector
     class MountPoint < CWM::ComboBox
-      def initialize(mount_point)
-        @mount_point = mount_point
+      def initialize(options)
+        @options = options
       end
 
       def init
-        self.value = @mount_point
+        self.value = @options.mount_point
       end
 
       def label
@@ -224,7 +242,7 @@ module Y2Partitioner
       end
 
       def store
-        @mount_point = value
+        @options.mount_point = value
       end
 
       def items
@@ -251,94 +269,74 @@ module Y2Partitioner
       end
     end
 
-    # FIME(WIP)
-    class FstabOptionsButton < CWM::PushButton
+    class InodeSize < CWM::ComboBox
+      SIZES = ["auto", "512", "1024", "2048", "4096"].freeze
+
       def initialize(options)
         @options = options
       end
 
       def label
-        _("Fstab options")
+        _("&Inode Size")
       end
 
-      def handle
-        Yast::UI.OpenDialog(Opt(:decorated), layout)
-
-        # FIXME: Handle edition
-        Yast::UI.UserInput
-
-        Yast::UI.CloseDialog()
-
-        nil
+      def help
       end
 
-      def layout
-        VBox(
-          HSpacing(50),
-          # heading text
-          Left(Heading(_("Fstab Options:"))),
-          VStretch(),
-          VSpacing(1),
-          HBox(HStretch(), HSpacing(1), dialog, HStretch(), HSpacing(1)),
-          VSpacing(1),
-          VStretch(),
-          ButtonBox(
-            PushButton(Id(:help), Opt(:helpButton), Yast::Label.HelpButton),
-            PushButton(Id(:ok), Opt(:default), Yast::Label.OKButton),
-            PushButton(Id(:cancel), Yast::Label.CancelButton)
-          )
-        )
+      def items
+        SIZES.map { |s| [s, s] }
+      end
+    end
+
+    class BlockSize < CWM::ComboBox
+      SIZES = ["auto", "512", "1024", "2048", "4096"].freeze
+
+      def initialize(options)
+        @options = options
       end
 
-    private
-
-      def dialog
-        VBox(
-          mount_by_content,
-          TextEntry(Id(:vol_label), Opt(:hstretch), _("Volume &Label")),
-          VSpacing(1),
-          Left(CheckBox(Id("opt_readonly"), _("Mount &Read-Only"), false)),
-          Left(CheckBox(Id("opt_noatime"), _("No &Access Time"), false)),
-          Left(CheckBox(Id("opt_user"), _("Mountable by User"), false)),
-          Left(
-            CheckBox(
-              Id("opt_noauto"),
-              Opt(:notify),
-              _("Do Not Mount at System &Start-up"), false
-            )
-          ),
-          Left(
-            CheckBox(
-              Id("opt_quota"),
-              Opt(:notify),
-              _("Enable &Quota Support"),
-              false
-            )
-          ),
-        )
+      def label
+        _("Block &Size in Bytes")
       end
 
-      def mount_by_content
-        RadioButtonGroup(
-          Id(:mt_group),
-          VBox(
-            # label text
-            Left(Label(_("Mount in /etc/fstab by"))),
-            HBox(
-              VBox(
-                Left(RadioButton(Id(:device), _("&Device Name"))),
-                Left(RadioButton(Id(:label), _("Volume &Label"))),
-                Left(RadioButton(Id(:uuid), _("&UUID")))
-              ),
-              Top(
-                VBox(
-                  Left(RadioButton(Id(:id), _("Device &ID"))),
-                  Left(RadioButton(Id(:path), _("Device &Path")))
-                )
-              )
-            )
-          )
-        )
+      def help
+        "<p><b>Block Size:</b>\nSpecify the size of blocks in bytes. " \
+          "Valid block size values are 512, 1024, 2048 and 4096 bytes " \
+          "per block. If auto is selected, the standard block size of " \
+          "4096 is used.</p>\n"
+      end
+
+      def items
+        SIZES.map { |s| [s, s] }
+      end
+    end
+
+    class IOCharset < CWM::ComboBox
+      def initialize(options)
+        @options = options
+      end
+
+      def label
+        _("Char&set for file names")
+      end
+
+      def help
+        "<p><b>Charset for File Names:</b>\nSet the charset used for display " \
+        "of file names in Windows partitions.</p>\n"
+      end
+
+      def opt
+        [:editable, :hstretch]
+      end
+
+      def items
+        [
+          "", "iso8859-1", "iso8859-15", "iso8859-2", "iso8859-5", "iso8859-7",
+          "iso8859-9", "utf8", "koi8-r", "euc-jp", "sjis", "gb2312", "big5",
+          "euc-kr"
+        ].map do |ch|
+          [ch, ch]
+        end
       end
     end
   end

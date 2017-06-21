@@ -21,7 +21,7 @@ module Y2Partitioner
 
       def run
         sequence_hash = {
-          "ws_start"     => "format_options",
+          "ws_start"       => "format_options",
           # FIXME: If encryption password is set in a different step then it
           # allows to go back and reset all the options to not modify the
           # partition at all but since the moment :next is preset the partition

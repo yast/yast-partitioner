@@ -12,8 +12,8 @@ module Y2Partitioner
         textdomain "storage"
 
         @options = options
-        @format_widget = Widgets::FormatOptions.new(@options)
         @mount_widget  = Widgets::MountOptions.new(@options)
+        @format_widget = Widgets::FormatOptions.new(@options, @mount_widget)
       end
 
       def title
