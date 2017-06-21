@@ -22,15 +22,16 @@ module Y2Partitioner
       @encrypt = false
       @type = partition.type.to_sym
       @id = partition.id
+      @mount_by = Y2Storage::Filesystems::MountByType::UUID
       if fs
         @filesystem  = partition.filesystem_type.to_s
         @mount_point = fs.mount_point
-        @mount_by =  fs.mount_by ? fs.mount_by.to_sym : :uuid
+        (@mount_by = fs.mount_by) if fs.mount_by
+        @label = fs.label
         @fstab_options = fs.fstab_options
       else
         @mount_point   = partition.respond_to?("mount_point") ? partition.mount_point : ""
         @filesystem    = default_fs
-        @mount_by = :uuid
         @fstab_options = []
       end
 

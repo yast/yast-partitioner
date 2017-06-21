@@ -84,11 +84,12 @@ module Y2Partitioner
       end
 
       def store
-        @options.mount_by = value
+        @options.mount_by = selected_mount_by
       end
 
       def init
-        Yast::UI.ChangeWidget(Id(:mt_group), :Value, @options.mount_by)
+        value = @options.mount_by ? @options.mount_by.to_sym : :uuid
+        Yast::UI.ChangeWidget(Id(:mt_group), :Value, value)
       end
 
       def contents
@@ -111,6 +112,12 @@ module Y2Partitioner
             )
           )
         )
+      end
+
+      def selected_mount_by
+        Y2Storage::Filesystems::MountByType.all.detect do |fs|
+          fs.to_sym == value
+        end
       end
 
       def value

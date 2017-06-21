@@ -75,7 +75,14 @@ module Y2Partitioner
 
         @partition.create_filesystem(@options.filesystem) if @options.format
 
-        (@partition.filesystem.mount_point = @options.mount_point) if @options.mount
+        if @options.mount
+          @partition.filesystem.mount_point = @options.mount_point
+          @partition.filesystem.mount_by = @options.mount_by
+          @partition.filesystem.label = @options.label
+          @partition.filesystem.fstab_options = @options.fstab_options
+        else
+          @partition.filesystem.mount_point = ""
+        end
 
         :finish
       end

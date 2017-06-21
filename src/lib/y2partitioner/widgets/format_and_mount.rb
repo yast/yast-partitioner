@@ -269,6 +269,7 @@ module Y2Partitioner
       end
     end
 
+    # Format option
     class InodeSize < CWM::ComboBox
       SIZES = ["auto", "512", "1024", "2048", "4096"].freeze
 
@@ -288,6 +289,7 @@ module Y2Partitioner
       end
     end
 
+    # Format option
     class BlockSize < CWM::ComboBox
       SIZES = ["auto", "512", "1024", "2048", "4096"].freeze
 
@@ -311,6 +313,7 @@ module Y2Partitioner
       end
     end
 
+    # Format option (VFAT)
     class IOCharset < CWM::ComboBox
       def initialize(options)
         @options = options
