@@ -5,51 +5,6 @@ require "cwm/custom_widget"
 
 Yast.import "Popup"
 
-module Y2Storage
-  # Monkey-patched Region to get a size
-  class Region
-    # @return [Y2Storage::DiskSize] {#block_size} * {#length}
-    def size
-      block_size * length
-    end
-
-    # #cover? like Range#cover?
-
-    # @param block [Fixnum] disk block number
-    # @return [Boolean] is *block* inside the region?
-    def cover?(block)
-      start <= block && block <= self.end
-    end
-  end
-
-  # Monkey-patched DiskSize to get #human_floor
-  class DiskSize
-    # A human readable representation that does not exceed the exact size.
-    #
-    # If we have 4.999 GiB of space and prefill the "Size" widget
-    # with a "5.00 GiB" it will then fail validation. We must round down.
-    #
-    # @see to_human_string
-    def human_floor
-      return "unlimited" if unlimited?
-      float, unit_s = human_string_components
-      "#{(float * 100).floor / 100.0} #{unit_s}"
-    end
-
-    # A human readable representation that is at least the exact size.
-    #
-    # (This seems unnecessary because actual minimum sizes
-    # have few significant digits, but we use it for symmetry)
-    #
-    # @see to_human_string
-    def human_ceil
-      return "unlimited" if unlimited?
-      float, unit_s = human_string_components
-      "#{(float * 100).ceil / 100.0} #{unit_s}"
-    end
-  end
-end
-
 module Y2Partitioner
   module Dialogs
     # Determine the size of a partition to be created, in the form
