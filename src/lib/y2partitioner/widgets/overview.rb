@@ -110,7 +110,13 @@ module Y2Partitioner
 
       def raid_items
         # TODO: real MD subtree
-        item_for("raid", _("RAID"), icon: Icons::RAID, subtree: [])
+        item_for("raid", _("RAID"), icon: Icons::RAID, subtree: mds_items)
+      end
+
+      def mds_items
+        Y2Storage::Md.all(@device_graph).map do |md|
+          item_for("md:#{md.name}", md.basename)
+        end
       end
 
       def lvm_items
