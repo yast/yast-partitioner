@@ -40,7 +40,8 @@ module Y2Partitioner
             device.filesystem_label || "",
             device.filesystem_mountpoint || "",
             "TODO",
-            device.chunk_size.to_human_string
+            # according to mdadm(8): chunk size "is only meaningful for RAID0, RAID4, RAID5, RAID6, and RAID10"
+            device.chunk_size.zero? ? "" : device.chunk_size.to_human_string
 
           ]
         end
