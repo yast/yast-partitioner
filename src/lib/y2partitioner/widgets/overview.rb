@@ -8,6 +8,7 @@ require "y2partitioner/widgets/disk_page"
 require "y2partitioner/widgets/lvm_page"
 require "y2partitioner/widgets/lvm_lv_page"
 require "y2partitioner/widgets/lvm_vg_page"
+require "y2partitioner/widgets/md_raids_page"
 require "y2partitioner/widgets/partition_page"
 
 Yast.import "Hostname"
@@ -109,12 +110,13 @@ module Y2Partitioner
       end
 
       def raid_items
-        # TODO: real MD subtree
-        item_for("raid", _("RAID"), icon: Icons::RAID, subtree: mds_items)
+        page = MdRaidsPage.new(Y2Storage::Md.all(@device_graph), self)
+        CWM::PagerTreeItem.new(page, children: mds_items, icon: Icons::RAID)
       end
 
       def mds_items
         Y2Storage::Md.all(@device_graph).map do |md|
+          # TODO use real page
           item_for("md:#{md.name}", md.basename)
         end
       end

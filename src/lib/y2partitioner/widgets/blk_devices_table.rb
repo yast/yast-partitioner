@@ -59,6 +59,8 @@ module Y2Partitioner
           res << "lvm_lv:#{device.lv_name}"
         elsif device.is?(:lvm_vg)
           res << "lvm_vg:#{device.vg_name}"
+        elsif device.is?(:md)
+          res << "md:#{device.name}"
         else
           raise "unsuported type #{device.inspect}"
         end
