@@ -15,8 +15,7 @@ module Y2Partitioner
         @options = options
 
         @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
-        @filesystem_widget = BlkDeviceFilesystem.new(@options.filesystem.to_s)
-
+        @filesystem_widget = BlkDeviceFilesystem.new(@options)
         @mount_widget = mount_widget
 
         self.handle_all_events = true
@@ -29,7 +28,6 @@ module Y2Partitioner
       def store
         @options.format = format?
         @options.encrypt = encrypt?
-        @options.filesystem = @filesystem_widget.selected_filesystem
       end
 
       def handle(event)
@@ -60,7 +58,10 @@ module Y2Partitioner
                   Left(RadioButton(Id(:format_device), Opt(:notify), _("Format device"))),
                   HBox(
                     HSpacing(4),
-                    Left(@filesystem_widget)
+                    VBox(
+                      Left(@filesystem_widget),
+                      Left(FormatOptionsButton.new(@options))
+                    )
                   ),
                   Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Do not format device")))
                 )
@@ -184,18 +185,24 @@ module Y2Partitioner
 
     # BlkDevice Filesystem selector
     class BlkDeviceFilesystem < CWM::ComboBox
-      def initialize(filesystem)
+      def initialize(options)
         textdomain "storage"
 
-        @filesystem = filesystem
+        @options = options
       end
 
       def opt
-        [:notify]
+        [:hstretch, :notify]
       end
 
       def init
-        self.value = @filesystem
+        self.value = @options.filesystem_type.to_sym
+      end
+
+      def handle
+        store
+
+        nil
       end
 
       def label
@@ -204,25 +211,39 @@ module Y2Partitioner
 
       def items
         Y2Storage::Filesystems::Type.all.select { |fs| supported?(fs) }.map do |fs|
-          [fs.to_s, fs.to_human_string]
+          [fs.to_sym, fs.to_human_string]
         end
       end
 
       def supported?(fs)
-        [:reiserfs, :ext2, :ext3, :ext4, :vfat, :xfs, :btrfs].include? fs.to_sym
+        [:btrfs, :ext2, :ext3, :ext4, :vfat, :xfs, :reiserfs].include?(fs.to_sym)
       end
 
       def store
-        @filesystem = value
-      end
-
-      def selected_filesystem
-        Y2Storage::Filesystems::Type.all.detect do |fs|
-          fs.to_s == value
-        end
+        @options.filesystem_type = Y2Storage::Filesystems::Type.find(value)
       end
     end
 
+    class FormatOptionsButton < CWM::PushButton
+      def initialize(options)
+        @options = options
+      end
+
+      def opt
+        [:hstretch, :notify]
+      end
+
+      def label
+        _("Options...")
+      end
+
+      def handle
+        #Dialogs::FormatOptions.new(@options).run
+
+        nil
+      end
+
+    end
     # MountPoint selector
     class MountPoint < CWM::ComboBox
       def initialize(options)
@@ -246,7 +267,7 @@ module Y2Partitioner
       end
 
       def items
-        %w(/root /home /opt /var).map { |mp| [mp, mp] }
+        %w(/root /home /srv /tmp /opt /var).map { |mp| [mp, mp] }
       end
     end
 
@@ -310,36 +331,6 @@ module Y2Partitioner
 
       def items
         SIZES.map { |s| [s, s] }
-      end
-    end
-
-    # Format option (VFAT)
-    class IOCharset < CWM::ComboBox
-      def initialize(options)
-        @options = options
-      end
-
-      def label
-        _("Char&set for file names")
-      end
-
-      def help
-        "<p><b>Charset for File Names:</b>\nSet the charset used for display " \
-        "of file names in Windows partitions.</p>\n"
-      end
-
-      def opt
-        [:editable, :hstretch]
-      end
-
-      def items
-        [
-          "", "iso8859-1", "iso8859-15", "iso8859-2", "iso8859-5", "iso8859-7",
-          "iso8859-9", "utf8", "koi8-r", "euc-jp", "sjis", "gb2312", "big5",
-          "euc-kr"
-        ].map do |ch|
-          [ch, ch]
-        end
       end
     end
   end
