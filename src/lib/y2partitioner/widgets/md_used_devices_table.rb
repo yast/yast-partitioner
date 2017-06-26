@@ -11,7 +11,6 @@ module Y2Partitioner
   module Widgets
     # Table widget to represent used devices by given Y2Storage::Md.
     class MdUsedDevicesTable < UsedDevicesTable
-
       # @param md [Y2Storage::LvmMd] device to display
       # @param pager [CWM::Pager] table have feature, that double click change content of pager
       #   if someone do not need this feature, make it only optional

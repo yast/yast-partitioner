@@ -76,7 +76,7 @@ module Y2Partitioner
           device_size,
           device_encrypted,
           device_udev_by_path.join(Yast::HTML.Newline),
-          device_udev_by_id.join(Yast::HTML.Newline),
+          device_udev_by_id.join(Yast::HTML.Newline)
         ]
       end
     end
