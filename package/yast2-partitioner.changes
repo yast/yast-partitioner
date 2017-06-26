@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jun 26 09:06:20 UTC 2017 - jreidinger@suse.com
+
+- read-only md raid view
+- 3.3.5
+
+-------------------------------------------------------------------
 Tue Jun 20 11:37:00 UTC 2017 - mvidner@suse.com
 
 - Fixed building with newest yast2.rpm.
