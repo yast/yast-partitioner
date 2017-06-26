@@ -8,7 +8,7 @@ require "y2partitioner/widgets/md_used_devices_table"
 
 module Y2Partitioner
   module Widgets
-    # A Page for a md raid device: contains {DiskTab} and {UsedDevicesTab}
+    # A Page for a md raid device: contains {MdTab} and {MdUsedDevicesTab}
     class MdRaidPage < CWM::Page
       def initialize(md, pager)
         textdomain "storage"
@@ -34,7 +34,7 @@ module Y2Partitioner
           ),
           CWM::Tabs.new(
             MdTab.new(@md),
-            UsedDevicesTab.new(@md, @pager)
+            MdUsedDevicesTab.new(@md, @pager)
           )
         )
       end
@@ -64,7 +64,7 @@ module Y2Partitioner
     end
 
     # A Tab for devices used by given md raid device
-    class UsedDevicesTab < CWM::Tab
+    class MdUsedDevicesTab < CWM::Tab
       def initialize(md, pager)
         textdomain "storage"
         @md = md

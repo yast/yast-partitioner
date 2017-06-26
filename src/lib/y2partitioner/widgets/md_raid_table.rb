@@ -28,7 +28,7 @@ module Y2Partitioner
         @mds.map do |device|
           graph = DeviceGraphs.instance.system
           formatted = device.to_be_formatted?(graph)
-          res = [
+          [
             id_for_device(device), # use name as id
             device.name,
             device.size.to_human_string,
