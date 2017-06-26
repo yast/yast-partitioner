@@ -4,6 +4,7 @@ require "cwm/tree_pager"
 require "y2partitioner/device_graphs"
 require "y2partitioner/icons"
 require "y2partitioner/widgets/md_description"
+require "y2partitioner/widgets/md_used_devices_table"
 
 module Y2Partitioner
   module Widgets
@@ -77,7 +78,7 @@ module Y2Partitioner
 
       # @macro seeCustomWidget
       def contents
-        Label("TODO")
+        @contents ||= VBox(MdUsedDevicesTable.new(@md, @pager))
       end
     end
   end
