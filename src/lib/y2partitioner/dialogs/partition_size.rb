@@ -23,11 +23,13 @@ module Y2Partitioner
         @regions = regions
       end
 
+      # @macro seeDialog
       def title
         # dialog title
         Yast::Builtins.sformat(_("Add Partition on %1"), @disk_name)
       end
 
+      # @macro seeDialog
       def contents
         HVSquash(SizeWidget.new(@ptemplate, @regions))
       end
@@ -83,10 +85,12 @@ module Y2Partitioner
           nil
         end
 
+        # Get the currently selected radio button from the UI
         def value
           Yast::UI.QueryWidget(Id(widget_id), :CurrentButton)
         end
 
+        # Tell the UI to change the currently selected radio button
         def value=(val)
           Yast::UI.ChangeWidget(Id(widget_id), :CurrentButton, val)
         end
@@ -134,6 +138,7 @@ module Y2Partitioner
           @largest_region = @regions.max_by(&:size)
         end
 
+        # @macro seeAbstractWidget
         def label
           _("New Partition Size")
         end
@@ -156,12 +161,14 @@ module Y2Partitioner
           ]
         end
 
+        # @macro seeAbstractWidget
         def init
           self.value = (@ptemplate.size_choice ||= :max_size)
           # trigger disabling the other subwidgets
           handle("ID" => value)
         end
 
+        # @macro seeAbstractWidget
         def store
           w = current_widget
           w.store
@@ -178,6 +185,7 @@ module Y2Partitioner
           @region = region
         end
 
+        # @macro seeAbstractWidget
         def store
           # nothing to do, that's OK
         end
@@ -197,10 +205,12 @@ module Y2Partitioner
           @min_size = Y2Storage::DiskSize.new(1)
         end
 
+        # Forward to ptemplate
         def size
           @ptemplate.custom_size
         end
 
+        # Forward to ptemplate
         def size=(v)
           @ptemplate.custom_size = v
         end
@@ -221,19 +231,23 @@ module Y2Partitioner
           Y2Storage::Region.create(parent.start, length, bsize)
         end
 
+        # @macro seeAbstractWidget
         def label
           _("Size")
         end
 
+        # @macro seeAbstractWidget
         def init
           self.size ||= max_size
           self.value = size
         end
 
+        # @macro seeAbstractWidget
         def store
           self.size = value
         end
 
+        # @macro seeAbstractWidget
         def validate
           v = value
           if v.nil? || v > max_size
@@ -278,6 +292,7 @@ module Y2Partitioner
           @ptemplate.region ||= @regions.max_by(&:size)
         end
 
+        # @macro seeCustomWidget
         def contents
           min_block = @regions.map(&:start).min
           # FIXME: libyui widget overflow :-(
@@ -303,6 +318,7 @@ module Y2Partitioner
           ]
         end
 
+        # @macro seeAbstractWidget
         def store
           start_block, end_block = query_widgets
           len = end_block - start_block + 1
@@ -310,6 +326,7 @@ module Y2Partitioner
           @ptemplate.region = Y2Storage::Region.create(start_block, len, bsize)
         end
 
+        # @macro seeAbstractWidget
         def validate
           start_block, end_block = query_widgets
           # starting block must be in a region,
