@@ -1,6 +1,6 @@
 require "yast"
-require "cwm"
 require "y2storage"
+require "cwm/custom_widget"
 require "y2partitioner/format_mount_options"
 require "y2partitioner/dialogs/fstab_options"
 require "y2partitioner/widgets/fstab_options"
@@ -37,7 +37,10 @@ module Y2Partitioner
         when :no_format_device
           select_no_format
         when @filesystem_widget.widget_id
+          # FIXME: When the filesystem change it should reload all the
+          # widgets, a redraw will lost the focus.
           store
+          @filesystem_widget.store
 
           @mount_widget.reload
         end
@@ -199,12 +202,6 @@ module Y2Partitioner
         self.value = @options.filesystem_type.to_sym
       end
 
-      def handle
-        store
-
-        nil
-      end
-
       def label
         _("Filesystem")
       end
@@ -224,6 +221,8 @@ module Y2Partitioner
       end
     end
 
+    # Push Button that launches a dialog to set speficic options for the
+    # selected filesystem
     class FormatOptionsButton < CWM::PushButton
       def initialize(options)
         @options = options
@@ -238,12 +237,12 @@ module Y2Partitioner
       end
 
       def handle
-        #Dialogs::FormatOptions.new(@options).run
+        # Dialogs::FormatOptions.new(@options).run
 
         nil
       end
-
     end
+
     # MountPoint selector
     class MountPoint < CWM::ComboBox
       def initialize(options)
@@ -290,7 +289,7 @@ module Y2Partitioner
       end
     end
 
-    # Format option
+    # Inode Size format option
     class InodeSize < CWM::ComboBox
       SIZES = ["auto", "512", "1024", "2048", "4096"].freeze
 
@@ -310,7 +309,7 @@ module Y2Partitioner
       end
     end
 
-    # Format option
+    # Block Size format option
     class BlockSize < CWM::ComboBox
       SIZES = ["auto", "512", "1024", "2048", "4096"].freeze
 

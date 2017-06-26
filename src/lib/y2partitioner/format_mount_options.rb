@@ -3,26 +3,23 @@ require "y2storage"
 
 module Y2Storage
   module Filesystems
+    # FIXME: Temporal Monkey patching of fstab options per filesystem type. It
+    # could/should be moved to yast2-storage-ng.
     class Type
       MOUNT_OPTIONS = {
         btrfs:    {
           fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
                           "noauto", "ro", "rw", "defaults"]
-
-
         },
         ext2:     {
           fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
                           "noauto", "ro", "rw", "defaults", "dev", "nodev",
                           "usrquota", "grpquota", "acl", "noacl"]
-
-
         },
         ext3:     {
           fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
                           "noauto", "ro", "rw", "defaults", "dev", "nodev",
                           "usrquota", "grpquota", "data=", "acl", "noacl"]
-
         },
         ext4:     {
           fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
@@ -36,7 +33,7 @@ module Y2Storage
           fstab_options: []
         },
         jfs:      {
-          fstab_options:  []
+          fstab_options: []
         },
         msdos:    {
           fstab_options: []
@@ -68,7 +65,7 @@ module Y2Storage
         udf:      {
           fstab_options: ["acl", "noacl"]
         }
-      }
+      }.freeze
 
       def supported_fstab_options
         MOUNT_OPTIONS[to_sym][:fstab_options] || []
@@ -78,6 +75,9 @@ module Y2Storage
 end
 
 module Y2Partitioner
+  # Helper class to store and remember format and mount options during
+  # different dialogs avoiding the direct modification of the blk_device being
+  # edited
   class FormatMountOptions
     # @return [Y2Storage::Filesystem::Type]
     attr_accessor :filesystem_type
@@ -123,23 +123,22 @@ module Y2Partitioner
     end
 
     def set_defaults!
-      @format   = false
-      @encrypt  = false
+      @format = false
+      @encrypt = false
       @mount_by = Y2Storage::Filesystems::MountByType::UUID
-      @filesystem_type    = default_fs
+      @filesystem_type = default_fs
       @fstab_options = []
     end
 
-    def options_for_partition(partition, defaults = false)
+    def options_for_partition(partition)
       @name = partition.name
       @type = partition.type
       @id = partition.id
-      @mount_point   = partition.respond_to?("mount_point") ? partition.mount_point : ""
+      @mount_point = partition.respond_to?("mount_point") ? partition.mount_point : ""
 
-      options_for_filesystem(partition.filesystem) if partition.filesystem
       fs = partition.filesystem
       if fs
-        @filesystem_type  = partition.filesystem_type
+        @filesystem_type = partition.filesystem_type
         @mount_point = fs.mount_point
         @mount_by = fs.mount_by if fs.mount_by
         @label = fs.label
@@ -147,33 +146,21 @@ module Y2Partitioner
       end
     end
 
+    # FIXME: To be implemented mainly for {Sequences::AddPartition}
     def options_for_role(role)
       case role
       when :swap
-        @format      = true
+        @format = true
         @mount_point = "swap"
-        @filesystem_type  = Y2Storage::Filesystems::Type::SWAP
+        @filesystem_type = Y2Storage::Filesystems::Type::SWAP
       when :efi_boot
         @mount_point = "/boot/efi"
-        @format      = true
+        @format = true
       when :raw
-        @format      = false
+        @format = false
       else
         @mount_point = ""
         @filesystem = default_fs
-      end
-    end
-
-    def options_for_filesystem(filesystem)
-      case filesystem.type
-      when Y2Storage::Filesystems::Type::SWAP
-        @mount_point = "swap"
-      when Y2Storage::Filesystems::Type::EXT2
-      when Y2Storage::Filesystems::Type::EXT3
-      when Y2Storage::Filesystems::Type::EXT4
-      when Y2Storage::Filesystems::Type::XFS
-      when Y2Storage::Filesystems::Type::BTRFS
-      else
       end
     end
 
