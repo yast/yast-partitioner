@@ -59,14 +59,14 @@ module Y2Partitioner
       def raid_attributes_list
         [
           # TRANSLATORS: Type of RAID
-          format(_("RAID Type: %s"), "TODO"),
+          format(_("RAID Type: %s"), md.md_level.to_human_string),
           # TRANSLATORS: chunk size of md raid
           # according to mdadm(8): chunk size "is only meaningful for RAID0, RAID4,
           # RAID5, RAID6, and RAID10"
           format(_("Chunk Size: %s"),
             md.chunk_size.zero? ? "" : md.chunk_size.to_human_string),
           # TRANSLATORS: parity algorithm of md raid
-          format(_("Partity algorithm: %s"), "TODO")
+          format(_("Partity algorithm: %s"), md.md_parity.to_human_string)
         ]
       end
 
