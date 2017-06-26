@@ -20,6 +20,13 @@ module Y2Storage
 end
 
 arg = Yast::WFM.Args.first
-storage = Y2Storage::StorageManager.fake_from_yaml(arg)
-storage.probed.copy(storage.staging)
+case arg
+when /.ya?ml$/
+  Y2Storage::StorageManager.fake_from_yaml(arg)
+when /.xml$/
+  # note: support only xml device graph, not xml output of probing commands
+  Y2Storage::StorageManager.fake_from_xml(arg)
+else
+  raise "Invalid testing parameter #{arg}, expecting foo.yml or foo.xml."
+end
 Y2Partitioner::Clients::Main.run(allow_commit: false)
