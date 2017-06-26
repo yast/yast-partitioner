@@ -80,7 +80,13 @@ module Y2Partitioner
       def handle(event)
         case event["ID"]
         when :help
-          Yast::Wizard.ShowHelp()
+          help = []
+
+          widgets.each do |w|
+            help << w.help if w.respond_to? "help"
+          end
+
+          Yast::Wizard.ShowHelp(help.join("\n"))
         end
 
         nil
@@ -101,6 +107,12 @@ module Y2Partitioner
 
       def supported_filesystems
         [:btrfs, :ext2, :ext3, :ext4, :reiserfs]
+      end
+
+    private
+
+      def widgets
+        Yast::CWM.widgets_in_contents([self])
       end
     end
 

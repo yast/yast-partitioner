@@ -12,8 +12,6 @@ module Y2Partitioner
         textdomain "storage"
 
         @options = options
-        @mount_widget  = Widgets::MountOptions.new(@options)
-        @format_widget = Widgets::FormatOptions.new(@options, @mount_widget)
       end
 
       def title
@@ -23,11 +21,23 @@ module Y2Partitioner
       def contents
         HVSquash(
           HBox(
-            @format_widget,
-            HSpacing(4),
-            @mount_widget
+            Widgets::FormatOptions.new(@options),
+            HSpacing(5),
+            Widgets::MountOptions.new(@options)
           )
         )
+      end
+
+      def run_assuming_open
+        ret = nil
+
+        loop do
+          ret = super
+
+          break if ret != :redraw
+        end
+
+        ret
       end
     end
   end

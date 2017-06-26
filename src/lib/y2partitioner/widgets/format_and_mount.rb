@@ -9,14 +9,13 @@ module Y2Partitioner
   module Widgets
     # Format options for {Y2Storage::BlkDevice}
     class FormatOptions < CWM::CustomWidget
-      def initialize(options, mount_widget)
+      def initialize(options)
         textdomain "storage"
 
         @options = options
 
         @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
         @filesystem_widget = BlkDeviceFilesystem.new(@options)
-        @mount_widget = mount_widget
 
         self.handle_all_events = true
       end
@@ -37,12 +36,7 @@ module Y2Partitioner
         when :no_format_device
           select_no_format
         when @filesystem_widget.widget_id
-          # FIXME: When the filesystem change it should reload all the
-          # widgets, a redraw will lost the focus.
-          store
-          @filesystem_widget.store
-
-          @mount_widget.reload
+          return :redraw
         end
 
         nil
