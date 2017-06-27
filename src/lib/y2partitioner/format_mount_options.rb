@@ -77,6 +77,14 @@ module Y2Storage
       def supported_fstab_options
         MOUNT_OPTIONS[to_sym][:fstab_options] || []
       end
+
+      def encryptable?
+        MOUNT_OPTIONS[to_sym][:supports_encryption] || false
+      end
+
+      def formattable?
+        MOUNT_OPTIONS[to_sym][:supports_format] || false
+      end
     end
   end
 end

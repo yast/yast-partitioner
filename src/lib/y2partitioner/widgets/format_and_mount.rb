@@ -13,15 +13,21 @@ module Y2Partitioner
         textdomain "storage"
 
         @options = options
-
         @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
         @filesystem_widget = BlkDeviceFilesystem.new(@options)
+        @format_options    = FormatOptionsButton.new(@options)
 
         self.handle_all_events = true
       end
 
       def init
-        @options.format ? select_format : select_no_format
+        if @options.filesystem_type && !@options.filesystem_type.formattable?
+          select_no_format
+          Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, false)
+        else
+          Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, false)
+          @options.format ? select_format : select_no_format
+        end
       end
 
       def store
@@ -57,7 +63,7 @@ module Y2Partitioner
                     HSpacing(4),
                     VBox(
                       Left(@filesystem_widget),
-                      Left(FormatOptionsButton.new(@options))
+                      Left(@format_options)
                     )
                   ),
                   Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Do not format device")))
@@ -71,21 +77,17 @@ module Y2Partitioner
 
     private
 
-      # FIXME: This method has been copied from {Y2Storage::Proposal::Encrypter}
-      # and should be moved probably to {Y2Storage::Encription}
-      def dm_name_for(device)
-        name = device.name.split("/").last
-        "cr_#{name}"
-      end
-
       def select_format
         @filesystem_widget.enable
+        @format_options.enable
         Yast::UI.ChangeWidget(Id(:format_device), :Value, true)
         @format = true
       end
 
       def select_no_format
         @filesystem_widget.disable
+        @format_options.disable
+
         Yast::UI.ChangeWidget(Id(:no_format_device), :Value, true)
         @format = false
       end
@@ -157,10 +159,20 @@ module Y2Partitioner
         case event["ID"]
         when :mount_device
           @mount_point_widget.enable
-          @fstab_options_widget.enable
+          if @mount_point_widget.value.to_s.empty?
+            @fstab_options_widget.disable
+          else
+            @fstab_options_widget.enable
+          end
         when :no_mount_device
           @fstab_options_widget.disable
           @mount_point_widget.disable
+        when @mount_point_widget.widget_id
+          if @mount_point_widget.value.to_s.empty?
+            @fstab_options_widget.disable
+          else
+            @fstab_options_widget.enable
+          end
         end
 
         nil
