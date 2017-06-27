@@ -2,12 +2,14 @@ require_relative "../test_helper"
 
 require "cwm/rspec"
 require "y2partitioner/dialogs/partition_size"
+require "y2partitioner/sequences/add_partition"
 
 describe "Partition Size widgets" do
   let(:ptemplate) do
-    double("partition template",
-      region:      region,
-      custom_size: Y2Storage::DiskSize.MiB(1))
+    pt = Y2Partitioner::Sequences::PartitionTemplate.new
+    pt.region = region
+    pt.custom_size = Y2Storage::DiskSize.MiB(1)
+    pt
   end
   let(:regions) { [region] }
   let(:region) do
