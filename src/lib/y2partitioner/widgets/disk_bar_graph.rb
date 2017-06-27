@@ -37,8 +37,10 @@ module Y2Partitioner
         # lets use size in MiB, disks are now so big, that otherwise it will overflow
         # even for few TB and we passing values to libyui in too low data. Ignoring anything
         # below 1MiB looks OK for me (JReidinger)
-        sizes = data.map { |i| i[0].size.to_i / (2**20) }
-        labels = data.map { |i| i[1] + "\n" + i[0].size.to_human_string }
+        sizes = data.map { |(region, _)| region.size.to_i / (2**20) }
+        labels = data.map do |(region, label)|
+          label + "\n" + region.size.to_human_string
+        end
         BarGraph(sizes, labels)
       end
     end
