@@ -1,14 +1,18 @@
 require_relative "../test_helper"
 
 require "cwm/rspec"
+require "y2partitioner/device_graphs"
 require "y2partitioner/widgets/overview"
 
 describe Y2Partitioner::Widgets::OverviewTreePager do
-  let(:device_graph) do
-    double("Device Graph",
-      disks: [], lvm_vgs: [])
+  subject do
+
+    smanager = Y2Storage::StorageManager.instance
+    system = smanager.y2storage_probed
+    current = smanager.y2storage_staging
+    Y2Partitioner::DeviceGraphs.create_instance(system, current)
+    described_class.new(current)
   end
-  subject { described_class.new(device_graph) }
 
   include_examples "CWM::Pager"
 end
