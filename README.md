@@ -13,6 +13,7 @@ To run it on running system call it via `yast2 partitioner` or `yast2 storage`.
 It is also possible to run it with device graph from file with `yast2 partitioner_testing <path to file>`. Supported formats are
 [yast2-storage-ng yml format](https://github.com/yast/yast-storage-ng/blob/master/doc/fake-devicegraphs-yaml-format.md)
 [and libstorage xml format](https://github.com/openSUSE/libstorage-ng).
+
 [//]: # (TODO: find better link for xml format)
 
 ## Intentional Differences to Old Expert Partitioner
