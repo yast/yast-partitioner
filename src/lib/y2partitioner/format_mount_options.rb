@@ -54,7 +54,9 @@ module Y2Storage
           fstab_options: []
         },
         swap:     {
-          fstab_options: ["priority"]
+          fstab_options:       ["priority"],
+          supports_format:     true,
+          supports_encryption: true
         },
         vfat:     {
           fstab_options:       COMMON_FSTAB_OPTIONS + ["dev", "nodev", "iocharset="],
@@ -67,7 +69,9 @@ module Y2Storage
           supports_encryption: true
         },
         iso9669:  {
-          fstab_options: ["acl", "noacl"]
+          fstab_options:       ["acl", "noacl"],
+          supports_format:     false,
+          supports_encryption: false
         },
         udf:      {
           fstab_options: ["acl", "noacl"]
@@ -102,6 +106,8 @@ module Y2Partitioner
     attr_accessor :encrypt
     # @return [Y2Storage::PartitionType]
     attr_accessor :partition_type
+    # @return [Y2Storage::PartitionId]
+    attr_accessor :partition_id
     # @return [String]
     attr_accessor :mount_point
     # @return [Y2Storage::Filesystems::MountBy]
@@ -142,6 +148,7 @@ module Y2Partitioner
       @encrypt = false
       @mount_by = Y2Storage::Filesystems::MountByType::UUID
       @filesystem_type = default_fs
+      @partition_id = 131
       @fstab_options = []
     end
 

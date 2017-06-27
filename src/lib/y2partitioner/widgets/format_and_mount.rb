@@ -16,6 +16,7 @@ module Y2Partitioner
         @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
         @filesystem_widget = BlkDeviceFilesystem.new(@options)
         @format_options    = FormatOptionsButton.new(@options)
+        @partition_id      = PartitionId.new(@options)
 
         self.handle_all_events = true
       end
@@ -23,9 +24,9 @@ module Y2Partitioner
       def init
         if @options.filesystem_type && !@options.filesystem_type.formattable?
           select_no_format
-          Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, false)
+          Yast::UI.ChangeWidget(Id(:format_device), :Enabled, false)
         else
-          Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, false)
+          Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, true)
           @options.format ? select_format : select_no_format
         end
       end
@@ -66,7 +67,8 @@ module Y2Partitioner
                       Left(@format_options)
                     )
                   ),
-                  Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Do not format device")))
+                  Left(RadioButton(Id(:no_format_device), Opt(:notify), _("Do not format device"))),
+                  HBox(HSpacing(4), Left(@partition_id))
                 )
               ),
               Left(@encrypt_widget)
@@ -80,6 +82,7 @@ module Y2Partitioner
       def select_format
         @filesystem_widget.enable
         @format_options.enable
+        @partition_id.disable
         Yast::UI.ChangeWidget(Id(:format_device), :Value, true)
         @format = true
       end
@@ -87,6 +90,7 @@ module Y2Partitioner
       def select_no_format
         @filesystem_widget.disable
         @format_options.disable
+        @partition_id.enable
 
         Yast::UI.ChangeWidget(Id(:no_format_device), :Value, true)
         @format = false
@@ -336,6 +340,36 @@ module Y2Partitioner
 
       def items
         SIZES.map { |s| [s, s] }
+      end
+    end
+
+    # Partition identifier selector
+    class PartitionId < CWM::ComboBox
+      def initialize(options)
+        @options = options
+      end
+
+      def opts
+        [:notify, :editable, :hstretch]
+      end
+
+      # FIXME: initialize with the correct value
+      def init
+        self.value = @options.partition_id
+      end
+
+      def store
+        @options.partition_id = value
+      end
+
+      def label
+        _("File system &ID:")
+      end
+
+      def items
+        Y2Storage::PartitionId.all.map do |part_id|
+          [part_id.to_storage_value, part_id.to_s]
+        end
       end
     end
   end

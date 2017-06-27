@@ -3,6 +3,7 @@ require "ui/sequence"
 require "y2partitioner/device_graphs"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
+require "y2partitioner/dialogs/encrypt_password"
 require "y2partitioner/format_mount_options"
 
 Yast.import "Wizard"
