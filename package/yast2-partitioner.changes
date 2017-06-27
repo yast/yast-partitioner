@@ -1,7 +1,9 @@
 -------------------------------------------------------------------
 Tue Jun 27 08:20:22 UTC 2017 - mvidner@suse.com
 
-- A proper partition size dialog
+- Partition size dialog allows Maximum size, Custom size,
+  or Custom region, like the old partitioner.
+- Disk bar graph also shows free spaces
 - 3.3.6
 
 -------------------------------------------------------------------

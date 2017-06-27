@@ -14,8 +14,10 @@ module Y2Partitioner
     # Formerly MiniWorkflowStepPartitionSize
     class PartitionSize < CWM::Dialog
       # @param disk_name [String]
-      # @param ptemplate [#region]
+      # @param ptemplate [Sequences::PartitionTemplate]
+      #   a partition template, collecting data for a partition to be created
       # @param regions [Array<Y2Storage::Region>]
+      #   regions available to create a partition in
       def initialize(disk_name, ptemplate, regions)
         textdomain "storage"
         @disk_name = disk_name
@@ -128,7 +130,10 @@ module Y2Partitioner
       # Choose a size (region, really) for a new partition
       # from several options: use maximum, enter size, enter start+end
       class SizeWidget < ControllerRadioButtons
-
+        # @param ptemplate [Sequences::PartitionTemplate]
+        #   a partition template, collecting data for a partition to be created
+        # @param regions [Array<Y2Storage::Region>]
+        #   regions available to create a partition in
         def initialize(ptemplate, regions)
           textdomain "storage"
           @ptemplate = ptemplate
@@ -179,6 +184,7 @@ module Y2Partitioner
       class MaxSizeDummy < CWM::Empty
         attr_reader :region
 
+        # @param region [Y2Storage::Region]
         def initialize(region)
           @region = region
         end
@@ -194,6 +200,10 @@ module Y2Partitioner
         # @return [Y2Storage::DiskSize]
         attr_reader :min_size, :max_size
 
+        # @param ptemplate [Sequences::PartitionTemplate]
+        #   a partition template, collecting data for a partition to be created
+        # @param regions [Array<Y2Storage::Region>]
+        #   regions available to create a partition in
         def initialize(ptemplate, regions)
           textdomain "storage"
           @ptemplate = ptemplate
@@ -220,7 +230,8 @@ module Y2Partitioner
           suitable_rs.min_by(&:size)
         end
 
-        # @return [Y2Storage::Region] create it in the smallest region
+        # @return [Y2Storage::Region]
+        # A new region created in the smallest region
         #   that can contain the chosen size
         def region
           parent = parent_region
@@ -281,6 +292,10 @@ module Y2Partitioner
 
       # Specify start+end of the region
       class CustomRegion < CWM::CustomWidget
+        # @param ptemplate [Sequences::PartitionTemplate]
+        #   a partition template, collecting data for a partition to be created
+        # @param regions [Array<Y2Storage::Region>]
+        #   regions available to create a partition in
         def initialize(ptemplate, regions)
           raise ArgumentError if regions.empty?
           textdomain "storage"
@@ -309,6 +324,7 @@ module Y2Partitioner
           )
         end
 
+        # UI::QueryWidget both ids in one step
         def query_widgets
           [
             Yast::UI.QueryWidget(Id(:start_block), :Value),
