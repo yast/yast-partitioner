@@ -45,25 +45,24 @@ module Y2Partitioner
         end
       end
 
+      TYPE_ID_MAPPING = {
+        partition:  ->(device) { "partition:#{device.name}" },
+        disk:       ->(device) { "disk:#{device.name}" },
+        encryption: ->(device) { "encryption:#{device.name}" },
+        lvm_lv:     ->(device) { "lvm_lv:#{device.lv_name}" },
+        lvm_vg:     ->(device) { "lvm_lv:#{device.vg_name}" },
+        md:         ->(device) { "md:#{device.name}" }
+      }.freeze
       # helper to generate id that can be later used in handle
       # @note keep in sync with ids used in overview widget
       def id_for_device(device)
-        res = "table:"
-        if device.is?(:partition)
-          res << "partition:#{device.name}"
-        elsif device.is?(:disk)
-          res << "disk:#{device.name}"
-        elsif device.is?(:encryption)
-          res << "encryption:#{device.name}"
-        elsif device.is?(:lvm_lv)
-          res << "lvm_lv:#{device.lv_name}"
-        elsif device.is?(:lvm_vg)
-          res << "lvm_vg:#{device.vg_name}"
-        else
-          raise "unsuported type #{device.inspect}"
+        _, suffix_call = TYPE_ID_MAPPING.find do |type, _call|
+          device.is?(type)
         end
 
-        res
+        raise "unsuported type #{device.inspect}" unless suffix_call
+
+        "table:" + suffix_call.call(device)
       end
 
       def type_for(_device)
