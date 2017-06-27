@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Tue Jun 27 08:20:22 UTC 2017 - mvidner@suse.com
+
+- A proper partition size dialog
+- 3.3.6
+
+-------------------------------------------------------------------
 Mon Jun 26 09:06:20 UTC 2017 - jreidinger@suse.com
 
 - read-only md raid view
