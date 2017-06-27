@@ -6,25 +6,31 @@ module Y2Storage
     # FIXME: Temporal Monkey patching of fstab options per filesystem type. It
     # could/should be moved to yast2-storage-ng.
     class Type
+      COMMON_FSTAB_OPTIONS = ["async", "atime", "noatime", "user", "nouser",
+                              "auto", "noauto", "ro", "rw", "defaults"].freeze
+      EXT_FSTAB_OPTIONS = ["dev", "nodev", "usrquota", "grpquota", "acl",
+                           "noacl"].freeze
+
       MOUNT_OPTIONS = {
         btrfs:    {
-          fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
-                          "noauto", "ro", "rw", "defaults"]
+          fstab_options:       COMMON_FSTAB_OPTIONS,
+          supports_format:     true,
+          supports_encryption: true
         },
         ext2:     {
-          fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
-                          "noauto", "ro", "rw", "defaults", "dev", "nodev",
-                          "usrquota", "grpquota", "acl", "noacl"]
+          fstab_options:       COMMON_FSTAB_OPTIONS + EXT_FSTAB_OPTIONS,
+          supports_format:     true,
+          supports_encryption: true
         },
         ext3:     {
-          fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
-                          "noauto", "ro", "rw", "defaults", "dev", "nodev",
-                          "usrquota", "grpquota", "data=", "acl", "noacl"]
+          fstab_options:       COMMON_FSTAB_OPTIONS + EXT_FSTAB_OPTIONS + ["data="],
+          supports_format:     true,
+          supports_encryption: true
         },
         ext4:     {
-          fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
-                          "noauto", "ro", "rw", "defaults", "dev", "nodev",
-                          "usrquota", "grpquota", "data=", "acl", "noacl"]
+          fstab_options:       COMMON_FSTAB_OPTIONS + EXT_FSTAB_OPTIONS + ["data="],
+          supports_format:     true,
+          supports_encryption: true
         },
         hfs:      {
           fstab_options: []
@@ -51,13 +57,14 @@ module Y2Storage
           fstab_options: ["priority"]
         },
         vfat:     {
-          fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
-                          "noauto", "ro", "rw", "defaults", "dev", "nodev",
-                          "iocharset="]
+          fstab_options:       COMMON_FSTAB_OPTIONS + ["dev", "nodev", "iocharset="],
+          supports_format:     true,
+          supports_encryption: true
         },
         xfs:      {
-          fstab_options: ["async", "atime", "noatime", "user", "nouser", "auto",
-                          "noauto", "ro", "rw", "usrquota", "grpquota"]
+          fstab_options:       COMMON_FSTAB_OPTIONS + ["usrquota", "grpquota"],
+          supports_format:     true,
+          supports_encryption: true
         },
         iso9669:  {
           fstab_options: ["acl", "noacl"]
@@ -166,6 +173,12 @@ module Y2Partitioner
 
     def default_fs
       Y2Storage::Filesystems::Type::BTRFS
+    end
+
+    def used_mount_points
+      dg = DeviceGraphs.instance.current
+
+      Y2Storage::Mountable.all(dg).map(&:mount_point).compact
     end
   end
 end
