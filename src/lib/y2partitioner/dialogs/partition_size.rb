@@ -128,8 +128,6 @@ module Y2Partitioner
       # Choose a size (region, really) for a new partition
       # from several options: use maximum, enter size, enter start+end
       class SizeWidget < ControllerRadioButtons
-        include Yast
-        include Yast::UIShortcuts
 
         def initialize(ptemplate, regions)
           textdomain "storage"
