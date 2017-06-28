@@ -14,18 +14,6 @@ describe Y2Partitioner::Clients::Main do
       Y2Storage::StorageManager.create_test_instance
     end
 
-    it "opens wizard outside of initial stage" do
-      expect(Yast::Wizard).to receive(:OpenDialog)
-      allow(Yast::Stage).to receive(:initial).and_return(false)
-
-      subject.run
-
-      expect(Yast::Wizard).to_not receive(:OpenDialog)
-      allow(Yast::Stage).to receive(:initial).and_return(true)
-
-      subject.run
-    end
-
     describe "when committing is allowed" do
       it "asks, and commits when confirmed" do
         smanager = Y2Storage::StorageManager.instance
