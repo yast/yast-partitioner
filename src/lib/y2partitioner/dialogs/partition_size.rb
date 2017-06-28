@@ -77,6 +77,8 @@ module Y2Partitioner
         # @param event [Hash] UI event
         def handle(event)
           eid = event["ID"]
+          return nil unless ids.include?(eid)
+
           ids.zip(widgets).each do |id, widget|
             if id == eid
               widget.enable
