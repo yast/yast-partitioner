@@ -20,10 +20,10 @@ module Y2Partitioner
 
       def contents
         MarginBox(
-            0.5,
-            0.5,
-            Widgets::OverviewTreePager.new(DeviceGraphs.instance.current)
-          )
+          0.5,
+          0.5,
+          Widgets::OverviewTreePager.new(DeviceGraphs.instance.current)
+        )
       end
 
       def skip_store_for
