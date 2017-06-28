@@ -19,6 +19,8 @@ module Y2Partitioner
       # @param regions [Array<Y2Storage::Region>]
       #   regions available to create a partition in
       def initialize(disk_name, ptemplate, regions)
+        raise ArgumentError, "No region to make a partition in" if regions.empty?
+
         textdomain "storage"
         @disk_name = disk_name
         @ptemplate = ptemplate
@@ -116,7 +118,10 @@ module Y2Partitioner
         def buttons_with_widgets
           items = self.items
           widgets = self.widgets
-          raise ArgumentError unless items.size == widgets.size
+          if items.size != widgets.size
+            raise ArgumentError,
+              "Length mismatch: items #{items.size}, widgets #{widgets.size}"
+          end
 
           terms = items.zip(widgets).map do |(id, text), widget|
             VBox(
@@ -299,7 +304,6 @@ module Y2Partitioner
         # @param regions [Array<Y2Storage::Region>]
         #   regions available to create a partition in
         def initialize(ptemplate, regions)
-          raise ArgumentError if regions.empty?
           textdomain "storage"
           @ptemplate = ptemplate
           @regions = regions
