@@ -11,16 +11,19 @@ module Y2Partitioner
     class PartitionType < CWM::Dialog
       # Choose partition type: primary/extended/logical.
       class TypeChoice < CWM::RadioButtons
+        # @param ptemplate [#type] a Y2Storage::PartitionType field
         def initialize(ptemplate, slots)
           textdomain "storage"
           @ptemplate = ptemplate
           @slots = slots
         end
 
+        # @macro seeAbstractWidget
         def label
           _("New Partition Type")
         end
 
+        # @macro seeAbstractWidget
         def help
           # helptext
           _("<p>Choose the partition type for the new partition.</p>")
@@ -41,28 +44,39 @@ module Y2Partitioner
           ].find_all { |t, _l| available_types[t] }
         end
 
+        # @macro seeAbstractWidget
         def validate
           !value.nil?
         end
 
+        # @macro seeAbstractWidget
+        def init
+          # Pick the first one available
+          default_pt = Y2Storage::PartitionType.new(items.first.first)
+          self.value = (@ptemplate.type ||= default_pt).to_s
+        end
+
+        # @macro seeAbstractWidget
         def store
           @ptemplate.type = Y2Storage::PartitionType.new(value)
         end
       end
 
       # @param slots [Array<Y2Storage::PartitionTables::PartitionSlot>]
-      def initialize(disk, ptemplate, slots)
-        @disk = disk
+      def initialize(disk_name, ptemplate, slots)
+        @disk_name = disk_name
         @ptemplate = ptemplate
         @slots = slots
         textdomain "storage"
       end
 
+      # @macro seeDialog
       def title
         # dialog title
-        Yast::Builtins.sformat(_("Add Partition on %1"), @disk.name)
+        Yast::Builtins.sformat(_("Add Partition on %1"), @disk_name)
       end
 
+      # @macro seeDialog
       def contents
         HVSquash(TypeChoice.new(@ptemplate, @slots))
       end

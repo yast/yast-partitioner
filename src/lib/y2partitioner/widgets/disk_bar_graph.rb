@@ -1,25 +1,46 @@
 require "cwm/widget"
 
+# FIXME: just for Region#size
+require "y2partitioner/dialogs/partition_size"
+
 module Y2Partitioner
   module Widgets
     # Widget that shows bar graph for given disk if UI support it
     class DiskBarGraph < CWM::CustomWidget
       def initialize(disk)
+        textdomain "storage"
         @disk = disk
+      end
+
+      # @return [Array<Array(Y2Storage::Region,String)>]
+      #   regions with labels, sorted by region start
+      def regions_and_labels
+        free_regions = @disk.free_spaces.map do |fs|
+          r = fs.region
+          # FIXME: FreeDiskSpace#region returns
+          # Storage::Region, not Y2Storage::Region
+          r = Y2Storage::Region.create(r.start, r.length, r.block_size)
+          [r, _("Unpartitioned")]
+        end
+
+        partitions = @disk.partitions.map do |part|
+          [part.region, part.sysfs_name]
+        end
+
+        (free_regions + partitions).sort_by { |i| i[0].start }
       end
 
       # @macro seeCustomWidget
       def contents
         return Empty() unless Yast::UI.HasSpecialWidget(:BarGraph)
-
-        data = @disk.partitions.map do |part|
-          # lets use size in MiB, disks are now so big, that otherwise it will overflow
-          # even for few TB and we passing values to libyui in too low data. Ignoring anything
-          # below 1MiB looks OK for me (JReidinger)
-          [part.size.to_i / (2**20), "#{part.sysfs_name}\n#{part.size.to_human_string}"]
+        data = regions_and_labels
+        # lets use size in MiB, disks are now so big, that otherwise it will overflow
+        # even for few TB and we passing values to libyui in too low data. Ignoring anything
+        # below 1MiB looks OK for me (JReidinger)
+        sizes = data.map { |(region, _)| region.size.to_i / (2**20) }
+        labels = data.map do |(region, label)|
+          label + "\n" + region.size.to_human_string
         end
-        sizes = data.map(&:first)
-        labels = data.map { |i| i[1] }
         BarGraph(sizes, labels)
       end
     end

@@ -4,11 +4,10 @@ require "cwm/rspec"
 require "y2partitioner/dialogs/partition_type"
 
 describe Y2Partitioner::Dialogs::PartitionType do
-  let(:disk) { double("Disk", name: "mydisk") }
   let(:ptemplate) { double("partition template") }
   let(:slots) { [] }
 
-  subject { described_class.new(disk, ptemplate, slots) }
+  subject { described_class.new("mydisk", ptemplate, slots) }
   before do
     allow(Y2Partitioner::Dialogs::PartitionType::TypeChoice)
       .to receive(:new).and_return(term(:Empty))
