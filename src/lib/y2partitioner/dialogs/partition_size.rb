@@ -47,7 +47,7 @@ module Y2Partitioner
           self.handle_all_events = true
         end
 
-        # @return [WidgetTerm]
+        # @return [CWM::WidgetTerm]
         def contents
           Frame(
             label,
@@ -72,7 +72,7 @@ module Y2Partitioner
         # @return [Array<Array(id,String)>]
         abstract_method :items
 
-        # FIXME: allow {WidgetTerm}
+        # FIXME: allow {CWM::WidgetTerm}
         # @return [Array<AbstractWidget>]
         abstract_method :widgets
 
