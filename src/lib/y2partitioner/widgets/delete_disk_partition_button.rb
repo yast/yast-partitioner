@@ -37,11 +37,8 @@ module Y2Partitioner
 
         partition_table = device.partition_table
         if device.is?(:disk)
-          partitions = partition_table.partitions.reject { |p| p.type.is?(:logical) }
-          partitions.each do |partition|
-            log.info "deleting partition #{partition}"
-            partition_table.delete_partition(partition)
-          end
+          log.info "deleting partitions for #{device}"
+          partition_table.delete_all_partitions
         else
           log.info "deleting partition #{device}"
           partition_table.delete_partition(device)
@@ -56,7 +53,6 @@ module Y2Partitioner
         names = children_names(device)
 
         if names.empty?
-          # TODO: check for children that will die and if there are, use confirm_recursive_delete
           Yast::Popup.YesNo(
             # TRANSLATORS %s is device to be deleted
             format(_("Really delete %s?"), device.name)
@@ -65,6 +61,7 @@ module Y2Partitioner
           confirm_recursive_delete(
             names,
             _("Confirm Deleting of All Partitions"),
+            # TRANSLATORS: type stands for type of device and name is its identifier
             format(_("The %{type} \"%{name}\" contains at least one another device.\n" \
               "If you proceed, the following devices will be deleted:"),
               name: device.name,
@@ -76,12 +73,7 @@ module Y2Partitioner
 
       def children_names(device)
         device.descendants.map do |dev|
-          if dev.respond_to?(:name)
-            dev.name
-          elsif dev.is?(:lvm_vg)
-            # TODO: discuss to have it in storage-ng
-            "/dev/#{dev.vg_name}"
-          end
+          dev.name if dev.respond_to?(:name)
         end.compact
       end
 
