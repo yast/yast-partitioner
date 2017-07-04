@@ -28,18 +28,19 @@ module Y2Partitioner
       def handle
         device = @device || id_to_device(@table.value)
 
-        # TODO: check for children that will die and if there are, use confirm_recursive_delete
-        ret = Yast::Popup.YesNo(
-          # TRANSLATORS %s is device to be deleted
-          format(_("Really delete %s?"), device.name)
-        )
+        if device.nil?
+          Yast::Popup.Error(_("No device selected"))
+          return nil
+        end
 
-        return nil unless ret
+        return nil unless confirm(device)
 
         partition_table = device.partition_table
         if device.is?(:disk)
-          partition_table.partitions.each { |p| partition_table.delete_partition(p) }
+          log.info "deleting partitions for #{device}"
+          partition_table.delete_all_partitions
         else
+          log.info "deleting partition #{device}"
           partition_table.delete_partition(device)
         end
 
@@ -48,7 +49,37 @@ module Y2Partitioner
 
     private
 
+      def confirm(device)
+        names = children_names(device)
+
+        if names.empty?
+          Yast::Popup.YesNo(
+            # TRANSLATORS %s is device to be deleted
+            format(_("Really delete %s?"), device.name)
+          )
+        else
+          confirm_recursive_delete(
+            names,
+            _("Confirm Deleting of All Partitions"),
+            # TRANSLATORS: type stands for type of device and name is its identifier
+            format(_("The %{type} \"%{name}\" contains at least one another device.\n" \
+              "If you proceed, the following devices will be deleted:"),
+              name: device.name,
+              type: device.is?(:disk) ? _("disk") : _("partition")),
+            format(_("Really delete all devices on \"%s\"?"), device.name)
+          )
+        end
+      end
+
+      def children_names(device)
+        device.descendants.map do |dev|
+          dev.name if dev.respond_to?(:name)
+        end.compact
+      end
+
       def id_to_device(id)
+        return nil if id.nil?
+
         if id.start_with?("table:partition")
           partition_name = id[/table:partition:(.*)/, 1]
           Y2Storage::Partition.find_by_name(@device_graph, partition_name)
@@ -85,14 +116,14 @@ module Y2Partitioner
         )
 
         Yast::UI.OpenDialog(layout)
-        ret = UI.UserInput
+        ret = Yast::UI.UserInput
         Yast::UI.CloseDialog
 
         ret == :yes
       end
 
       # TODO: copy and pasted code from old storage, feel free to improve
-      def confirm_recursive_delete(_device, devices, headline, label_before, label_after)
+      def confirm_recursive_delete(devices, headline, label_before, label_after)
         button_box = ButtonBox(
           PushButton(Id(:yes), Opt(:okButton), Yast::Label.DeleteButton),
           PushButton(

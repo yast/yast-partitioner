@@ -59,7 +59,7 @@ module Y2Partitioner
         if @partition.encryption
           ret = Dialogs::EncryptPassword.new(@partition).run
 
-          (ret == :next) ? :finish : ret
+          ret == :next ? :finish : ret
         else
           :finish
         end

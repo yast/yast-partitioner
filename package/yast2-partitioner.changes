@@ -1,4 +1,10 @@
 -------------------------------------------------------------------
+Mon Jul  3 11:08:49 UTC 2017 - jreidinger@suse.com
+
+- add deletion of disks and also more complex confirm if there are
+  any devices connected to partition
+
+-------------------------------------------------------------------
 Thu Jun 29 07:48:18 UTC 2017 - mvidner@suse.com
 
 - moved CWM bits to yast2.rpm
