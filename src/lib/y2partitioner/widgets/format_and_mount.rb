@@ -13,7 +13,7 @@ module Y2Partitioner
         textdomain "storage"
 
         @options = options
-        @encrypt_widget    = EncryptBlkDevice.new(@options.encrypt)
+        @encrypt_widget    = EncryptBlkDevice.new(@options)
         @filesystem_widget = BlkDeviceFilesystem.new(@options)
         @format_options    = FormatOptionsButton.new(@options)
         @partition_id      = PartitionId.new(@options)
@@ -23,17 +23,17 @@ module Y2Partitioner
 
       def init
         if @options.filesystem_type && !@options.filesystem_type.formattable?
-          select_no_format
-          Yast::UI.ChangeWidget(Id(:format_device), :Enabled, false)
+          disable_format
         else
           Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, true)
           @options.format ? select_format : select_no_format
+
+          disable_format unless @options.partition_id.formattable?
         end
       end
 
       def store
         @options.format = format?
-        @options.encrypt = encrypt?
       end
 
       def handle(event)
@@ -43,6 +43,11 @@ module Y2Partitioner
         when :no_format_device
           select_no_format
         when @filesystem_widget.widget_id
+          return :redraw
+        when @partition_id.widget_id
+          @partition_id.store
+          @options.options_for_partition_id(@options.partition_id)
+
           return :redraw
         end
 
@@ -100,8 +105,9 @@ module Y2Partitioner
         Yast::UI::QueryWidget(Id(:format_device), :Value)
       end
 
-      def encrypt?
-        @encrypt_widget.value
+      def disable_format
+        select_no_format
+        Yast::UI.ChangeWidget(Id(:format_device), :Enabled, false)
       end
     end
 
@@ -123,6 +129,11 @@ module Y2Partitioner
       end
 
       def init
+        if !@options.partition_id.formattable? || !@options.filesystem_type.formattable?
+          Yast::UI.ChangeWidget(Id(:mount_device), :Enabled, false)
+          @options.mount = nil
+        end
+
         if @options.mount
           @fstab_options_widget.enable
           Yast::UI.ChangeWidget(Id(:mount_device), :Value, true)
@@ -205,11 +216,12 @@ module Y2Partitioner
       end
 
       def opt
-        [:hstretch, :notify]
+        %i[hstretch notify]
       end
 
       def init
-        self.value = @options.filesystem_type.to_sym
+        fs_type = @options.filesystem_type
+        self.value = fs_type ? fs_type.to_sym : nil
       end
 
       def label
@@ -217,17 +229,20 @@ module Y2Partitioner
       end
 
       def items
+        return [] unless @options.filesystem_type
+
         Y2Storage::Filesystems::Type.all.select { |fs| supported?(fs) }.map do |fs|
           [fs.to_sym, fs.to_human_string]
         end
       end
 
       def supported?(fs)
-        [:btrfs, :ext2, :ext3, :ext4, :vfat, :xfs, :reiserfs].include?(fs.to_sym)
+        %i[swap btrfs ext2 ext3 ext4 vfat xfs reiserfs].include?(fs.to_sym)
       end
 
       def store
-        @options.filesystem_type = Y2Storage::Filesystems::Type.find(value)
+
+        @options.filesystem_type = value ? Y2Storage::Filesystems::Type.find(value) : value
       end
     end
 
@@ -239,7 +254,7 @@ module Y2Partitioner
       end
 
       def opt
-        [:hstretch, :notify]
+        %i[hstretch notify]
       end
 
       def label
@@ -268,7 +283,7 @@ module Y2Partitioner
       end
 
       def opt
-        [:editable, :hstretch, :notify]
+        %i[editable hstretch notify]
       end
 
       def store
@@ -282,8 +297,8 @@ module Y2Partitioner
 
     # Encryption selector
     class EncryptBlkDevice < CWM::CheckBox
-      def initialize(encrypt)
-        @encrypt = encrypt
+      def initialize(options)
+        @options = options
       end
 
       def label
@@ -291,11 +306,16 @@ module Y2Partitioner
       end
 
       def init
-        self.value = @encrypt
+        if @options.filesystem_type && !@options.filesystem_type.encryptable?
+          self.value = false
+          disable
+        else
+          self.value = @options.encrypt
+        end
       end
 
       def store
-        @encrypt = value
+        @options.encrypt = value
       end
     end
 
@@ -309,9 +329,6 @@ module Y2Partitioner
 
       def label
         _("&Inode Size")
-      end
-
-      def help
       end
 
       def items
@@ -349,17 +366,17 @@ module Y2Partitioner
         @options = options
       end
 
-      def opts
-        [:notify, :editable, :hstretch]
+      def opt
+        %i[hstretch notify]
       end
 
       # FIXME: initialize with the correct value
       def init
-        self.value = @options.partition_id
+        self.value = @options.partition_id.to_sym
       end
 
       def store
-        @options.partition_id = value
+        @options.partition_id = Y2Storage::PartitionId.find(value)
       end
 
       def label
@@ -368,7 +385,7 @@ module Y2Partitioner
 
       def items
         Y2Storage::PartitionId.all.map do |part_id|
-          [part_id.to_storage_value, part_id.to_s]
+          [part_id.to_sym, part_id.to_human_string]
         end
       end
     end

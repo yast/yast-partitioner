@@ -28,7 +28,7 @@ module Y2Partitioner
         )
       end
 
-      def run_assuming_open
+      def cwm_show
         ret = nil
 
         loop do
@@ -38,6 +38,10 @@ module Y2Partitioner
         end
 
         ret
+      end
+
+      def skip_store_for
+        [:redraw]
       end
     end
   end

@@ -106,7 +106,7 @@ module Y2Partitioner
       end
 
       def supported_filesystems
-        [:btrfs, :ext2, :ext3, :ext4, :reiserfs]
+        %i[btrfs ext2 ext3 ext4 reiserfs]
       end
 
     private
@@ -219,9 +219,6 @@ module Y2Partitioner
         delete_from_fstab!(Regexp.union(VALUES))
 
         @options.fstab_options << "noauto" if value
-      end
-
-      def help
       end
 
       def label
@@ -409,7 +406,7 @@ module Y2Partitioner
       end
 
       def opt
-        [:hstretch]
+        %i[hstretch]
       end
 
       def label
@@ -456,9 +453,6 @@ module Y2Partitioner
         @options.fstab_options << "pri=#{value}"
       end
 
-      def validate
-      end
-
       def help
         "<p><b>Swap Priority:</b>\nEnter the swap priority. " \
         "Higher numbers mean higher priority.</p>\n"
@@ -499,7 +493,7 @@ module Y2Partitioner
       end
 
       def opt
-        [:editable, :hstretch]
+        %i[editable hstretch]
       end
 
       def items
@@ -547,7 +541,7 @@ module Y2Partitioner
       end
 
       def opt
-        [:editable, :hstretch]
+        %i[editable hstretch]
       end
 
       def items
@@ -559,7 +553,7 @@ module Y2Partitioner
       end
 
       def supported_filesystems
-        [:vfat]
+        %i[vfat]
       end
 
       def default

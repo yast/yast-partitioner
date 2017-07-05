@@ -1,7 +1,70 @@
+# encoding: utf-8
+
+# Copyright (c) [2017] SUSE LLC
+#
+# All Rights Reserved.
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, contact SUSE LLC.
+#
+# To contact SUSE LLC about this file by physical or electronic mail, you may
+# find current contact information at www.suse.com.
+
 require "yast"
 require "y2storage"
 
 module Y2Storage
+  # FIXME: Monkey patch of Y2Storage::PartitionId it should moved to
+  # yast2-storage-ng
+  class PartitionId
+    include Yast::I18n
+    extend Yast::I18n
+
+    TRANSLATIONS = {
+      dos12:              N_("DOS12"),
+      dos16:              N_("DOS16"),
+      dos32:              N_("DOS32"),
+      swap:               N_("Linux Swap"),
+      linux:              N_("Lnux"),
+      lvm:                N_("Linux LVM"),
+      raid:               N_("Linux RAID"),
+      esp:                N_("EFI System Partition"),
+      bios_boot:          N_("BIOS Boot Partition"),
+      prep:               N_("PReP Boot Partition"),
+      ntfs:               N_("NTFS"),
+      extended:           N_("Extended"),
+      windows_basic_data: N_("Windows Data Partition"),
+      microsoft_reserved: N_("Microsoft Reserved Partition"),
+      diag:               N_("Diagnostics Partition"),
+      unknown:            N_("Unknown")
+    }.freeze
+    private_constant :TRANSLATIONS
+
+    def to_human_string
+      textdomain "storage"
+
+      string = TRANSLATIONS[to_sym] or raise "Unhandled Partition ID '#{inspect}'"
+
+      _(string)
+    end
+
+    def formattable?
+      !%i[lvm raid esp prep bios_boot unknown].include?(to_sym)
+    end
+
+    def encryptable?
+    end
+  end
+
   module Filesystems
     # FIXME: Temporal Monkey patching of fstab options per filesystem type. It
     # could/should be moved to yast2-storage-ng.
@@ -15,22 +78,26 @@ module Y2Storage
         btrfs:    {
           fstab_options:       COMMON_FSTAB_OPTIONS,
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::LINUX
         },
         ext2:     {
           fstab_options:       COMMON_FSTAB_OPTIONS + EXT_FSTAB_OPTIONS,
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::LINUX
         },
         ext3:     {
           fstab_options:       COMMON_FSTAB_OPTIONS + EXT_FSTAB_OPTIONS + ["data="],
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::LINUX
         },
         ext4:     {
           fstab_options:       COMMON_FSTAB_OPTIONS + EXT_FSTAB_OPTIONS + ["data="],
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::LINUX
         },
         hfs:      {
           fstab_options: []
@@ -56,7 +123,8 @@ module Y2Storage
         swap:     {
           fstab_options:       ["priority"],
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::SWAP
         },
         vfat:     {
           fstab_options:       COMMON_FSTAB_OPTIONS + ["dev", "nodev", "iocharset="],
@@ -66,7 +134,8 @@ module Y2Storage
         xfs:      {
           fstab_options:       COMMON_FSTAB_OPTIONS + ["usrquota", "grpquota"],
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::LINUX
         },
         iso9669:  {
           fstab_options:       ["acl", "noacl"],
@@ -148,7 +217,7 @@ module Y2Partitioner
       @encrypt = false
       @mount_by = Y2Storage::Filesystems::MountByType::UUID
       @filesystem_type = default_fs
-      @partition_id = 131
+      @partition_id = Y2Storage::PartitionId::LINUX
       @fstab_options = []
     end
 
@@ -159,12 +228,36 @@ module Y2Partitioner
       @mount_point = partition.respond_to?("mount_point") ? partition.mount_point : ""
 
       fs = partition.filesystem
-      if fs
-        @filesystem_type = partition.filesystem_type
-        @mount_point = fs.mount_point
-        @mount_by = fs.mount_by if fs.mount_by
-        @label = fs.label
-        @fstab_options = fs.fstab_options
+
+      return unless fs
+
+      @filesystem_type = partition.filesystem_type
+      @mount_point = fs.mount_point
+      @mount_by = fs.mount_by if fs.mount_by
+      @label = fs.label
+      @fstab_options = fs.fstab_options
+    end
+
+    def options_for_windows_partition(partition_id)
+      @filesystem_type = Y2Storage::Filesystems::Type::VFAT
+    end
+
+    def options_for_partition_id(partition_id)
+      return options_for_windows_partition(partiton_id) if partiton_id.is?(:windows_system)
+
+      case partition_id
+      when Y2Storage::PartitionId::SWAP
+        options_for_role(:swap)
+      when Y2Storage::PartitionId::ESP
+        options_for_role(:efi_boot)
+      else
+
+        if partition_id.formattable?
+          @filesystem_type = default_fs
+
+        else
+          @filesystem_type = partition_id.formattable? ? Y2Storage::Filesystems::Type::EXT4 : nil
+        end
       end
     end
 
@@ -172,14 +265,13 @@ module Y2Partitioner
     def options_for_role(role)
       case role
       when :swap
-        @format = true
         @mount_point = "swap"
         @filesystem_type = Y2Storage::Filesystems::Type::SWAP
+        @partition_id = Y2Storage::PartitionId::SWAP
       when :efi_boot
         @mount_point = "/boot/efi"
-        @format = true
+        @partition_id = Y2Storage::PartitionId::ESP
       when :raw
-        @format = false
       else
         @mount_point = ""
         @filesystem = default_fs
