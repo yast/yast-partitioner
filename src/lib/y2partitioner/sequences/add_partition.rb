@@ -3,6 +3,7 @@ require "ui/sequence"
 require "y2partitioner/device_graphs"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
+require "y2partitioner/dialogs/encrypt_password"
 
 Yast.import "Wizard"
 
@@ -31,6 +32,7 @@ module Y2Partitioner
         textdomain "storage"
         @disk_name = disk_name
         @ptemplate = PartitionTemplate.new
+        @options = FormatMountOptions.new
       end
 
       def disk
@@ -40,13 +42,14 @@ module Y2Partitioner
 
       def run
         sequence_hash = {
-          "ws_start"      => "preconditions",
-          "preconditions" => { next: "type" },
-          "type"          => { next: "size" },
-          "size"          => { next: "role", finish: :finish },
-          "role"          => { next: "format_mount" },
-          "format_mount"  => { next: "password", finish: :finish },
-          "password"      => { finish: :finish }
+          "ws_start"       => "preconditions",
+          "preconditions"  => { next: "type" },
+          "type"           => { next: "size" },
+          "size"           => { next: "role", finish: :finish },
+          "role"           => { next: "format_options" },
+          "format_options" => { next: "password" },
+          "password"       => { finish: :format_mount },
+          "format_mount"   => { finish: :finish }
         }
 
         sym = nil
@@ -97,18 +100,43 @@ module Y2Partitioner
         log.info "TODO: Partition ROLE dialog"
         :next
       end
+
       skip_stack :role
 
       def format_mount
         ptable = disk.partition_table
         name = next_free_primary_partition_name(@disk_name, ptable)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
-        Dialogs::FormatAndMount.new(partition).run
+
+        if @options.encrypt
+          partition = partition.create_encryption(dm_name_for(@partition))
+        end
+
+        partition.create_filesystem(@options.filesystem_type) if @options.format
+
+        if @options.mount
+          partition.filesystem.mount_point = @options.mount_point
+          partition.filesystem.mount_by = @options.mount_by
+          partition.filesystem.label = @options.label
+          partition.filesystem.fstab_options = @options.fstab_options
+        else
+          partition.filesystem.mount_point = ""
+        end
+
+        :finish
+      end
+
+      def format_options
+        @format_dialog ||= Dialogs::FormatAndMount.new(@options)
+
+        @format_dialog.run
       end
 
       def password
-        log.info "TODO: Partition PASSWORD dialog"
-        :finish
+        return :next unless @options.encrypt
+        @encrypt_dialog ||= Dialogs::EncryptPassword.new(@options)
+
+        @encrypt_dialog.run
       end
 
     private

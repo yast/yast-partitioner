@@ -74,7 +74,7 @@ module Y2Partitioner
           @partition = @partition.create_encryption(dm_name_for(@partition))
         end
 
-        @partition.create_filesystem(@options.filesystem) if @options.format
+        @partition.create_filesystem(@options.filesystem_type) if @options.format
 
         if @options.mount
           @partition.filesystem.mount_point = @options.mount_point

@@ -43,6 +43,8 @@ module Y2Partitioner
         when :no_format_device
           select_no_format
         when @filesystem_widget.widget_id
+          @filesystem_widget.store
+          store
           return :redraw
         when @partition_id.widget_id
           @partition_id.store

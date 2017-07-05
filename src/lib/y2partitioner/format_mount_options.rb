@@ -243,7 +243,7 @@ module Y2Partitioner
     end
 
     def options_for_partition_id(partition_id)
-      return options_for_windows_partition(partiton_id) if partiton_id.is?(:windows_system)
+      return options_for_windows_partition(partition_id) if partition_id.is?(:windows_system)
 
       case partition_id
       when Y2Storage::PartitionId::SWAP
