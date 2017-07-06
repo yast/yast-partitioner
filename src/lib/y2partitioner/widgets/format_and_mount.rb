@@ -56,6 +56,25 @@ module Y2Partitioner
         nil
       end
 
+      def help
+        text = "<p>First, choose whether the partition should be\n" \
+                "formatted and the desired file system type.</p>"
+
+        text <<
+          _(
+            "<p>If you want to encrypt all data on the\n" \
+            "volume, select <b>Encrypt Device</b>. Changing the encryption on an existing\n" \
+            "volume will delete all data on it.</p>\n"
+          )
+        text <<
+          _(
+            "<p>Then, choose whether the partition should\n" \
+            "be mounted and enter the mount point (/, /boot, /home, /var, etc.).</p>"
+          )
+
+        text
+      end
+
       def contents
         Frame(
           _("Format Options"),
@@ -243,7 +262,6 @@ module Y2Partitioner
       end
 
       def store
-
         @options.filesystem_type = value ? Y2Storage::Filesystems::Type.find(value) : value
       end
     end

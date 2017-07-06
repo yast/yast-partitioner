@@ -224,7 +224,8 @@ module Y2Partitioner
     def options_for_partition(partition)
       @name = partition.name
       @type = partition.type
-      @id = partition.id
+      @partition_id = partition.id
+
       @mount_point = partition.respond_to?("mount_point") ? partition.mount_point : ""
 
       fs = partition.filesystem
@@ -238,7 +239,7 @@ module Y2Partitioner
       @fstab_options = fs.fstab_options
     end
 
-    def options_for_windows_partition(partition_id)
+    def options_for_windows_partition(_partition_id)
       @filesystem_type = Y2Storage::Filesystems::Type::VFAT
     end
 
@@ -251,13 +252,7 @@ module Y2Partitioner
       when Y2Storage::PartitionId::ESP
         options_for_role(:efi_boot)
       else
-
-        if partition_id.formattable?
-          @filesystem_type = default_fs
-
-        else
-          @filesystem_type = partition_id.formattable? ? Y2Storage::Filesystems::Type::EXT4 : nil
-        end
+        @filesystem_type = partition_id.formattable? ? default_fs : nil
       end
     end
 
@@ -268,18 +263,25 @@ module Y2Partitioner
         @mount_point = "swap"
         @filesystem_type = Y2Storage::Filesystems::Type::SWAP
         @partition_id = Y2Storage::PartitionId::SWAP
+        @mount_by = Y2Storage::Filesystems::MountByType::DEVICE
       when :efi_boot
         @mount_point = "/boot/efi"
         @partition_id = Y2Storage::PartitionId::ESP
       when :raw
+        @partition_id = Y2Storage::PartitionId::LVM
       else
         @mount_point = ""
-        @filesystem = default_fs
+        @filesystem = (role == :system) ? default_fs : default_home_fs
+        @partition_id = Y2Storage::PartitionId::LINUX
       end
     end
 
     def default_fs
       Y2Storage::Filesystems::Type::BTRFS
+    end
+
+    def default_home_fs
+      Y2Storage::Filesystems::Type::XFS
     end
 
     def used_mount_points

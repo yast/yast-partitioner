@@ -48,7 +48,7 @@ module Y2Partitioner
           "size"           => { next: "role", finish: :finish },
           "role"           => { next: "format_options" },
           "format_options" => { next: "password" },
-          "password"       => { finish: :format_mount },
+          "password"       => { next: "format_mount" },
           "format_mount"   => { finish: :finish }
         }
 
@@ -107,6 +107,8 @@ module Y2Partitioner
         ptable = disk.partition_table
         name = next_free_primary_partition_name(@disk_name, ptable)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
+
+        partition.id = @options.partition_id
 
         if @options.encrypt
           partition = partition.create_encryption(dm_name_for(@partition))

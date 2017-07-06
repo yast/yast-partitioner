@@ -23,13 +23,6 @@ module Y2Partitioner
       def run
         sequence_hash = {
           "ws_start"       => "format_options",
-          # FIXME: If encryption password is set in a different step then it
-          # allows to go back and reset all the options to not modify the
-          # partition at all but since the moment :next is preset the partition
-          # will be altered. We could work with a FormatOptions object that
-          # could be a Struct or Hash and just set all the options there and
-          # format in a extra step at the end of the sequence or we could make
-          # the password step part of format_and_mount.
           "format_options" => { next: "password" },
           "password"       => { next: "format_mount" },
           "format_mount"   => { finish: :finish }
@@ -68,6 +61,7 @@ module Y2Partitioner
       end
 
       def format_mount
+        @partition.id = @options.partition_id
         @partition.remove_descendants if @options.encrypt || @options.format
 
         if @options.encrypt
