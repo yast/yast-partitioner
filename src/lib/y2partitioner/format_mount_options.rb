@@ -58,10 +58,7 @@ module Y2Storage
     end
 
     def formattable?
-      !%i[lvm raid esp prep bios_boot unknown].include?(to_sym)
-    end
-
-    def encryptable?
+      !%i(lvm raid esp prep bios_boot unknown).include?(to_sym)
     end
   end
 
@@ -169,7 +166,7 @@ module Y2Partitioner
   class FormatMountOptions
     # @return [Y2Storage::Filesystem::Type]
     attr_accessor :filesystem_type
-    # @return [:system, :data, :swap, :boot_efi]
+    # @return [:system, :data, :swap, :efi_boot]
     attr_accessor :role
     # @return [Boolean]
     attr_accessor :encrypt
@@ -221,42 +218,31 @@ module Y2Partitioner
       @fstab_options = []
     end
 
+    # sets current attributes based on the given partition
+    # @param partition [Y2Storage::BlkDevice]
     def options_for_partition(partition)
+      return unless partition
+
       @name = partition.name
-      @type = partition.type
+      @partition_type = partition.type
       @partition_id = partition.id
 
-      @mount_point = partition.respond_to?("mount_point") ? partition.mount_point : ""
-
-      fs = partition.filesystem
-
-      return unless fs
-
-      @filesystem_type = partition.filesystem_type
-      @mount_point = fs.mount_point
-      @mount_by = fs.mount_by if fs.mount_by
-      @label = fs.label
-      @fstab_options = fs.fstab_options
+      options_for_filesystem(partition.filesystem)
     end
 
-    def options_for_windows_partition(_partition_id)
-      @filesystem_type = Y2Storage::Filesystems::Type::VFAT
+    # sets current filesystem attributes based on the given one
+    # @param filesystem [Y2Storage::Filesystems::Type]
+    def options_for_filesystem(filesystem)
+      return unless filesystem
+
+      @filesystem_type = filesystem.type
+      @mount_point = filesystem.mount_point
+      @mount_by = filesystem.mount_by if filesystem.mount_by
+      @label = filesystem.label
+      @fstab_options = filesystem.fstab_options
     end
 
-    def options_for_partition_id(partition_id)
-      return options_for_windows_partition(partition_id) if partition_id.is?(:windows_system)
-
-      case partition_id
-      when Y2Storage::PartitionId::SWAP
-        options_for_role(:swap)
-      when Y2Storage::PartitionId::ESP
-        options_for_role(:efi_boot)
-      else
-        @filesystem_type = partition_id.formattable? ? default_fs : nil
-      end
-    end
-
-    # FIXME: To be implemented mainly for {Sequences::AddPartition}
+    # @param role [Symbol]
     def options_for_role(role)
       case role
       when :swap
@@ -267,12 +253,31 @@ module Y2Partitioner
       when :efi_boot
         @mount_point = "/boot/efi"
         @partition_id = Y2Storage::PartitionId::ESP
+        @filesystem_type = Y2Storage::Filesystems::Type::VFAT
       when :raw
         @partition_id = Y2Storage::PartitionId::LVM
       else
         @mount_point = ""
         @filesystem = (role == :system) ? default_fs : default_home_fs
         @partition_id = Y2Storage::PartitionId::LINUX
+      end
+    end
+
+    def options_for_windows_partition(_partition_id)
+      @filesystem_type = Y2Storage::Filesystems::Type::VFAT
+    end
+
+    # @param partition_id [Y2Storage::PartitionId]
+    def options_for_partition_id(partition_id)
+      return options_for_windows_partition(partition_id) if partition_id.is?(:windows_system)
+
+      case partition_id
+      when Y2Storage::PartitionId::SWAP
+        options_for_role(:swap)
+      when Y2Storage::PartitionId::ESP
+        options_for_role(:efi_boot)
+      else
+        @filesystem_type = partition_id.formattable? ? default_fs : nil
       end
     end
 

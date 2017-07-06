@@ -106,7 +106,7 @@ module Y2Partitioner
       end
 
       def supported_filesystems
-        %i[btrfs ext2 ext3 ext4 reiserfs]
+        %i(btrfs ext2 ext3 ext4 reiserfs)
       end
 
     private
@@ -406,7 +406,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[hstretch]
+        %i(hstretch)
       end
 
       def label
@@ -493,7 +493,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[editable hstretch]
+        %i(editable hstretch)
       end
 
       def items
@@ -541,7 +541,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[editable hstretch]
+        %i(editable hstretch)
       end
 
       def items
@@ -553,7 +553,7 @@ module Y2Partitioner
       end
 
       def supported_filesystems
-        %i[vfat]
+        %i(vfat)
       end
 
       def default

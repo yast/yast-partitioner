@@ -237,7 +237,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[hstretch notify]
+        %i(hstretch notify)
       end
 
       def init
@@ -258,7 +258,7 @@ module Y2Partitioner
       end
 
       def supported?(fs)
-        %i[swap btrfs ext2 ext3 ext4 vfat xfs reiserfs].include?(fs.to_sym)
+        %i(swap btrfs ext2 ext3 ext4 vfat xfs reiserfs).include?(fs.to_sym)
       end
 
       def store
@@ -274,7 +274,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[hstretch notify]
+        %i(hstretch notify)
       end
 
       def label
@@ -303,7 +303,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[editable hstretch notify]
+        %i(editable hstretch notify)
       end
 
       def store
@@ -387,7 +387,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i[hstretch notify]
+        %i(hstretch notify)
       end
 
       # FIXME: initialize with the correct value
