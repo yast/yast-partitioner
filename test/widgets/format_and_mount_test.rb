@@ -26,9 +26,6 @@ end
 describe Y2Partitioner::Widgets::FstabOptionsButton do
   let(:format_options) do
     double("Format Options")
-    # double("Format Options", filesystem_type: Y2Storage::Filesystems::Type::XFS,
-    #        format: true, encrypt: false, mount_by: :label, label: "data", :
-    #        mount_point => "swap", :fstab_options => [])
   end
 
   before do
@@ -39,4 +36,54 @@ describe Y2Partitioner::Widgets::FstabOptionsButton do
   subject { described_class.new(format_options) }
 
   include_examples "CWM::PushButton"
+end
+
+describe Y2Partitioner::Widgets::BlkDeviceFilesystem do
+  let(:format_options) do
+    double("Format Options")
+  end
+
+  subject { described_class.new(format_options) }
+
+  include_examples "CWM::AbstractWidget"
+end
+
+describe Y2Partitioner::Widgets::MountPoint do
+  let(:format_options) do
+    double("Format Options")
+  end
+
+  subject { described_class.new(format_options) }
+
+  include_examples "CWM::AbstractWidget"
+end
+
+describe Y2Partitioner::Widgets::InodeSize do
+  let(:format_options) do
+    double("Format Options")
+  end
+
+  subject { described_class.new(format_options) }
+
+  include_examples "CWM::AbstractWidget"
+end
+
+describe Y2Partitioner::Widgets::BlockSize do
+  let(:format_options) do
+    double("Format Options")
+  end
+
+  subject { described_class.new(format_options) }
+
+  include_examples "CWM::AbstractWidget"
+end
+
+describe Y2Partitioner::Widgets::PartitionId do
+  let(:format_options) do
+    double("Format Options")
+  end
+
+  subject { described_class.new(format_options) }
+
+  include_examples "CWM::AbstractWidget"
 end
