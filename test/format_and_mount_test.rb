@@ -84,7 +84,7 @@ describe Y2Partitioner::FormatMountOptions do
       end
 
       it "sets the filesystem with the default" do
-        expect(options.filesystem_type).to eql(options.default_fs)
+        expect(options.filesystem_type).to eql(Y2Partitioner::FormatMountOptions::DEFAULT_FS)
       end
     end
   end

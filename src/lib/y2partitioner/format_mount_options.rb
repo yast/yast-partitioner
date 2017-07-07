@@ -191,6 +191,9 @@ module Y2Partitioner
     # @return [String]
     attr_accessor :label
 
+    DEFAULT_FS = Y2Storage::Filesystems::Type::BTRFS
+    DEFAULT_HOME_FS = Y2Storage::Filesystems::Type::XFS
+
     # Constructor
     #
     # @param options [Hash]
@@ -213,7 +216,7 @@ module Y2Partitioner
       @format = false
       @encrypt = false
       @mount_by = Y2Storage::Filesystems::MountByType::UUID
-      @filesystem_type = default_fs
+      @filesystem_type = DEFAULT_FS
       @partition_id = Y2Storage::PartitionId::LINUX
       @fstab_options = []
     end
@@ -258,7 +261,7 @@ module Y2Partitioner
         @partition_id = Y2Storage::PartitionId::LVM
       else
         @mount_point = ""
-        @filesystem = (role == :system) ? default_fs : default_home_fs
+        @filesystem = (role == :system) ? DEFAULT_FS : DEFAULT_HOME_FS
         @partition_id = Y2Storage::PartitionId::LINUX
       end
     end
@@ -277,16 +280,8 @@ module Y2Partitioner
       when Y2Storage::PartitionId::ESP
         options_for_role(:efi_boot)
       else
-        @filesystem_type = partition_id.formattable? ? default_fs : nil
+        @filesystem_type = partition_id.formattable? ? DEFAULT_FS : nil
       end
-    end
-
-    def default_fs
-      Y2Storage::Filesystems::Type::BTRFS
-    end
-
-    def default_home_fs
-      Y2Storage::Filesystems::Type::XFS
     end
 
     def used_mount_points
