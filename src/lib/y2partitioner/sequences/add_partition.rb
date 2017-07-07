@@ -1,6 +1,7 @@
 require "yast"
 require "ui/sequence"
 require "y2partitioner/device_graphs"
+require "y2partitioner/dialogs/partition_role"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
 require "y2partitioner/dialogs/encrypt_password"
@@ -97,8 +98,7 @@ module Y2Partitioner
       end
 
       def role
-        log.info "TODO: Partition ROLE dialog"
-        :next
+        Dialogs::PartitionRole.run(disk.name, @options)
       end
 
       skip_stack :role

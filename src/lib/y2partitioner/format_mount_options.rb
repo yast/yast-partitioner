@@ -264,6 +264,8 @@ module Y2Partitioner
         @filesystem = (role == :system) ? DEFAULT_FS : DEFAULT_HOME_FS
         @partition_id = Y2Storage::PartitionId::LINUX
       end
+
+      @role = role
     end
 
     def options_for_windows_partition(_partition_id)
