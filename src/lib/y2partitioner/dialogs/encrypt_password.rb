@@ -8,6 +8,7 @@ module Y2Partitioner
     # Part of {Sequences::AddPartition} and {Sequences::EditBlkDevice}.
     # Formerly MiniWorkflowStepPassword
     class EncryptPassword < CWM::Dialog
+      # @param options [Y2Partitioner::FormatMount::Options]
       def initialize(options)
         textdomain "storage"
 

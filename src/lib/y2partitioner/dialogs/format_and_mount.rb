@@ -7,7 +7,7 @@ module Y2Partitioner
     # Part of {Sequences::AddPartition} and {Sequences::EditBlkDevice}.
     # Formerly MiniWorkflowStepFormatMount
     class FormatAndMount < CWM::Dialog
-      # @param options [Y2Partitioner::FormatMountOptions]
+      # @param options [Y2Partitioner::FormatMount::Options]
       def initialize(options)
         textdomain "storage"
 

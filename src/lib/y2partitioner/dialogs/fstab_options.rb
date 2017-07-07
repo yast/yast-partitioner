@@ -7,6 +7,7 @@ module Y2Partitioner
     # CWM Dialog to set specific fstab options for the blk_device being added
     # or edited.
     class FstabOptions < CWM::Dialog
+      # @param options [Y2Partitioner::FormatMount::Options]
       def initialize(options)
         textdomain "storage"
 

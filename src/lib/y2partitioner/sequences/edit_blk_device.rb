@@ -4,7 +4,7 @@ require "y2partitioner/device_graphs"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
 require "y2partitioner/dialogs/encrypt_password"
-require "y2partitioner/format_mount_options"
+require "y2partitioner/format_mount/base"
 
 Yast.import "Wizard"
 
@@ -16,7 +16,7 @@ module Y2Partitioner
       # @param partition [Y2Storage::BlkDevice]
       def initialize(partition)
         textdomain "storage"
-        @options = FormatMountOptions.new(partition: partition)
+        @options = FormatMount::Options.new(partition: partition)
         @partition = partition
       end
 
@@ -61,32 +61,9 @@ module Y2Partitioner
       end
 
       def format_mount
-        @partition.id = @options.partition_id
-        @partition.remove_descendants if @options.encrypt || @options.format
-
-        if @options.encrypt
-          @partition = @partition.create_encryption(dm_name_for(@partition))
-        end
-
-        @partition.create_filesystem(@options.filesystem_type) if @options.format
-
-        if @options.mount
-          @partition.filesystem.mount_point = @options.mount_point
-          @partition.filesystem.mount_by = @options.mount_by
-          @partition.filesystem.label = @options.label
-          @partition.filesystem.fstab_options = @options.fstab_options
-        else
-          @partition.filesystem.mount_point = ""
-        end
+        FormatMount::Base.new(@partition, @options).apply_options!
 
         :finish
-      end
-
-    private
-
-      def dm_name_for(partition)
-        name = partition.name.split("/").last
-        "cr_#{name}"
       end
     end
   end

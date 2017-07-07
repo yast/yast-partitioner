@@ -33,7 +33,7 @@ module Y2Partitioner
         textdomain "storage"
         @disk_name = disk_name
         @ptemplate = PartitionTemplate.new
-        @options = FormatMountOptions.new
+        @options = FormatMount::Options.new
       end
 
       def disk
@@ -108,22 +108,7 @@ module Y2Partitioner
         name = next_free_primary_partition_name(@disk_name, ptable)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
 
-        partition.id = @options.partition_id
-
-        if @options.encrypt
-          partition = partition.create_encryption(dm_name_for(@partition))
-        end
-
-        partition.create_filesystem(@options.filesystem_type) if @options.format
-
-        if @options.mount
-          partition.filesystem.mount_point = @options.mount_point
-          partition.filesystem.mount_by = @options.mount_by
-          partition.filesystem.label = @options.label
-          partition.filesystem.fstab_options = @options.fstab_options
-        else
-          partition.filesystem.mount_point = ""
-        end
+        FormatMount::Base.new(partition, @options).apply_options!
 
         :finish
       end

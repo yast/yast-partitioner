@@ -55,7 +55,7 @@ module Y2Partitioner
 
       # @macro seeAbstractWidget
       def label
-        @partition.name.split("/").last
+        @partition.basename
       end
 
       # @macro seeCustomWidget

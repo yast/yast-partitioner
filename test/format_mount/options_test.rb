@@ -1,24 +1,24 @@
-require_relative "test_helper"
+require_relative "../test_helper"
 
-require "y2partitioner/format_mount_options"
+require "y2partitioner/format_mount/options"
 
-describe Y2Partitioner::FormatMountOptions do
+describe Y2Partitioner::FormatMount::Options do
 
   context "#initialize" do
     it "sets the defauts options" do
-      expect_any_instance_of(Y2Partitioner::FormatMountOptions).to receive(:set_defaults!)
+      expect_any_instance_of(described_class).to receive(:set_defaults!)
 
       subject
     end
 
     context "when a specific role is given" do
       it "also set options for the specific role" do
-        expect_any_instance_of(Y2Partitioner::FormatMountOptions)
+        expect_any_instance_of(described_class)
           .to receive(:set_defaults!)
-        expect_any_instance_of(Y2Partitioner::FormatMountOptions)
+        expect_any_instance_of(described_class)
           .to receive(:options_for_role).with(:swap)
 
-        Y2Partitioner::FormatMountOptions.new(role: :swap)
+        described_class.new(role: :swap)
       end
     end
 
@@ -26,18 +26,18 @@ describe Y2Partitioner::FormatMountOptions do
       let(:partition) { instance_double(Y2Storage::Partition, name: "/dev/test_partition") }
 
       it "also set options for the specific partition" do
-        expect_any_instance_of(Y2Partitioner::FormatMountOptions)
+        expect_any_instance_of(described_class)
           .to receive(:set_defaults!)
-        expect_any_instance_of(Y2Partitioner::FormatMountOptions)
+        expect_any_instance_of(described_class)
           .to receive(:options_for_partition).with(partition)
 
-        Y2Partitioner::FormatMountOptions.new(partition: partition)
+        described_class.new(partition: partition)
       end
     end
   end
 
   context "#options_for_role" do
-    let(:options) { Y2Partitioner::FormatMountOptions.new }
+    let(:options) { described_class.new }
 
     context "when the given role is :swap" do
       before do
@@ -84,13 +84,13 @@ describe Y2Partitioner::FormatMountOptions do
       end
 
       it "sets the filesystem with the default" do
-        expect(options.filesystem_type).to eql(Y2Partitioner::FormatMountOptions::DEFAULT_FS)
+        expect(options.filesystem_type).to eql(described_class::DEFAULT_FS)
       end
     end
   end
 
   context "#options_for_partition" do
-    let(:options) { Y2Partitioner::FormatMountOptions.new }
+    let(:options) { described_class.new }
     let(:filesystem) { instance_double(Y2Storage::Filesystems::Type) }
     let(:partition) do
       instance_double(

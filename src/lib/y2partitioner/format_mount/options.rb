@@ -29,6 +29,8 @@ module Y2Storage
     include Yast::I18n
     extend Yast::I18n
 
+    NOT_ALLOW_FORMAT = %i(lvm raid esp prep bios_boot unknown).freeze
+
     TRANSLATIONS = {
       dos12:              N_("DOS12"),
       dos16:              N_("DOS16"),
@@ -58,7 +60,7 @@ module Y2Storage
     end
 
     def formattable?
-      !%i(lvm raid esp prep bios_boot unknown).include?(to_sym)
+      NOT_ALLOW_FORMAT.include?(to_sym)
     end
   end
 
@@ -160,136 +162,140 @@ module Y2Storage
 end
 
 module Y2Partitioner
-  # Helper class to store and remember format and mount options during
-  # different dialogs avoiding the direct modification of the blk_device being
-  # edited
-  class FormatMountOptions
-    # @return [Y2Storage::Filesystem::Type]
-    attr_accessor :filesystem_type
-    # @return [:system, :data, :swap, :efi_boot]
-    attr_accessor :role
-    # @return [Boolean]
-    attr_accessor :encrypt
-    # @return [Y2Storage::PartitionType]
-    attr_accessor :partition_type
-    # @return [Y2Storage::PartitionId]
-    attr_accessor :partition_id
-    # @return [String]
-    attr_accessor :mount_point
-    # @return [Y2Storage::Filesystems::MountBy]
-    attr_accessor :mount_by
-    # @return [Boolean]
-    attr_accessor :format
-    # @return [Boolean]
-    attr_accessor :mount
-    # @return [String]
-    attr_accessor :name
-    # @return [Array<String>]
-    attr_accessor :fstab_options
-    # @return [String]
-    attr_accessor :password
-    # @return [String]
-    attr_accessor :label
+  module FormatMount
+    # Helper class to store and remember format and mount options during
+    # different dialogs avoiding the direct modification of the blk_device being
+    # edited
+    class Options
+      # @return [Y2Storage::Filesystem::Type]
+      attr_accessor :filesystem_type
+      # @return [:system, :data, :swap, :efi_boot]
+      attr_accessor :role
+      # @return [Boolean]
+      attr_accessor :encrypt
+      # @return [Y2Storage::PartitionType]
+      attr_accessor :partition_type
+      # @return [Y2Storage::PartitionId]
+      attr_accessor :partition_id
+      # @return [String]
+      attr_accessor :mount_point
+      # @return [Y2Storage::Filesystems::MountBy]
+      attr_accessor :mount_by
+      # @return [Boolean]
+      attr_accessor :format
+      # @return [Boolean]
+      attr_accessor :mount
+      # @return [String]
+      attr_accessor :name
+      # @return [Array<String>]
+      attr_accessor :fstab_options
+      # @return [String]
+      attr_accessor :password
+      # @return [String]
+      attr_accessor :label
 
-    DEFAULT_FS = Y2Storage::Filesystems::Type::BTRFS
-    DEFAULT_HOME_FS = Y2Storage::Filesystems::Type::XFS
+      DEFAULT_MOUNT_BY = Y2Storage::Filesystems::MountByType::UUID
+      DEFAULT_FS = Y2Storage::Filesystems::Type::BTRFS
+      DEFAULT_HOME_FS = Y2Storage::Filesystems::Type::XFS
+      DEFAULT_PARTITION_ID = Y2Storage::PartitionId::LINUX
 
-    # Constructor
-    #
-    # @param options [Hash]
-    # @param partition [Y2Storage::BlkDevice]
-    # @param role [Symbol]
-    def initialize(options: {}, partition: nil, role: nil)
-      set_defaults!
+      # Constructor
+      #
+      # @param options [Hash]
+      # @param partition [Y2Storage::BlkDevice]
+      # @param role [Symbol]
+      def initialize(options: {}, partition: nil, role: nil)
+        set_defaults!
 
-      options_for_role(role) if role
-      options_for_partition(partition) if partition
+        options_for_role(role) if role
+        options_for_partition(partition) if partition
 
-      @mount = @mount_point && !@mount_point.empty?
+        @mount = @mount_point && !@mount_point.empty?
 
-      options.each do |o, v|
-        send("#{o}=", v) if respond_to?("#{o}=")
+        options.each do |o, v|
+          public_send("#{o}=", v) if respond_to?("#{o}=")
+        end
       end
-    end
 
-    def set_defaults!
-      @format = false
-      @encrypt = false
-      @mount_by = Y2Storage::Filesystems::MountByType::UUID
-      @filesystem_type = DEFAULT_FS
-      @partition_id = Y2Storage::PartitionId::LINUX
-      @fstab_options = []
-    end
+      def set_defaults!
+        @format = false
+        @encrypt = false
+        @mount_by = DEFAULT_MOUNT_BY
+        @filesystem_type = DEFAULT_FS
+        @partition_id = DEFAULT_PARTITION_ID
+        @fstab_options = []
+      end
 
-    # sets current attributes based on the given partition
-    # @param partition [Y2Storage::BlkDevice]
-    def options_for_partition(partition)
-      return unless partition
+      # sets current attributes based on the given partition
+      # @param partition [Y2Storage::BlkDevice]
+      def options_for_partition(partition)
+        return unless partition
 
-      @name = partition.name
-      @partition_type = partition.type
-      @partition_id = partition.id
+        @name = partition.name
+        @partition_type = partition.type
+        @partition_id = partition.id
 
-      options_for_filesystem(partition.filesystem)
-    end
+        options_for_filesystem(partition.filesystem)
+      end
 
-    # sets current filesystem attributes based on the given one
-    # @param filesystem [Y2Storage::Filesystems::Type]
-    def options_for_filesystem(filesystem)
-      return unless filesystem
+      # sets current filesystem attributes based on the given one
+      # @param filesystem [Y2Storage::Filesystems::Type]
+      def options_for_filesystem(filesystem)
+        return unless filesystem
 
-      @filesystem_type = filesystem.type
-      @mount_point = filesystem.mount_point
-      @mount_by = filesystem.mount_by if filesystem.mount_by
-      @label = filesystem.label
-      @fstab_options = filesystem.fstab_options
-    end
+        @filesystem_type = filesystem.type
+        @mount_point = filesystem.mount_point
+        @mount_by = filesystem.mount_by if filesystem.mount_by
+        @label = filesystem.label
+        @fstab_options = filesystem.fstab_options
+      end
 
-    # @param role [Symbol]
-    def options_for_role(role)
-      case role
-      when :swap
-        @mount_point = "swap"
-        @filesystem_type = Y2Storage::Filesystems::Type::SWAP
-        @partition_id = Y2Storage::PartitionId::SWAP
-        @mount_by = Y2Storage::Filesystems::MountByType::DEVICE
-      when :efi_boot
-        @mount_point = "/boot/efi"
-        @partition_id = Y2Storage::PartitionId::ESP
+      # @param role [Symbol]
+      def options_for_role(role)
+        case role
+        when :swap
+          @mount_point = "swap"
+          @filesystem_type = Y2Storage::Filesystems::Type::SWAP
+          @partition_id = Y2Storage::PartitionId::SWAP
+          @mount_by = Y2Storage::Filesystems::MountByType::DEVICE
+        when :efi_boot
+          @mount_point = "/boot/efi"
+          @partition_id = Y2Storage::PartitionId::ESP
+          @filesystem_type = Y2Storage::Filesystems::Type::VFAT
+        when :raw
+          @partition_id = Y2Storage::PartitionId::LVM
+        else
+          @mount_point = ""
+          @filesystem = (role == :system) ? DEFAULT_FS : DEFAULT_HOME_FS
+          @partition_id = DEFAULT_PARTITION_ID
+        end
+
+        @role = role
+      end
+
+      def options_for_windows_partition(_partition_id)
         @filesystem_type = Y2Storage::Filesystems::Type::VFAT
-      when :raw
-        @partition_id = Y2Storage::PartitionId::LVM
-      else
-        @mount_point = ""
-        @filesystem = (role == :system) ? DEFAULT_FS : DEFAULT_HOME_FS
-        @partition_id = Y2Storage::PartitionId::LINUX
       end
 
-      @role = role
-    end
+      # @param partition_id [Y2Storage::PartitionId]
+      def options_for_partition_id(partition_id)
+        return options_for_windows_partition(partition_id) if partition_id.is?(:windows_system)
 
-    def options_for_windows_partition(_partition_id)
-      @filesystem_type = Y2Storage::Filesystems::Type::VFAT
-    end
-
-    # @param partition_id [Y2Storage::PartitionId]
-    def options_for_partition_id(partition_id)
-      return options_for_windows_partition(partition_id) if partition_id.is?(:windows_system)
-
-      case partition_id
-      when Y2Storage::PartitionId::SWAP
-        options_for_role(:swap)
-      when Y2Storage::PartitionId::ESP
-        options_for_role(:efi_boot)
-      else
-        @filesystem_type = partition_id.formattable? ? DEFAULT_FS : nil
+        case partition_id
+        when Y2Storage::PartitionId::SWAP
+          options_for_role(:swap)
+        when Y2Storage::PartitionId::ESP
+          options_for_role(:efi_boot)
+        else
+          @filesystem_type = partition_id.formattable? ? DEFAULT_FS : nil
+        end
       end
-    end
 
-    def used_mount_points
-      dg = DeviceGraphs.instance.current
+      def used_mount_points
+        dg = DeviceGraphs.instance.current
 
-      Y2Storage::Mountable.all(dg).map(&:mount_point).compact
+        Y2Storage::Mountable.all(dg).map(&:mount_point).compact
+      end
     end
   end
 end

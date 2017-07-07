@@ -13,7 +13,8 @@ module Y2Partitioner
     # Part of {Sequences::AddPartition}.
     # Formerly MiniWorkflowStepRole
     class PartitionRole < CWM::Dialog
-      # @param options [Y2Partitioner::FormatMountOptions]
+      # @param disk_name [String]
+      # @param options [Y2Partitioner::FormatMount::Options]
       def initialize(disk_name, options)
         textdomain "storage"
 
@@ -34,7 +35,7 @@ module Y2Partitioner
 
       # Choose the role of the new partition
       class RoleChoice < CWM::RadioButtons
-        # @param options [Y2Partitioner::FormatMountOptions]
+        # @param options [Y2Partitioner::FormatMount::Options]
         def initialize(options)
           textdomain "storage"
 

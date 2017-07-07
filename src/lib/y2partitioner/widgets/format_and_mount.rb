@@ -1,7 +1,7 @@
 require "yast"
 require "y2storage"
 require "cwm/custom_widget"
-require "y2partitioner/format_mount_options"
+require "y2partitioner/format_mount/options"
 require "y2partitioner/dialogs/fstab_options"
 require "y2partitioner/widgets/fstab_options"
 
