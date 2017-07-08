@@ -28,7 +28,7 @@ module Y2Partitioner
 
       # @macro seeAbstractWidget
       def label
-        disk.sysfs_name
+        disk.basename
       end
 
       # @macro seeCustomWidget
