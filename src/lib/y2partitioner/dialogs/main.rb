@@ -3,6 +3,9 @@ require "cwm/dialog"
 require "y2partitioner/device_graphs"
 require "y2partitioner/widgets/overview"
 
+Yast.import "Mode"
+Yast.import "Popup"
+
 module Y2Partitioner
   module Dialogs
     # main entry point to partitioner showing tree pager with all content
@@ -40,7 +43,13 @@ module Y2Partitioner
         res = nil
         loop do
           res = super()
-          break if res != :redraw
+
+          next if res == :redraw
+          if res == :abort && Yast::Mode.installation
+            next unless Yast::Popup.ConfirmAbort(:painless)
+          end
+
+          break
         end
         @device_graph = DeviceGraphs.instance.current
 
