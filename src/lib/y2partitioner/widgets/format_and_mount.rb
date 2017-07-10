@@ -5,6 +5,8 @@ require "y2partitioner/format_mount/options"
 require "y2partitioner/dialogs/fstab_options"
 require "y2partitioner/widgets/fstab_options"
 
+Yast.import "Popup"
+
 module Y2Partitioner
   module Widgets
     # Format options for {Y2Storage::BlkDevice}
@@ -291,7 +293,7 @@ module Y2Partitioner
       end
 
       def handle
-        # Dialogs::FormatOptions.new(@options).run
+        Yast::Popup.Error("Not yet implemented") # Dialogs::FormatOptions.new(@options).run
 
         nil
       end
