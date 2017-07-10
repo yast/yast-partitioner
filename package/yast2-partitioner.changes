@@ -1,4 +1,9 @@
 -------------------------------------------------------------------
+Sat Jul  8 05:23:53 UTC 2017 - ancor@suse.com
+
+- During installation, ask for confirmation before aborting.
+
+-------------------------------------------------------------------
 Mon Jul  3 11:08:49 UTC 2017 - jreidinger@suse.com
 
 - add deletion of disks and also more complex confirm if there are
