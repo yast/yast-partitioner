@@ -78,7 +78,26 @@ module Y2Partitioner
 
       # @macro seeDialog
       def contents
-        HVSquash(TypeChoice.new(@ptemplate, @slots))
+        HVSquash(type_choice)
+      end
+
+      # Overwrite run. If there is only one type of partition, just select it
+      def run
+        case type_choice.items.size
+        when 0
+          raise "No partition type possible"
+        when 1
+          @ptemplate.type = Y2Storage::PartitionType.new(type_choice.items.first.first)
+          :next
+        else
+          super
+        end
+      end
+
+    private
+
+      def type_choice
+        @type_choice ||= TypeChoice.new(@ptemplate, @slots)
       end
     end
   end
