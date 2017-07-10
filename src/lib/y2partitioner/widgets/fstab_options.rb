@@ -227,19 +227,20 @@ module Y2Partitioner
     end
 
     # Generic checkbox for fstab options
+    # VALUES must be a pair: ["fire", "water"] means "fire" is checked and "water" unchecked
     class FstabCheckBox < CWM::CheckBox
       include FstabCommon
 
       # FIXME: It is common to almost all regexp widgets not only for checkboxes
       def init
-        self.value = @options.fstab_options.include?(check_option)
+        self.value = @options.fstab_options.include?(checked_value)
       end
 
       # FIXME: It is common to almost all regexp widgets not only for checkboxes
       def store
         delete_from_fstab!(Regexp.union(options))
 
-        @options.fstab_options << check_option if value
+        @options.fstab_options << checked_value if value
       end
 
     private
@@ -248,7 +249,7 @@ module Y2Partitioner
         self.class::VALUES
       end
 
-      def check_option
+      def checked_value
         self.class::VALUES[0]
       end
     end

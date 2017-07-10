@@ -152,11 +152,11 @@ module Y2Storage
       end
 
       def encryptable?
-        MOUNT_OPTIONS[to_sym][:supports_encryption] || false
+        MOUNT_OPTIONS[to_sym].fetch(:supports_encryption, false)
       end
 
       def formattable?
-        MOUNT_OPTIONS[to_sym][:supports_format] || false
+        MOUNT_OPTIONS[to_sym].fetch(:supports_format, false)
       end
 
       def supported_partition_id

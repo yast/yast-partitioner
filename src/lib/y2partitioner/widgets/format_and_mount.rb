@@ -174,7 +174,7 @@ module Y2Partitioner
 
       def contents
         Frame(
-          _("Mount Options"),
+          _("Mounting Options"),
           MarginBox(
             1.45,
             0.5,
