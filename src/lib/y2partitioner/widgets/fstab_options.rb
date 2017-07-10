@@ -360,9 +360,9 @@ module Y2Partitioner
 
       def items
         [
-          ["journal", "journal"],
-          ["ordered", "ordered"],
-          ["writeback", "writeback"]
+          ["journal", _("journal")],
+          ["ordered", _("ordered")],
+          ["writeback", _("writeback")]
         ]
       end
 
@@ -380,7 +380,7 @@ module Y2Partitioner
     # Custom widget that allows to enable ACL and the use of extended
     # attributes
     #
-    # FIXME: Pending implementation, currently it is only draw
+    # TODO: FIXME: Pending implementation, currently it is only draw
     class AclOptions < CWM::CustomWidget
       include FstabCommon
 
@@ -397,7 +397,7 @@ module Y2Partitioner
     # A input field that allows to set other options that are not handled by
     # specific widgets
     #
-    # FIXME: Pending implementation, currently it is only draw, all the options
+    # TODO: FIXME: Pending implementation, currently it is only draw, all the options
     # that it is responsable of should be defined, removing them if not set or
     # supported by the current filesystem.
     class ArbitraryOptions < CWM::InputField
@@ -464,6 +464,11 @@ module Y2Partitioner
       SUPPORTED_FILESYSTEMS = ["vfat"].freeze
       REGEXP = /^iocharset=/
       DEFAULT = "".freeze
+      AVAILABLE_VALUES = [
+          "", "iso8859-1", "iso8859-15", "iso8859-2", "iso8859-5", "iso8859-7",
+          "iso8859-9", "utf8", "koi8-r", "euc-jp", "sjis", "gb2312", "big5",
+          "euc-kr"
+        ].freeze
 
       def init
         i = @options.fstab_options.index { |o| o =~ REGEXP }
@@ -491,11 +496,7 @@ module Y2Partitioner
       end
 
       def items
-        [
-          "", "iso8859-1", "iso8859-15", "iso8859-2", "iso8859-5", "iso8859-7",
-          "iso8859-9", "utf8", "koi8-r", "euc-jp", "sjis", "gb2312", "big5",
-          "euc-kr"
-        ].map do |ch|
+        AVAILABLE_VALUES.map do |ch|
           [ch, ch]
         end
       end
