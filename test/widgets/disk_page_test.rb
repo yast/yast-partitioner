@@ -7,7 +7,7 @@ describe Y2Partitioner::Widgets::DiskPage do
   let(:pager) { double("Pager") }
   let(:disk) do
     double("Disk",
-      name: "mydisk", sysfs_name: "sysmydisk",
+      name: "mydisk", basename: "sysmydisk",
       partitions: [], partition_table: partition_table)
   end
   let(:partition_table) do

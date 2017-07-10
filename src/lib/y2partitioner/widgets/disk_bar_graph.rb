@@ -24,7 +24,7 @@ module Y2Partitioner
         end
 
         partitions = @disk.partitions.map do |part|
-          [part.region, part.sysfs_name]
+          [part.region, part.basename]
         end
 
         (free_regions + partitions).sort_by { |i| i[0].start }
