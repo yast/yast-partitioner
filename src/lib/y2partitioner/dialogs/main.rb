@@ -3,6 +3,7 @@ require "cwm/dialog"
 require "y2partitioner/device_graphs"
 require "y2partitioner/widgets/overview"
 
+Yast.import "Label"
 Yast.import "Mode"
 Yast.import "Popup"
 
@@ -31,6 +32,15 @@ module Y2Partitioner
 
       def skip_store_for
         [:redraw]
+      end
+
+      def back_button
+        # do not show back button when running on running system. See CWM::Dialog.back_button
+        Yast::Mode.installation ? nil : ""
+      end
+
+      def next_button
+        Yast::Mode.installation ? Yast::Label.AcceptButton : Yast::Label.FinishButton
       end
 
       # runs dialog.
