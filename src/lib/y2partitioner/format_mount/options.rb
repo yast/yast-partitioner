@@ -36,7 +36,7 @@ module Y2Storage
       dos16:              N_("DOS16"),
       dos32:              N_("DOS32"),
       swap:               N_("Linux Swap"),
-      linux:              N_("Lnux"),
+      linux:              N_("Linux"),
       lvm:                N_("Linux LVM"),
       raid:               N_("Linux RAID"),
       esp:                N_("EFI System Partition"),

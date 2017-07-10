@@ -25,7 +25,7 @@ require "y2partitioner/format_mount/options"
 
 module Y2Partitioner
   module FormatMount
-    # Base class for handle common formant and mount operations
+    # Base class for handle common format and mount operations
     class Base
       # params partition [Y2Storage::BlkDevice]
       # @param options [Options]
