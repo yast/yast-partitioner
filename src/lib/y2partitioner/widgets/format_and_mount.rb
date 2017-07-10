@@ -8,6 +8,10 @@ require "y2partitioner/widgets/fstab_options"
 module Y2Partitioner
   module Widgets
     # Format options for {Y2Storage::BlkDevice}
+    #
+    # This widget generates a Frame Term with the format and encrypt options,
+    # redrawing the interface in case of filesystem or partition selection
+    # change.
     class FormatOptions < CWM::CustomWidget
       def initialize(options)
         textdomain "storage"
@@ -21,6 +25,8 @@ module Y2Partitioner
         self.handle_all_events = true
       end
 
+      # It disable the format option if the current filesystem is not
+      # formattable or the selected partition does not allow format
       def init
         if @options.filesystem_type && !@options.filesystem_type.formattable?
           disable_format
@@ -28,7 +34,7 @@ module Y2Partitioner
           Yast::UI.ChangeWidget(Id(:no_format_device), :Enabled, true)
           @options.format ? select_format : select_no_format
 
-          disable_format unless @options.partition_id.formattable?
+          @options.partition_id.formattable? ? enable_format : disable_format
         end
       end
 
@@ -43,14 +49,9 @@ module Y2Partitioner
         when :no_format_device
           select_no_format
         when @filesystem_widget.widget_id
-          @filesystem_widget.store
-          store
-          return :redraw
+          return :redraw_filesystem
         when @partition_id.widget_id
-          @partition_id.store
-          @options.options_for_partition_id(@options.partition_id)
-
-          return :redraw
+          return :redraw_partition_id
         end
 
         nil
@@ -129,6 +130,10 @@ module Y2Partitioner
       def disable_format
         select_no_format
         Yast::UI.ChangeWidget(Id(:format_device), :Enabled, false)
+      end
+
+      def enable_format
+        Yast::UI.ChangeWidget(Id(:format_device), :Enabled, true)
       end
     end
 
@@ -230,6 +235,8 @@ module Y2Partitioner
 
     # BlkDevice Filesystem selector
     class BlkDeviceFilesystem < CWM::ComboBox
+      SUPPORTED_FILESYSTEMS = %i(swap btrfs ext2 ext3 ext4 vfat xfs reiserfs).freeze
+
       def initialize(options)
         textdomain "storage"
 
@@ -257,12 +264,14 @@ module Y2Partitioner
         end
       end
 
-      def supported?(fs)
-        %i(swap btrfs ext2 ext3 ext4 vfat xfs reiserfs).include?(fs.to_sym)
-      end
-
       def store
         @options.filesystem_type = value ? Y2Storage::Filesystems::Type.find(value) : value
+      end
+
+    private
+
+      def supported?(fs)
+        SUPPORTED_FILESYSTEMS.include?(fs.to_sym)
       end
     end
 
@@ -289,7 +298,10 @@ module Y2Partitioner
     end
 
     # MountPoint selector
+    # FIXME: Implement validate, verifying if the mount_point is in use.
     class MountPoint < CWM::ComboBox
+      SUGGESTED_MOUNT_POINTS = %w(/ /home /var /opt /srv /tmp).freeze
+
       def initialize(options)
         @options = options
       end
@@ -311,7 +323,7 @@ module Y2Partitioner
       end
 
       def items
-        %w(/root /home /srv /tmp /opt /var).map { |mp| [mp, mp] }
+        SUGGESTED_MOUNT_POINTS.map { |mp| [mp, mp] }
       end
     end
 

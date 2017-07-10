@@ -60,7 +60,7 @@ module Y2Storage
     end
 
     def formattable?
-      NOT_ALLOW_FORMAT.include?(to_sym)
+      !NOT_ALLOW_FORMAT.include?(to_sym)
     end
   end
 
@@ -120,15 +120,16 @@ module Y2Storage
           fstab_options: []
         },
         swap:     {
-          fstab_options:       ["priority"],
+          fstab_options:       ["pri="],
           supports_format:     true,
           supports_encryption: true,
           partition_id:        Y2Storage::PartitionId::SWAP
         },
         vfat:     {
-          fstab_options:       COMMON_FSTAB_OPTIONS + ["dev", "nodev", "iocharset="],
+          fstab_options:       COMMON_FSTAB_OPTIONS + ["dev", "nodev", "iocharset=", "codepage="],
           supports_format:     true,
-          supports_encryption: true
+          supports_encryption: true,
+          partition_id:        Y2Storage::PartitionId::DOS32
         },
         xfs:      {
           fstab_options:       COMMON_FSTAB_OPTIONS + ["usrquota", "grpquota"],
@@ -156,6 +157,10 @@ module Y2Storage
 
       def formattable?
         MOUNT_OPTIONS[to_sym][:supports_format] || false
+      end
+
+      def supported_partition_id
+        MOUNT_OPTIONS[to_sym][:partition_id]
       end
     end
   end
@@ -250,6 +255,22 @@ module Y2Partitioner
         @fstab_options = filesystem.fstab_options
       end
 
+      # FIXME: Set fstab default options for the current filesystem
+      def update_filesystem_options!
+        if @filesystem_type != Y2Storage::Filesystems::Type::SWAP
+          @mount_point = "" if @mount_point == "swap"
+        end
+
+        # Delete options that are not supported by the current Filesystem.
+        @fstab_options.keep_if do |option|
+          @filesystem_type.supported_fstab_options.include?(option.gsub(/=(.*)/, "="))
+        end
+
+        @partition_id = filesystem_type.supported_partition_id || DEFAULT_PARTITION_ID
+      end
+
+      # Initializes the format and mount state based on the role given.
+      #
       # @param role [Symbol]
       def options_for_role(role)
         case role
@@ -273,28 +294,18 @@ module Y2Partitioner
         @role = role
       end
 
-      def options_for_windows_partition(_partition_id)
-        @filesystem_type = Y2Storage::Filesystems::Type::VFAT
-      end
-
       # @param partition_id [Y2Storage::PartitionId]
       def options_for_partition_id(partition_id)
-        return options_for_windows_partition(partition_id) if partition_id.is?(:windows_system)
-
         case partition_id
         when Y2Storage::PartitionId::SWAP
           options_for_role(:swap)
         when Y2Storage::PartitionId::ESP
           options_for_role(:efi_boot)
+        when partition_id.is?(:windows_system)
+          @filesystem_type = Y2Storage::Filesystems::Type::VFAT
         else
           @filesystem_type = partition_id.formattable? ? DEFAULT_FS : nil
         end
-      end
-
-      def used_mount_points
-        dg = DeviceGraphs.instance.current
-
-        Y2Storage::Mountable.all(dg).map(&:mount_point).compact
       end
     end
   end

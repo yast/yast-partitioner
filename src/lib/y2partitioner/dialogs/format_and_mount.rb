@@ -34,14 +34,25 @@ module Y2Partitioner
         loop do
           ret = super
 
-          break if ret != :redraw
+          case ret
+          when :redraw_partition_id
+            redraw_partition_id
+          when :redraw_filesystem
+            redraw_filesystem
+          else
+            break
+          end
         end
 
         ret
       end
 
-      def skip_store_for
-        [:redraw]
+      def redraw_partition_id
+        @options.options_for_partition_id(@options.partition_id)
+      end
+
+      def redraw_filesystem
+        @options.update_filesystem_options!
       end
     end
   end

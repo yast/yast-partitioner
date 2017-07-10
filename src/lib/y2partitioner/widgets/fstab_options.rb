@@ -4,7 +4,8 @@ require "y2storage"
 
 module Y2Partitioner
   module Widgets
-    # Fstab mixin
+    # The fstab options are mostly checkboxes and combo boxes that share some
+    # commong methods, so this is a mixin for that share code.
     module FstabCommon
       def initialize(options)
         textdomain "storage"
@@ -12,38 +13,67 @@ module Y2Partitioner
         @options = options
       end
 
+      def init
+        init_regexp if self.class.const_defined?("REGEXP")
+      end
+
+      # No all the fstab options are supported by all the filesystem so each
+      # widget are able to check if the current filesystem is supported
+      # explicitely or checking if the values it is responsable of are
+      # supported by the filesystem.
       def supported_by_filesystem?
         return false if !@options.filesystem_type
 
-        if respond_to?("supported_filesystems")
-          supported_filesystems.include?(@options.filesystem_type.to_sym)
+        if self.class.const_defined?("SUPPORTED_FILESYSTEMS")
+          self.class::SUPPORTED_FILESYSTEMS
+            .include?(@options.filesystem_type.to_sym)
         else
-          self.class.const_get("VALUES").all? do |v|
+          self.class::VALUES.all? do |v|
             @options.filesystem_type.supported_fstab_options.include?(v)
           end
         end
       end
 
-      def draw_widget?(widget)
+      # @param widget [CWM::AbstractWidget]
+      # @return [Boolean] true if it is supported by current filesystem
+      def ui_term?(widget)
         return true if widget.supported_by_filesystem?
 
         false
       end
 
-      def draw(widget)
-        return Empty() unless draw_widget?(widget)
+      # @param widget [CWM::AbstractWidget]
+      # @return [CWM::WidgetTerm]
+      def to_ui_term(widget)
+        return Empty() unless ui_term?(widget)
 
         Left(widget)
       end
 
-      def draw_with_vspace(widget)
-        return [Empty()] unless draw_widget?(widget)
+      # @param widget [CWM::AbstractWidget]
+      # @return [Array<CWM::WidgetTerm>]
+      def ui_term_with_vspace(widget)
+        return [Empty()] unless ui_term?(widget)
 
         [Left(widget), VSpacing(1)]
       end
 
       def delete_from_fstab!(option)
         @options.fstab_options.delete_if { |o| o =~ option }
+      end
+
+    private
+
+      # Common regexp checkbox widgets init.
+      def init_regexp
+        i = @options.fstab_options.index { |o| o =~ self.class::REGEXP }
+
+        self.value =
+          if i
+            @options.fstab_options[i].gsub(self.class::REGEXP, "")
+          else
+            self.class::DEFAULT
+          end
       end
     end
 
@@ -66,6 +96,8 @@ module Y2Partitioner
     # Main widget for set all the available options for a particular filesystem
     class FstabOptions < CWM::CustomWidget
       include FstabCommon
+
+      SUPPORTED_FILESYSTEMS = %i(btrfs ext2 ext3 ext4 reiserfs).freeze
 
       def initialize(options)
         @options = options
@@ -99,14 +131,10 @@ module Y2Partitioner
           VSpacing(1),
           Left(GeneralOptions.new(@options)),
           Left(FilesystemsOptions.new(@options)),
-          * draw_with_vspace(JournalOptions.new(@options)),
-          * draw_with_vspace(AclOptions.new(@options)),
+          * ui_term_with_vspace(JournalOptions.new(@options)),
+          * ui_term_with_vspace(AclOptions.new(@options)),
           Left(ArbitraryOptions.new(@options))
         )
-      end
-
-      def supported_filesystems
-        %i(btrfs ext2 ext3 ext4 reiserfs)
       end
 
     private
@@ -189,9 +217,9 @@ module Y2Partitioner
       include FstabCommon
 
       def contents
-        return Empty() unless widgets.any? { |w| draw_widget?(w) }
+        return Empty() unless widgets.any? { |w| ui_term?(w) }
 
-        VBox(* widgets.map { |w| draw(w) }, VSpacing(1))
+        VBox(* widgets.map { |w| to_ui_term(w) }, VSpacing(1))
       end
 
       def widgets
@@ -205,21 +233,36 @@ module Y2Partitioner
       end
     end
 
-    # CheckBox to disable the automount option when starting up
-    class Noauto < CWM::CheckBox
+    # Generic checkbox for fstab options
+    class FstabCheckBox < CWM::CheckBox
       include FstabCommon
 
-      VALUES = ["noauto", "auto"].freeze
-
+      # FIXME: It is common to almost all regexp widgets not only for checkboxes
       def init
-        self.value = @options.fstab_options.include?("noauto")
+        self.value = @options.fstab_options.include?(check_option)
       end
 
+      # FIXME: It is common to almost all regexp widgets not only for checkboxes
       def store
-        delete_from_fstab!(Regexp.union(VALUES))
+        delete_from_fstab!(Regexp.union(options))
 
-        @options.fstab_options << "noauto" if value
+        @options.fstab_options << check_option if value
       end
+
+    private
+
+      def options
+        self.class::VALUES
+      end
+
+      def check_option
+        self.class::VALUES[0]
+      end
+    end
+
+    # CheckBox to disable the automount option when starting up
+    class Noauto < FstabCheckBox
+      VALUES = ["noauto", "auto"].freeze
 
       def label
         _("Do Not Mount at System &Start-up")
@@ -227,18 +270,12 @@ module Y2Partitioner
     end
 
     # CheckBox to enable the read only option ("ro")
-    class ReadOnly < CWM::CheckBox
+    class ReadOnly < FstabCheckBox
       include FstabCommon
-      VALUES = ["rw", "ro"].freeze
+      VALUES = ["ro", "rw"].freeze
 
-      def init
-        self.value = @options.fstab_options.include?("ro")
-      end
-
-      def store
-        delete_from_fstab!(Regexp.union(VALUES))
-
-        @options.fstab_options << "ro" if value
+      def label
+        _("Mount &Read-Only")
       end
 
       def help
@@ -246,60 +283,34 @@ module Y2Partitioner
         "Writing to the file system is not possible. Default is false. During installation\n" \
         "the file system is always mounted read-write.</p>"
       end
-
-      def label
-        _("Mount &Read-Only")
-      end
     end
 
     # CheckBox to enable the noatime option
-    class Noatime < CWM::CheckBox
-      include FstabCommon
+    class Noatime < FstabCheckBox
       VALUES = ["noatime", "atime"].freeze
 
-      def init
-        self.value = @options.fstab_options.include?("noatime")
-      end
-
-      def store
-        delete_from_fstab!(Regexp.union(VALUES))
-
-        @options.fstab_options << "noatime" if value
+      def label
+        _("No &Access Time")
       end
 
       def help
         "<p><b>No Access Time:</b>\nAccess times are not " \
         "updated when a file is read. Default is false.</p>\n"
       end
-
-      def label
-        _("No &Access Time")
-      end
     end
 
     # CheckBox to enable the user option which means allow to mount the
     # filesystem by an ordinary user
-    class MountUser < CWM::CheckBox
-      include FstabCommon
+    class MountUser < FstabCheckBox
       VALUES = ["user", "nouser"].freeze
 
-      def init
-        self.value = @options.fstab_options.include?("user")
-      end
-
-      def store
-        delete_from_fstab!(Regexp.union(VALUES))
-
-        @options.fstab_options << "user" if value
+      def label
+        _("Mountable by user")
       end
 
       def help
         "<p><b>Mountable by User:</b>\nThe file system may be " \
         "mounted by an ordinary user. Default is false.</p>\n"
-      end
-
-      def label
-        _("Mountable by user")
       end
     end
 
@@ -307,6 +318,10 @@ module Y2Partitioner
     class Quota < CWM::CheckBox
       include FstabCommon
       VALUES = ["grpquota", "usrquota"].freeze
+
+      def label
+        _("Enable &Quota Support")
+      end
 
       def help
         "<p><b>Enable Quota Support:</b>\n" \
@@ -321,12 +336,7 @@ module Y2Partitioner
       def store
         delete_from_fstab!(Regexp.union(VALUES))
 
-        @options.fstab_options << "usrquota" if value
-        @options.fstab_options << "grpquota" if value
-      end
-
-      def label
-        _("Enable &Quota Support")
+        @options.fstab_options << "usrquota" << "grpquota" if value
       end
     end
 
@@ -334,24 +344,16 @@ module Y2Partitioner
     class JournalOptions < CWM::ComboBox
       include FstabCommon
 
+      REGEXP = /^data=/
       VALUES = ["data="].freeze
-
-      def initialize(options)
-        @options = options
-      end
+      DEFAULT = "journal".freeze
 
       def label
         _("Data &Journaling Mode")
       end
 
-      def init
-        i = @options.fstab_options.index { |o| o =~ /^data=/ }
-
-        self.value = i ? @options.fstab_options[i].gsub(/^data=/, "") : default
-      end
-
       def store
-        delete_from_fstab!(/^data=/)
+        delete_from_fstab!(REGEXP)
 
         @options.fstab_options << "data=#{value}"
       end
@@ -373,22 +375,16 @@ module Y2Partitioner
         "prior to its metadata being committed to the journal. Medium performance impact.<br>\n" \
         "<tt>writeback</tt> -- Data ordering is not preserved. No performance impact.</p>\n"
       end
-
-      def default
-        "journal"
-      end
     end
 
     # Custom widget that allows to enable ACL and the use of extended
     # attributes
+    #
+    # FIXME: Pending implementation, currently it is only draw
     class AclOptions < CWM::CustomWidget
-      VALUES = ["acl", "eua"].freeze
-
       include FstabCommon
 
-      def initialize(options)
-        @options = options
-      end
+      VALUES = ["acl", "eua"].freeze
 
       def contents
         VBox(
@@ -400,6 +396,10 @@ module Y2Partitioner
 
     # A input field that allows to set other options that are not handled by
     # specific widgets
+    #
+    # FIXME: Pending implementation, currently it is only draw, all the options
+    # that it is responsable of should be defined, removing them if not set or
+    # supported by the current filesystem.
     class ArbitraryOptions < CWM::InputField
       def initialize(options)
         @options = options
@@ -419,9 +419,9 @@ module Y2Partitioner
       include FstabCommon
 
       def contents
-        return Empty() unless widgets.any? { |w| draw_widget?(w) }
+        return Empty() unless widgets.any? { |w| ui_term?(w) }
 
-        VBox(* widgets.map { |w| draw(w) }, VSpacing(1))
+        VBox(* widgets.map { |w| to_ui_term(w) }, VSpacing(1))
       end
 
       def widgets
@@ -437,18 +437,16 @@ module Y2Partitioner
     class SwapPriority < CWM::InputField
       include FstabCommon
 
+      VALUES = ["pri="].freeze
+      REGEXP  = /^pri=/
+      DEFAULT = "42".freeze
+
       def label
         _("Swap &Priority")
       end
 
-      def init
-        i = @options.fstab_options.index { |o| o =~ /^pri=/ }
-
-        self.value = i ? @options.fstab_options[i].gsub(/^pri=/, "") : default
-      end
-
       def store
-        delete_from_fstab!(/^pri=/)
+        delete_from_fstab!(REGEXP)
 
         @options.fstab_options << "pri=#{value}"
       end
@@ -457,28 +455,24 @@ module Y2Partitioner
         "<p><b>Swap Priority:</b>\nEnter the swap priority. " \
         "Higher numbers mean higher priority.</p>\n"
       end
-
-      def supported_filesystems
-        [:swap]
-      end
-
-      def default
-        42
-      end
     end
 
     # VFAT IOCharset
     class IOCharset < CWM::ComboBox
       include FstabCommon
 
-      def init
-        i = @options.fstab_options.index { |o| o =~ /^iocharset=/ }
+      SUPPORTED_FILESYSTEMS = ["vfat"].freeze
+      REGEXP = /^iocharset=/
+      DEFAULT = "".freeze
 
-        self.value = i ? @options.fstab_options[i].gsub(/^iocharset=/, "") : default
+      def init
+        i = @options.fstab_options.index { |o| o =~ REGEXP }
+
+        self.value = i ? @options.fstab_options[i].gsub(REGEXP, "") : DEFAULT
       end
 
       def store
-        delete_from_fstab!(/^iocharset/)
+        delete_from_fstab!(/^iocharset=/)
 
         @options.fstab_options << "iocharset=#{value}"
       end
@@ -505,30 +499,21 @@ module Y2Partitioner
           [ch, ch]
         end
       end
-
-      def supported_filesystems
-        [:vfat]
-      end
-
-      def default
-        ""
-      end
     end
 
     # VFAT Codepage
     class Codepage < CWM::ComboBox
       include FstabCommon
 
-      def init
-        i = @options.fstab_options.index { |o| o =~ /^codepage=/ }
-
-        self.value = i ? @options.fstab_options[i].gsub(/^codepage=/, "") : default
-      end
+      CODEPAGES = ["", "437", "852", "932", "936", "949", "950"].freeze
+      REGEXP = /^codepage=/
+      VALUES = ["codepage="].freeze
+      DEFAULT = "".freeze
 
       def store
-        @options.fstab_options.delete_if { |o| o =~ /^codepage=/ }
+        @options.fstab_options.delete_if { |o| o =~ REGEXP }
 
-        @options.fstab_options << "codepage=#{value}"
+        @options.fstab_options << "codepage=#{value}" if value && !value.empty?
       end
 
       def label
@@ -545,19 +530,7 @@ module Y2Partitioner
       end
 
       def items
-        [
-          "", "437", "852", "932", "936", "949", "950"
-        ].map do |ch|
-          [ch, ch]
-        end
-      end
-
-      def supported_filesystems
-        %i(vfat)
-      end
-
-      def default
-        ""
+        CODEPAGES.map { |ch| [ch, ch] }
       end
     end
   end
