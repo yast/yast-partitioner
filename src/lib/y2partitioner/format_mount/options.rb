@@ -23,47 +23,6 @@ require "yast"
 require "y2storage"
 
 module Y2Storage
-  # FIXME: Monkey patch of Y2Storage::PartitionId it should moved to
-  # yast2-storage-ng
-  class PartitionId
-    include Yast::I18n
-    extend Yast::I18n
-
-    NOT_ALLOW_FORMAT = %i(lvm raid esp prep bios_boot unknown).freeze
-
-    TRANSLATIONS = {
-      dos12:              N_("DOS12"),
-      dos16:              N_("DOS16"),
-      dos32:              N_("DOS32"),
-      swap:               N_("Linux Swap"),
-      linux:              N_("Linux"),
-      lvm:                N_("Linux LVM"),
-      raid:               N_("Linux RAID"),
-      esp:                N_("EFI System Partition"),
-      bios_boot:          N_("BIOS Boot Partition"),
-      prep:               N_("PReP Boot Partition"),
-      ntfs:               N_("NTFS"),
-      extended:           N_("Extended"),
-      windows_basic_data: N_("Windows Data Partition"),
-      microsoft_reserved: N_("Microsoft Reserved Partition"),
-      diag:               N_("Diagnostics Partition"),
-      unknown:            N_("Unknown")
-    }.freeze
-    private_constant :TRANSLATIONS
-
-    def to_human_string
-      textdomain "storage"
-
-      string = TRANSLATIONS[to_sym] or raise "Unhandled Partition ID '#{inspect}'"
-
-      _(string)
-    end
-
-    def formattable?
-      !NOT_ALLOW_FORMAT.include?(to_sym)
-    end
-  end
-
   module Filesystems
     # FIXME: Temporal Monkey patching of fstab options per filesystem type. It
     # could/should be moved to yast2-storage-ng.
