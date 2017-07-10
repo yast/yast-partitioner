@@ -35,8 +35,8 @@ module Y2Partitioner
       end
 
       def back_button
-        # do not show back button when running on running system
-        Yast::Mode.installation ? true : nil
+        # do not show back button when running on running system. See CWM::Dialog.back_button
+        Yast::Mode.installation ? nil : ""
       end
 
       def next_button
