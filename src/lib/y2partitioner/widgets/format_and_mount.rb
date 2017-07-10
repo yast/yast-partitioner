@@ -80,7 +80,7 @@ module Y2Partitioner
 
       def contents
         Frame(
-          _("Format Options"),
+          _("Formatting Options"),
           MarginBox(
             1.45,
             0.5,
