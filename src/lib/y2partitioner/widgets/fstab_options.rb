@@ -210,7 +210,7 @@ module Y2Partitioner
       include FstabCommon
 
       def contents
-        return Empty() unless widgets.any? { |w| w.supported_by_filesystem? }
+        return Empty() unless widgets.any?(&:supported_by_filesystem?)
 
         VBox(* widgets.map { |w| to_ui_term(w) }, VSpacing(1))
       end
@@ -412,7 +412,7 @@ module Y2Partitioner
       include FstabCommon
 
       def contents
-        return Empty() unless widgets.any? { |w| w.supported_by_filesystem? }
+        return Empty() unless widgets.any?(&:supported_by_filesystem?)
 
         VBox(* widgets.map { |w| to_ui_term(w) }, VSpacing(1))
       end
@@ -458,10 +458,10 @@ module Y2Partitioner
       REGEXP = /^iocharset=/
       DEFAULT = "".freeze
       AVAILABLE_VALUES = [
-          "", "iso8859-1", "iso8859-15", "iso8859-2", "iso8859-5", "iso8859-7",
-          "iso8859-9", "utf8", "koi8-r", "euc-jp", "sjis", "gb2312", "big5",
-          "euc-kr"
-        ].freeze
+        "", "iso8859-1", "iso8859-15", "iso8859-2", "iso8859-5", "iso8859-7",
+        "iso8859-9", "utf8", "koi8-r", "euc-jp", "sjis", "gb2312", "big5",
+        "euc-kr"
+      ].freeze
 
       def init
         i = @options.fstab_options.index { |o| o =~ REGEXP }

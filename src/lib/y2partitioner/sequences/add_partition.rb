@@ -50,7 +50,7 @@ module Y2Partitioner
           "role"           => { next: "format_options" },
           "format_options" => { next: "password" },
           "password"       => { next: "commit" },
-          "commit"         => { finish: :finish },
+          "commit"         => { finish: :finish }
         }
 
         sym = nil
@@ -108,7 +108,9 @@ module Y2Partitioner
         name = next_free_partition_name(@disk_name, ptable, @ptemplate.type)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
 
-        FormatMount::Base.new(partition, @options).apply_options! unless @ptemplate.type.is?(:extended)
+        if !@ptemplate.type.is?(:extended)
+          FormatMount::Base.new(partition, @options).apply_options!
+        end
 
         :finish
       end

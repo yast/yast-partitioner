@@ -42,9 +42,7 @@ module Y2Partitioner
       def run
         res = super
 
-        if res == :next && @ptemplate.type.is?(:extended)
-          res = :finish
-        end
+        res = :finish if res == :next && @ptemplate.type.is?(:extended)
 
         res
       end
