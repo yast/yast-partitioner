@@ -6,6 +6,7 @@ require "y2partitioner/dialogs/partition_type"
 require "y2partitioner/dialogs/encrypt_password"
 require "y2partitioner/format_mount/base"
 
+Yast.import "Popup"
 Yast.import "Wizard"
 
 module Y2Partitioner
@@ -22,7 +23,8 @@ module Y2Partitioner
 
       def run
         sequence_hash = {
-          "ws_start"       => "format_options",
+          "ws_start"       => "preconditions",
+          "preconditions"  => { next: "format_options" },
           "format_options" => { next: "password" },
           "password"       => { next: "commit" },
           "commit"         => { finish: :finish }
@@ -46,6 +48,16 @@ module Y2Partitioner
       ensure
         Yast::Wizard.CloseDialog
       end
+
+      def preconditions
+        if @partition.type.is?(:extended)
+          Yast::Popup.Error(_("An extended partition cannot be edited"))
+          :back
+        else
+          :next
+        end
+      end
+      skip_stack :preconditions
 
       def format_options
         @format_dialog ||= Dialogs::FormatAndMount.new(@options)
