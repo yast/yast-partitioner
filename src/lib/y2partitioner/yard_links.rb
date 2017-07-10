@@ -16,6 +16,10 @@ module Y2Storage
   class Devicegraph
   end
 
+  # See http://www.rubydoc.info/github/yast/yast-storage-ng/Y2Storage/BlkDevice
+  class BlkDevice
+  end
+
   # See http://www.rubydoc.info/github/yast/yast-storage-ng/Y2Storage/Region
   class Region
   end
