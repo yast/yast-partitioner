@@ -273,9 +273,9 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Mount Read-Only:</b>\n" \
+        _("<p><b>Mount Read-Only:</b>\n" \
         "Writing to the file system is not possible. Default is false. During installation\n" \
-        "the file system is always mounted read-write.</p>"
+        "the file system is always mounted read-write.</p>")
       end
     end
 
@@ -288,8 +288,8 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>No Access Time:</b>\nAccess times are not " \
-        "updated when a file is read. Default is false.</p>\n"
+        _("<p><b>No Access Time:</b>\nAccess times are not " \
+        "updated when a file is read. Default is false.</p>\n")
       end
     end
 
@@ -303,8 +303,8 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Mountable by User:</b>\nThe file system may be " \
-        "mounted by an ordinary user. Default is false.</p>\n"
+        _("<p><b>Mountable by User:</b>\nThe file system may be " \
+        "mounted by an ordinary user. Default is false.</p>\n")
       end
     end
 
@@ -318,9 +318,9 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Enable Quota Support:</b>\n" \
+        ("<p><b>Enable Quota Support:</b>\n" \
         "The file system is mounted with user quotas enabled.\n" \
-        "Default is false.</p>\n"
+        "Default is false.</p>\n")
       end
 
       def init
@@ -361,13 +361,13 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Data Journaling Mode:</b>\n" \
+        _("<p><b>Data Journaling Mode:</b>\n" \
         "Specifies the journaling mode for file data.\n" \
         "<tt>journal</tt> -- All data is committed to the journal prior to being\n" \
         "written into the main file system. Highest performance impact.<br>\n" \
         "<tt>ordered</tt> -- All data is forced directly out to the main file system\n" \
         "prior to its metadata being committed to the journal. Medium performance impact.<br>\n" \
-        "<tt>writeback</tt> -- Data ordering is not preserved. No performance impact.</p>\n"
+        "<tt>writeback</tt> -- Data ordering is not preserved. No performance impact.</p>\n")
       end
     end
 
@@ -382,8 +382,8 @@ module Y2Partitioner
 
       def contents
         VBox(
-          Left(CheckBox(Id("opt_acl"), _("&Access Control Lists (ACL)"), false)),
-          Left(CheckBox(Id("opt_eua"), _("&Extended User Attributes"), false))
+          Left(CheckBox(Id("opt_acl"), Opt(:disabled), _("&Access Control Lists (ACL)"), false)),
+          Left(CheckBox(Id("opt_eua"), Opt(:disabled), _("&Extended User Attributes"), false))
         )
       end
     end
@@ -400,7 +400,7 @@ module Y2Partitioner
       end
 
       def opt
-        %i(hstretch)
+        %i(hstretch disabled)
       end
 
       def label
@@ -446,8 +446,8 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Swap Priority:</b>\nEnter the swap priority. " \
-        "Higher numbers mean higher priority.</p>\n"
+        _("<p><b>Swap Priority:</b>\nEnter the swap priority. " \
+        "Higher numbers mean higher priority.</p>\n")
       end
     end
 
@@ -481,8 +481,8 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Charset for File Names:</b>\nSet the charset used for display " \
-        "of file names in Windows partitions.</p>\n"
+        _("<p><b>Charset for File Names:</b>\nSet the charset used for display " \
+        "of file names in Windows partitions.</p>\n")
       end
 
       def opt
@@ -516,8 +516,8 @@ module Y2Partitioner
       end
 
       def help
-        "<p><b>Codepage for Short FAT Names:</b>\nThis codepage is used for " \
-        "converting to shortname characters on FAT file systems.</p>\n"
+        _("<p><b>Codepage for Short FAT Names:</b>\nThis codepage is used for " \
+        "converting to shortname characters on FAT file systems.</p>\n")
       end
 
       def opt
