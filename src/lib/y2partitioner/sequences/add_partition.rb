@@ -46,12 +46,11 @@ module Y2Partitioner
           "ws_start"       => "preconditions",
           "preconditions"  => { next: "type" },
           "type"           => { next: "size" },
-          "size"           => { next: "role", finish: "create_extended" },
+          "size"           => { next: "role", finish: "commit" },
           "role"           => { next: "format_options" },
           "format_options" => { next: "password" },
-          "password"       => { next: "format_mount" },
-          "format_mount"   => { finish: :finish },
-          "create_extended" => { finish: :finish }
+          "password"       => { next: "commit" },
+          "commit"         => { finish: :finish },
         }
 
         sym = nil
@@ -104,12 +103,12 @@ module Y2Partitioner
 
       skip_stack :role
 
-      def format_mount
+      def commit
         ptable = disk.partition_table
         name = next_free_partition_name(@disk_name, ptable, @ptemplate.type)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
 
-        FormatMount::Base.new(partition, @options).apply_options!
+        FormatMount::Base.new(partition, @options).apply_options! unless @ptemplate.type.is?(:extended)
 
         :finish
       end
@@ -125,14 +124,6 @@ module Y2Partitioner
         @encrypt_dialog ||= Dialogs::EncryptPassword.new(@options)
 
         @encrypt_dialog.run
-      end
-
-      def create_extended
-        ptable = disk.partition_table
-        name = next_free_partition_name(@disk_name, ptable, @ptemplate.type)
-        ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
-
-        :finish
       end
 
     private
