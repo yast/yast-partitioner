@@ -46,11 +46,12 @@ module Y2Partitioner
           "ws_start"       => "preconditions",
           "preconditions"  => { next: "type" },
           "type"           => { next: "size" },
-          "size"           => { next: "role", finish: :finish },
+          "size"           => { next: "role", finish: "create_extended" },
           "role"           => { next: "format_options" },
           "format_options" => { next: "password" },
           "password"       => { next: "format_mount" },
-          "format_mount"   => { finish: :finish }
+          "format_mount"   => { finish: :finish },
+          "create_extended" => { finish: :finish }
         }
 
         sym = nil
@@ -105,7 +106,7 @@ module Y2Partitioner
 
       def format_mount
         ptable = disk.partition_table
-        name = next_free_primary_partition_name(@disk_name, ptable)
+        name = next_free_partition_name(@disk_name, ptable, @ptemplate.type)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
 
         FormatMount::Base.new(partition, @options).apply_options!
@@ -126,14 +127,27 @@ module Y2Partitioner
         @encrypt_dialog.run
       end
 
+      def create_extended
+        ptable = disk.partition_table
+        name = next_free_partition_name(@disk_name, ptable, @ptemplate.type)
+        ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
+
+        :finish
+      end
+
     private
 
       # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
-      def next_free_primary_partition_name(disk_name, ptable)
+      def next_free_partition_name(disk_name, ptable, type)
         # FIXME: This is broken by design. create_partition needs to return
         # this information, not get it as an input parameter.
         part_names = ptable.partitions.map(&:name)
-        1.upto(ptable.max_primary) do |i|
+        first, last = if type.is?(:logical)
+          [ptable.max_primary + 1, 1024]
+        else
+          [1, ptable.max_primary]
+        end
+        first.upto(last) do |i|
           dev_name = "#{disk_name}#{i}"
           return dev_name unless part_names.include?(dev_name)
         end
