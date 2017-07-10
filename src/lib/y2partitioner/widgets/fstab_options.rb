@@ -35,17 +35,9 @@ module Y2Partitioner
       end
 
       # @param widget [CWM::AbstractWidget]
-      # @return [Boolean] true if it is supported by current filesystem
-      def ui_term?(widget)
-        return true if widget.supported_by_filesystem?
-
-        false
-      end
-
-      # @param widget [CWM::AbstractWidget]
       # @return [CWM::WidgetTerm]
       def to_ui_term(widget)
-        return Empty() unless ui_term?(widget)
+        return Empty() unless widget.supported_by_filesystem?
 
         Left(widget)
       end
@@ -53,7 +45,7 @@ module Y2Partitioner
       # @param widget [CWM::AbstractWidget]
       # @return [Array<CWM::WidgetTerm>]
       def ui_term_with_vspace(widget)
-        return [Empty()] unless ui_term?(widget)
+        return [Empty()] unless widget.supported_by_filesystem?
 
         [Left(widget), VSpacing(1)]
       end
@@ -127,6 +119,7 @@ module Y2Partitioner
       def contents
         VBox(
           Left(MountBy.new(@options)),
+          VSpacing(1),
           Left(VolumeLabel.new(@options)),
           VSpacing(1),
           Left(GeneralOptions.new(@options)),
@@ -217,7 +210,7 @@ module Y2Partitioner
       include FstabCommon
 
       def contents
-        return Empty() unless widgets.any? { |w| ui_term?(w) }
+        return Empty() unless widgets.any? { |w| w.supported_by_filesystem? }
 
         VBox(* widgets.map { |w| to_ui_term(w) }, VSpacing(1))
       end
@@ -419,7 +412,7 @@ module Y2Partitioner
       include FstabCommon
 
       def contents
-        return Empty() unless widgets.any? { |w| ui_term?(w) }
+        return Empty() unless widgets.any? { |w| w.supported_by_filesystem? }
 
         VBox(* widgets.map { |w| to_ui_term(w) }, VSpacing(1))
       end

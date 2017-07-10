@@ -24,8 +24,8 @@ module Y2Partitioner
         sequence_hash = {
           "ws_start"       => "format_options",
           "format_options" => { next: "password" },
-          "password"       => { next: "format_mount" },
-          "format_mount"   => { finish: :finish }
+          "password"       => { next: "commit" },
+          "commit"         => { finish: :finish }
         }
 
         sym = nil
@@ -60,7 +60,7 @@ module Y2Partitioner
         @encrypt_dialog.run
       end
 
-      def format_mount
+      def commit
         FormatMount::Base.new(@partition, @options).apply_options!
 
         :finish
