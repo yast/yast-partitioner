@@ -1,4 +1,19 @@
 -------------------------------------------------------------------
+Tue Jul 11 09:21:23 UTC 2017 - knut.anderssen@suse.com
+
+- Add Partition sequence
+  - skip Partition Type choice if only one is possible
+  - added the Partition Role step
+  - added the Ecryption Password step (optional)
+  - do not allow a filesystem in an extended partition
+- Format and Mount dialog:
+  - implemented the Fstab Options pop-up
+  - set default fstab options for the filesystem selected
+  - offer only the filesystems allowed for a specific partition id
+  - do not allow formatting if not appropriate
+- 3.3.8
+
+-------------------------------------------------------------------
 Sat Jul  8 05:23:53 UTC 2017 - ancor@suse.com
 
 - During installation, ask for confirmation before aborting.
