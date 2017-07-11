@@ -38,6 +38,15 @@ module Y2Partitioner
         HVSquash(SizeWidget.new(@ptemplate, @regions))
       end
 
+      # return finish for extended partition, as it can set only type and its size
+      def run
+        res = super
+
+        res = :finish if res == :next && @ptemplate.type.is?(:extended)
+
+        res
+      end
+
       # Like CWM::RadioButtons but each RB has a subordinate indented widget.
       # This is kind of like Pager, but all Pages being visible at once,
       # and enabled/disabled.

@@ -16,7 +16,7 @@
 #
 
 Name:		yast2-partitioner
-Version:        3.3.7
+Version:        3.3.8
 Release:	0
 BuildArch:	noarch
 
@@ -26,10 +26,10 @@ Source:		%{name}-%{version}.tar.bz2
 # CWM::Dialog
 Requires:	yast2 >= 3.2.40
 Requires:	yast2-ruby-bindings
-Requires:	yast2-storage-ng >= 0.1.25
+Requires:	yast2-storage-ng >= 0.1.30
 
 BuildRequires:	update-desktop-files
-BuildRequires:	yast2-storage-ng >= 0.1.25
+BuildRequires:	yast2-storage-ng >= 0.1.30
 BuildRequires:	yast2-ruby-bindings
 BuildRequires:	yast2-devtools
 BuildRequires:	yast2 >= 3.2.40

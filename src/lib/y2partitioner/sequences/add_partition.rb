@@ -1,8 +1,10 @@
 require "yast"
 require "ui/sequence"
 require "y2partitioner/device_graphs"
+require "y2partitioner/dialogs/partition_role"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
+require "y2partitioner/dialogs/encrypt_password"
 
 Yast.import "Wizard"
 
@@ -31,6 +33,7 @@ module Y2Partitioner
         textdomain "storage"
         @disk_name = disk_name
         @ptemplate = PartitionTemplate.new
+        @options = FormatMount::Options.new
       end
 
       def disk
@@ -40,13 +43,14 @@ module Y2Partitioner
 
       def run
         sequence_hash = {
-          "ws_start"      => "preconditions",
-          "preconditions" => { next: "type" },
-          "type"          => { next: "size" },
-          "size"          => { next: "role", finish: :finish },
-          "role"          => { next: "format_mount" },
-          "format_mount"  => { next: "password", finish: :finish },
-          "password"      => { finish: :finish }
+          "ws_start"       => "preconditions",
+          "preconditions"  => { next: "type" },
+          "type"           => { next: "size" },
+          "size"           => { next: "role", finish: "commit" },
+          "role"           => { next: "format_options" },
+          "format_options" => { next: "password" },
+          "password"       => { next: "commit" },
+          "commit"         => { finish: :finish }
         }
 
         sym = nil
@@ -94,31 +98,49 @@ module Y2Partitioner
       end
 
       def role
-        log.info "TODO: Partition ROLE dialog"
-        :next
+        Dialogs::PartitionRole.run(disk.name, @options)
       end
+
       skip_stack :role
 
-      def format_mount
+      def commit
         ptable = disk.partition_table
-        name = next_free_primary_partition_name(@disk_name, ptable)
+        name = next_free_partition_name(@disk_name, ptable, @ptemplate.type)
         partition = ptable.create_partition(name, @ptemplate.region, @ptemplate.type)
-        Dialogs::FormatAndMount.new(partition).run
+
+        if !@ptemplate.type.is?(:extended)
+          FormatMount::Base.new(partition, @options).apply_options!
+        end
+
+        :finish
+      end
+
+      def format_options
+        @format_dialog ||= Dialogs::FormatAndMount.new(@options)
+
+        @format_dialog.run
       end
 
       def password
-        log.info "TODO: Partition PASSWORD dialog"
-        :finish
+        return :next unless @options.encrypt
+        @encrypt_dialog ||= Dialogs::EncryptPassword.new(@options)
+
+        @encrypt_dialog.run
       end
 
     private
 
       # FIXME: stolen from Y2Storage::Proposal::PartitionCreator
-      def next_free_primary_partition_name(disk_name, ptable)
+      def next_free_partition_name(disk_name, ptable, type)
         # FIXME: This is broken by design. create_partition needs to return
         # this information, not get it as an input parameter.
         part_names = ptable.partitions.map(&:name)
-        1.upto(ptable.max_primary) do |i|
+        first, last = if type.is?(:logical)
+          [ptable.max_primary + 1, 1024]
+        else
+          [1, ptable.max_primary]
+        end
+        first.upto(last) do |i|
           dev_name = "#{disk_name}#{i}"
           return dev_name unless part_names.include?(dev_name)
         end

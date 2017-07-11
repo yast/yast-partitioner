@@ -6,10 +6,10 @@ module Y2Partitioner
   module Widgets
     # Encrypted {Y2Storage::BlkDevice} password
     class EncryptPassword < CWM::CustomWidget
-      def initialize(blk_device)
+      def initialize(options)
         textdomain "storage"
 
-        @blk_device = blk_device
+        @options = options
       end
 
       def helptext
@@ -41,7 +41,7 @@ module Y2Partitioner
       end
 
       def store
-        @blk_device.encryption.password = pw1 if @blk_device.encryption
+        @options.password = pw1
       end
 
       def contents

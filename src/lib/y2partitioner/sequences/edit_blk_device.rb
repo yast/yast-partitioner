@@ -3,7 +3,10 @@ require "ui/sequence"
 require "y2partitioner/device_graphs"
 require "y2partitioner/dialogs/partition_size"
 require "y2partitioner/dialogs/partition_type"
+require "y2partitioner/dialogs/encrypt_password"
+require "y2partitioner/format_mount/base"
 
+Yast.import "Popup"
 Yast.import "Wizard"
 
 module Y2Partitioner
@@ -14,21 +17,17 @@ module Y2Partitioner
       # @param partition [Y2Storage::BlkDevice]
       def initialize(partition)
         textdomain "storage"
+        @options = FormatMount::Options.new(partition: partition)
         @partition = partition
       end
 
       def run
         sequence_hash = {
-          "ws_start"     => "format_mount",
-          # FIXME: If encryption password is set in a different step then it
-          # allows to go back and reset all the options to not modify the
-          # partition at all but since the moment :next is preset the partition
-          # will be altered. We could work with a FormatOptions object that
-          # could be a Struct or Hash and just set all the options there and
-          # format in a extra step at the end of the sequence or we could make
-          # the password step part of format_and_mount.
-          "format_mount" => { next: "password", finish: :finish },
-          "password"     => { finish: :finish }
+          "ws_start"       => "preconditions",
+          "preconditions"  => { next: "format_options" },
+          "format_options" => { next: "password" },
+          "password"       => { next: "commit" },
+          "commit"         => { finish: :finish }
         }
 
         sym = nil
@@ -38,6 +37,7 @@ module Y2Partitioner
           end
           sym == :finish
         end
+
         sym
       end
 
@@ -49,20 +49,33 @@ module Y2Partitioner
         Yast::Wizard.CloseDialog
       end
 
-      def format_mount
-        @dialog ||= Dialogs::FormatAndMount.new(@partition)
+      def preconditions
+        if @partition.type.is?(:extended)
+          Yast::Popup.Error(_("An extended partition cannot be edited"))
+          :back
+        else
+          :next
+        end
+      end
+      skip_stack :preconditions
 
-        @dialog.run
+      def format_options
+        @format_dialog ||= Dialogs::FormatAndMount.new(@options)
+
+        @format_dialog.run
       end
 
       def password
-        if @partition.encryption
-          ret = Dialogs::EncryptPassword.new(@partition).run
+        return :next unless @options.encrypt
+        @encrypt_dialog ||= Dialogs::EncryptPassword.new(@options)
 
-          ret == :next ? :finish : ret
-        else
-          :finish
-        end
+        @encrypt_dialog.run
+      end
+
+      def commit
+        FormatMount::Base.new(@partition, @options).apply_options!
+
+        :finish
       end
     end
   end

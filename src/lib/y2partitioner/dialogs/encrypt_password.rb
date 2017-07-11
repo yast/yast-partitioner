@@ -8,19 +8,20 @@ module Y2Partitioner
     # Part of {Sequences::AddPartition} and {Sequences::EditBlkDevice}.
     # Formerly MiniWorkflowStepPassword
     class EncryptPassword < CWM::Dialog
-      def initialize(blk_device)
+      # @param options [Y2Partitioner::FormatMount::Options]
+      def initialize(options)
         textdomain "storage"
 
-        @blk_device = blk_device
+        @options = options
       end
 
       def title
-        _("Encryption password for %s") % @blk_device.plain_device.name
+        _("Encryption password for %s") % @options.name
       end
 
       def contents
         HVSquash(
-          Widgets::EncryptPassword.new(@blk_device)
+          Widgets::EncryptPassword.new(@options)
         )
       end
     end
